@@ -9,6 +9,8 @@ Vue 3, TypeScript, Vite and Tailwind CSS.
 
 English/Russian, light/dark themes.
 
+Brand assets, the palette and the interface guide are in [`branding/`](branding/README.md).
+
 ## Development
 
 Use the Node version in `.node-version` and Docker Compose v2 for integration tests.
