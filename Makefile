@@ -3,11 +3,16 @@ TRIVY ?= trivy
 IMAGE ?= orpheus-web:local
 DOCKERFILE := .docker/app/prod/Dockerfile
 
-.PHONY: install dev generate generate-check lint lint-api lint-docker deadcode audit vuln build check test-e2e test-integration docker-build
+.PHONY: install dev api-update api-verify generate generate-check lint lint-api lint-docker deadcode audit vuln build check test-e2e test-integration docker-build
 install:
 	npm ci
 dev:
 	npm run dev
+api-update:
+	@test -n "$$REF" || { echo 'Usage: make api-update REF=<core-tag-or-commit> [FROM=../orpheus]' >&2; exit 1; }
+	@if [ -n "$$FROM" ]; then npm run api:update -- --ref "$$REF" --from "$$FROM"; else npm run api:update -- --ref "$$REF"; fi
+api-verify:
+	npm run api:verify
 generate:
 	npm run generate:api
 generate-check:

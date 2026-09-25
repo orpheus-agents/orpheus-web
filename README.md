@@ -66,13 +66,13 @@ specification or generated code by hand.
 Update deliberately from a tag or commit:
 
 ```sh
-npm run api:update -- --ref <core-tag-or-commit>
+make api-update REF=<core-tag-or-commit>
 ```
 
 Or read a committed revision from a local clone, without downloading it:
 
 ```sh
-npm run api:update -- --from ../orpheus --ref main
+make api-update REF=main FROM=../orpheus
 ```
 
 `main` is resolved once to a full commit SHA. The command reads Git objects, so
@@ -81,10 +81,10 @@ first. For normal work, prefer an explicit tag/SHA; builds never follow `main`.
 
 | Command | Purpose | Network |
 | --- | --- | --- |
-| `npm run api:update -- …` | Copy an explicit revision, pin its SHA/checksum, regenerate types and enums | Only without `--from` |
-| `npm run generate:api` | Regenerate from the checked-in snapshot | No |
-| `npm run api:check` | Check checksum and exact generated output; write nothing | No |
-| `npm run api:verify` | Compare the snapshot with the pinned upstream GitHub commit | Yes |
+| `make api-update REF=… [FROM=…]` | Copy an explicit revision, pin its SHA/checksum, regenerate types and enums | Only without `FROM` |
+| `make generate` | Regenerate from the checked-in snapshot | No |
+| `make generate-check` | Check checksum and exact generated output; write nothing | No |
+| `make api-verify` | Compare the snapshot with the pinned upstream GitHub commit | Yes |
 
 The typed GET client derives paths, parameters and responses from OpenAPI.
 Enums are generated at runtime; DTOs are not redeclared in UI code. Aggregate
