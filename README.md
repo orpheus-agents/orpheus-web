@@ -10,8 +10,8 @@ Vue 3, TypeScript, Vite and Tailwind CSS.
 English/Russian, light/dark themes.
 
 Brand assets, the palette and the interface guide are in [`branding/`](branding/README.md);
-the interface follows [`branding/interface.md`](branding/interface.md), and the fonts
-are served from `branding/fonts/`.
+the interface follows [`branding/interface.md`](branding/interface.md); the brand fonts
+are served from `branding/fonts/` and JetBrains Mono for code blocks from npm.
 
 ## Development
 
@@ -138,9 +138,11 @@ Selecting a run preserves the session and the current page of its run list.
 History renders at most 200 items. A separate overlay of at most 400 updates
 protects not-yet-loaded snapshot pages; exceeding it renews the snapshot. Evicted
 items are explicitly noted, and refresh returns to the beginning of the run.
-Large message bodies and tool outputs render only when expanded. The technical
-journal is separate and loads only when opened. No raw Codex payload parsing is
-performed in the browser.
+Messages that start with YAML front matter show it as a separate block above the
+body. Tool calls show their input at once, a shell command as a prompt line; the
+output and its exit code expand on demand. Large message bodies render only when
+expanded. The technical journal is separate and loads only when opened. No raw
+Codex payload parsing is performed in the browser.
 
 Markdown is sanitized and raw HTML is disabled. Images in transcripts become links
 instead of making background requests to third-party hosts.

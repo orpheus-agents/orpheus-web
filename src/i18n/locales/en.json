@@ -154,7 +154,8 @@
     "sandboxId": "Sandbox ID",
     "workspace": "Workspace",
     "selectedRun": "Selected run",
-    "latestRun": "Latest run"
+    "latestRun": "Latest run",
+    "newerRun": "A newer run has started — show the latest"
   },
   "run": {
     "title": "Run #{number}",

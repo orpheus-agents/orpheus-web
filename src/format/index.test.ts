@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { formatNumber, formatCompactNumber, formatDuration, formatDate, formatPercent, formatAxisTime, fromZonedInput, toZonedInput } from './index'
+import { formatNumber, formatCompactNumber, formatDuration, formatDate, formatPercent, formatAxisTime, fromZonedInput, shortenKey, toZonedInput } from './index'
 import { AnalyticsOverviewBucket as Bucket } from '../api/generated'
 it('preserves aggregate token precision beyond Number.MAX_SAFE_INTEGER', () => {
   expect(formatNumber('9007199254740993123', 'en-US')).toBe('9,007,199,254,740,993,123')
@@ -42,4 +42,9 @@ it('reads skipped times with the pre-transition offset and repeated times as the
   expect(toZonedInput(fromZonedInput('2026-10-04T02:30', 'Australia/Sydney'), 'Australia/Sydney')).toBe('2026-10-04T03:30')
   expect(fromZonedInput('2026-10-25T02:30', 'Europe/Berlin')).toBe('2026-10-25T00:30:00.000Z')
   expect(fromZonedInput('2026-10-25T03:30', 'Europe/Berlin')).toBe('2026-10-25T02:30:00.000Z')
+})
+it('shortens long external keys for headings while keeping their structure', () => {
+  expect(shortenKey('issue:482')).toBe('issue:482')
+  expect(shortenKey('34d085fe9b27f59e4ecee636c2396d1e:channel:t8txc1dadidmmfhzrggfbyiyry:thread:wruhgzq8wpbr8cfihmg9n3b8fh')).toBe('34d085fe…:channel:t8txc1da…:thread:wruhgzq8…')
+  expect(shortenKey('x'.repeat(80))).toBe(`${'x'.repeat(38)}…${'x'.repeat(8)}`)
 })

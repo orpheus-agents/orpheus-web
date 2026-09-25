@@ -50,6 +50,17 @@ export function fromZonedInput(value: string, timeZone: string) {
   return new Date(existing.length ? Math.min(...existing) : wall - offsetAt(wall - 2 * day)).toISOString()
 }
 
+/**
+ * A long external key for a heading: segments between colons keep their first characters,
+ * so `hash:channel:id:thread:id` stays readable; anything still too long keeps its head and tail.
+ */
+export function shortenKey(key: string, max = 48) {
+  if (key.length <= max) return key
+  const parts = key.split(':')
+  const compact = parts.map((part) => (part.length > 12 ? `${part.slice(0, 8)}…` : part)).join(':')
+  return parts.length > 1 && compact.length <= max ? compact : `${key.slice(0, max - 10)}…${key.slice(-8)}`
+}
+
 export function formatPercent(value: number, locale: string) {
   return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value / 100)
 }
