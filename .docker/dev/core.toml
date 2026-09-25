@@ -1,0 +1,20 @@
+[profiles.default]
+harness = "codex"
+model = "fixture-model"
+[profiles.default.auth]
+mode = "api_key"
+api_key_env = "OPENAI_API_KEY"
+
+# No worker runs in this disposable stack; no credentials are read.
+[credential_stores.fixture]
+type = "s3"
+bucket = "fixture-credentials"
+region = "us-east-1"
+[profiles.account]
+harness = "codex"
+model = "fixture-model"
+[profiles.account.auth]
+mode = "account"
+account_id = "fixture-account"
+store = "fixture"
+key = "fixture/auth.json"
