@@ -192,8 +192,8 @@ at the installation's ingress; the bundled TLS fragment is a local SAML fixture.
 `.docker/dev/` contains the disposable Compose stack and SAML fixtures. The runtime
 runs as the unprivileged `nginx` user. `make docker-build` builds a local image.
 
-CI runs checks on main, pull requests and version tags. After all checks pass,
-pushing a tag such as `v0.1.0` publishes `retailcrm/orpheus-web:0.1.0` to Docker Hub
+CI runs checks on main and pull requests. After main passes, pushing a tag such as
+`v0.1.0` publishes `retailcrm/orpheus-web:0.1.0` to Docker Hub without repeating checks
 for `linux/amd64` and `linux/arm64`, following the adjacent Orpheus repositories.
 Stable versions also update `latest`; prerelease versions do not.
 Configure the `DOCKERHUB_USERNAME` repository variable and `DOCKERHUB_TOKEN` secret
