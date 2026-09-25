@@ -11,6 +11,16 @@ export type HistoryItem = HistoryPage['items'][number]
 export class HistorySnapshotExpired extends Error {
   constructor() { super('History snapshot needs renewal') }
 }
+const SHELLS = /(^|\/)(ba|z|da|fi|k)?sh$/
+/** The command line of a shell-like tool call, if its input carries one: `{command}`, `{cmd}` or argv. */
+export function commandLine(input: unknown): string | null {
+  const value = Array.isArray(input) ? input : input && typeof input === 'object' ? ((input as Record<string, unknown>).command ?? (input as Record<string, unknown>).cmd) : null
+  if (typeof value === 'string') return value
+  if (!Array.isArray(value) || !value.length || !value.every((part) => typeof part === 'string')) return null
+  const [shell, flag, script] = value as string[]
+  if (value.length === 3 && SHELLS.test(shell) && /^-l?c$/.test(flag)) return script
+  return value.map((part) => (/[\s"']/.test(part) ? JSON.stringify(part) : part)).join(' ')
+}
 export function entity(item: HistoryItem) {
   return item.type === MessageItemType.message ? item.message : item.tool_call
 }

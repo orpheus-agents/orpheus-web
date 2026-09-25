@@ -31,6 +31,7 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
 | Navigation, buttons | Martian Mono Condensed | 12 px | uppercase, tracking 0.08 em; active item SemiBold |
 | Table header | Martian Mono Condensed | 11 px | uppercase, `muted` |
 | Data: ids, versions, times | Martian Mono Condensed | 13 px | |
+| Code, commands, tool output, front matter | JetBrains Mono | 12 px | content, not UI; loaded from npm (`@fontsource/jetbrains-mono`) |
 | Names, descriptions | system sans | 13–14 px | |
 | Body copy | system sans | 16 px | line height 1.6 |
 
@@ -55,7 +56,11 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   SemiBold in `accent-ink`.
 - Console: `term-bg`, radius 10 px, a 30 px title bar with a mono caption
   (`codex · sbx_2a71 · live`), no traffic lights. Prompts in `term-ok`,
-  output in `term-fg`, paths in `term-dim`.
+  output in `term-fg`, paths in `term-dim`. A tool call shows its command as a
+  `$` prompt line at once; the output is collapsed under an `OUTPUT · EXIT CODE`
+  caption.
+- Front matter: YAML at the top of a message sits in its own bordered block,
+  keys in `accent-ink`, values in `ink`, smaller than the body.
 - Matrix: 10 px squares on a 14 px pitch; `bg-subtle` empty, `line` idle,
   `accent` busy. For pools and activity at a glance, not for exact numbers.
 - Dither: Bayer fields for hero areas and empty states, as on agentbox.ru;

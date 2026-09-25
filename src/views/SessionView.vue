@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ArrowLeft } from 'lucide-vue-next'
 import { useSession } from '../composables/useSession'
 import { sectionLinks } from '../router'
-import { formatCompactNumber, formatNumber } from '../format'
+import { formatCompactNumber, formatNumber, shortenKey } from '../format'
 import CopyButton from '../components/CopyButton.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import SessionInfo from '../components/SessionInfo.vue'
@@ -31,22 +31,19 @@ const { data, run, runError, runPending, runStale, sessionPending, selected, err
       </RouterLink><RefreshStatus :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" />
     </div>
     <template v-if="data">
-      <div class="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p class="font-mono text-xs text-muted">{{ data.namespace ?? t('session.noNamespace') }}</p>
-          <h1 class="mt-2 break-all font-display text-2xl font-bold tracking-title sm:text-3xl">
-            {{ data.external_key ?? data.id.slice(0, 8) }}
-          </h1>
-          <p class="mt-2 flex items-center gap-2 break-all font-mono text-xs text-muted">
-            {{ data.id }}<CopyButton :value="data.id" />
-          </p>
-        </div>
-        <div class="text-right">
-          <StatusBadge :value="data.status" />
-          <p class="mt-2 font-mono text-xs text-muted" :title="formatNumber(data.usage.total_tokens, locale)">
-            {{ t('session.totalTokens', { value: formatCompactNumber(data.usage.total_tokens, locale) }) }}
-          </p>
-        </div>
+      <div>
+        <p class="font-mono text-xs text-muted">{{ data.namespace ?? t('session.noNamespace') }}</p>
+        <h1 class="mt-2 flex items-center gap-3 break-all font-display text-2xl font-bold tracking-title sm:text-3xl" :title="data.external_key ?? undefined">
+          {{ data.external_key ? shortenKey(data.external_key) : data.id.slice(0, 8) }}<CopyButton v-if="data.external_key" :value="data.external_key" />
+        </h1>
+        <p class="mt-2 flex items-center gap-2 break-all font-mono text-xs text-muted">
+          {{ data.id }}<CopyButton :value="data.id" />
+        </p>
+        <p class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-muted">
+          <StatusBadge :value="data.status" /><span :title="formatNumber(data.usage.total_tokens, locale)">{{
+            t('session.totalTokens', { value: formatCompactNumber(data.usage.total_tokens, locale) })
+          }}</span>
+        </p>
       </div>
       <ErrorDetails v-if="data.error" :error="data.error" />
       <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -57,7 +54,13 @@ const { data, run, runError, runPending, runStale, sessionPending, selected, err
                 {{
                   t('run.title', { number: run.number })
                 }}
-              </RouterLink><StatusBadge :value="run.status" />
+              </RouterLink><StatusBadge :value="run.status" /><RouterLink
+                v-if="rid && data.last_run_id && data.last_run_id !== run.id"
+                :to="`/sessions/${sid}`"
+                class="ml-auto flex items-center gap-2 text-accent-ink hover:underline"
+              >
+                <span class="marker bg-accent" aria-hidden="true" />{{ t('session.newerRun') }}
+              </RouterLink>
             </div>
             <HistoryPanel :key="run.id" :sid="sid" :rid="run.id" @changed="refresh" />
           </div>

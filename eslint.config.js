@@ -18,7 +18,7 @@ export default [
     },
   },
   {
-    files: ['src/components/RichText.vue'],
+    files: ['src/components/RichText.vue', 'src/components/CodeBlock.vue'],
     // Every HTML value is sanitized by DOMPurify in src/render/markdown.ts.
     rules: { 'vue/no-v-html': 'off' },
   },

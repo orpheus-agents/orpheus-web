@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { HistoryWindow, entity } from './history'
+import { HistoryWindow, commandLine, entity } from './history'
 import { MessageEventType, MessageItemType, type MessageEvent, type HistoryPage } from '../api/generated'
 import { message, rid, sid, timestamp } from '../test/fixtures'
 const event = (id: string, text: string, objectId = 'message'): MessageEvent => ({
@@ -83,4 +83,15 @@ it('evicts an initially unpositioned item when its resolved position precedes th
   state.event({ ...event('6', 'resolved'), data: message({ id: 'pending', position: { run_number: 3, item_index: 0 } }) })
   expect(state.items.has('pending')).toBe(false)
   expect(state.cursor).toBe('6')
+})
+
+it('extracts a command line from string, object and argv tool inputs', () => {
+  expect(commandLine({ command: 'npm test' })).toBe('npm test')
+  expect(commandLine({ cmd: ['git', 'log', '--oneline'] })).toBe('git log --oneline')
+  expect(commandLine(['/bin/bash', '-lc', 'npm test && git status'])).toBe('npm test && git status')
+  expect(commandLine(['sh', '-c', 'ls'])).toBe('ls')
+  expect(commandLine(['rg', '-n', 'advisory lock', 'internal/'])).toBe('rg -n "advisory lock" internal/')
+  expect(commandLine({ path: '/tmp' })).toBeNull()
+  expect(commandLine('plain')).toBeNull()
+  expect(commandLine([1, 2])).toBeNull()
 })
