@@ -1,0 +1,256 @@
+{
+  "app": {
+    "name": "Orpheus",
+    "language": "Change language",
+    "skip": "Skip to content"
+  },
+  "settings": {
+    "timezone": "Time zone",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "languages": {
+      "en": "English",
+      "ru": "Русский"
+    },
+    "search": "Search",
+    "nothingFound": "Nothing found"
+  },
+  "nav": {
+    "analytics": "Analytics",
+    "sessions": "Sessions",
+    "limits": "Limits",
+    "missing": "Page not found",
+    "main": "Main navigation"
+  },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Try again",
+    "refresh": "Refresh",
+    "reconnecting": "Reconnecting…",
+    "updated": "Updated",
+    "requestFailed": "Could not load data",
+    "retryHint": "Check your connection and try again.",
+    "notFound": "Not found",
+    "unknown": "Unknown",
+    "notSet": "—",
+    "firstPage": "First page",
+    "nextPage": "Next page",
+    "dismiss": "Dismiss",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Could not copy to clipboard"
+  },
+  "auth": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "logoutFailed": "Could not sign out. Try again.",
+    "signinTitle": "Sign in to Orpheus",
+    "signinHint": "Continue with your organization’s sign-in.",
+    "disabledTitle": "Browser access is not configured",
+    "disabledHint": "This instance only accepts API clients. Ask the administrator to configure browser access.",
+    "forbiddenTitle": "Access denied",
+    "forbiddenHint": "Your session does not have access to this instance.",
+    "errorTitle": "Cannot connect to Orpheus",
+    "errorHint": "The server is unavailable. Try again in a moment."
+  },
+  "filters": {
+    "period": "Period",
+    "bucket": "Group by",
+    "namespace": "Namespace",
+    "allNamespaces": "All namespaces",
+    "apply": "Apply",
+    "externalKey": "External key",
+    "exactKey": "Exact key",
+    "allStatuses": "All statuses",
+    "from": "From",
+    "to": "Until"
+  },
+  "period": {
+    "24h": "Last 24 hours",
+    "7d": "Last 7 days",
+    "30d": "Last 30 days",
+    "all": "All time",
+    "custom": "Date range"
+  },
+  "bucket": {
+    "hour": "Hourly",
+    "day": "Daily"
+  },
+  "analytics": {
+    "title": "Orchestrator activity",
+    "active": "Active now",
+    "activeHint": "Unfinished sessions, across all periods",
+    "runs": "Runs",
+    "completedFailed": "{completed} completed · {failed} failed",
+    "tokens": "Run tokens",
+    "inputOutput": "{input} input · {output} output",
+    "runtime": "Combined run time",
+    "runtimeHint": "Full duration of selected runs",
+    "activity": "Run activity",
+    "chartHint": "Runs accepted in each interval · {timezone}",
+    "inProgress": "In progress",
+    "selectInterval": "Run intervals: point at a bar or use the arrow keys",
+    "intervalRuns": "No runs | {count} run | {count} runs",
+    "cancelledActive": "{cancelled} cancelled · {active} in progress"
+  },
+  "sessions": {
+    "title": "Sessions",
+    "activity": "Session activity",
+    "active": "Current",
+    "inactive": "Past",
+    "session": "Session",
+    "context": "Source",
+    "profile": "Profile / model",
+    "status": "Status",
+    "lastRun": "Last run",
+    "tokens": "Session tokens",
+    "emptyTitle": "No sessions found",
+    "emptyHint": "Sessions matching these filters will appear here.",
+    "shown": "No sessions | {count} session on this page | {count} sessions on this page"
+  },
+  "limits": {
+    "title": "Provider limits",
+    "hint": "Shared quotas for each account, including usage outside Orpheus.",
+    "emptyTitle": "No account profiles",
+    "emptyHint": "This instance has no configured accounts. API-key profiles do not report account quotas.",
+    "profiles": "Profiles",
+    "observed": "Observed",
+    "attempt": "Last attempt",
+    "primary": "Primary window",
+    "secondary": "Secondary window",
+    "noWindows": "The provider did not report usage windows.",
+    "unspecifiedWindow": "Window not specified",
+    "remaining": "{value} remaining",
+    "used": "Used quota",
+    "reset": "Resets",
+    "state": {
+      "fresh": "Recent observation.",
+      "stale": "Last known values; the observation is out of date.",
+      "unknown": "No observation yet. This does not mean the quota is unused.",
+      "unavailable": "Quota information is currently unavailable."
+    },
+    "errors": {
+      "unsupported": "This Codex version does not support quota reads.",
+      "temporarily_unavailable": "The provider or connection is temporarily unavailable.",
+      "invalid_response": "The response could not be read.",
+      "no_data": "The provider returned no quota data.",
+      "authentication_unavailable": "Account authentication is unavailable."
+    }
+  },
+  "session": {
+    "back": "Back to sessions",
+    "noNamespace": "Session",
+    "totalTokens": "{value} session tokens",
+    "configuration": "Configuration",
+    "fullConfiguration": "View configuration",
+    "tokenBudget": "Session token budget",
+    "runTimeout": "Run timeout",
+    "sandbox": "Sandbox",
+    "template": "Template",
+    "sandboxId": "Sandbox ID",
+    "workspace": "Workspace",
+    "selectedRun": "Selected run",
+    "latestRun": "Latest run"
+  },
+  "run": {
+    "title": "Run #{number}",
+    "list": "Runs",
+    "accepted": "Accepted",
+    "started": "Agent started",
+    "finished": "Finished",
+    "runtime": "Duration",
+    "deadline": "Deadline",
+    "phase": "Phase",
+    "agent": "Agent result",
+    "observation": "Observation",
+    "stopReason": "Stop reason",
+    "inputOutput": "Input / output tokens",
+    "hooks": "Hooks",
+    "exitCode": "Exit code"
+  },
+  "history": {
+    "title": "Conversation",
+    "live": "Live",
+    "empty": "No messages yet",
+    "more": "Load next messages",
+    "windowHint": "Earlier items are outside the displayed window. Refresh to return to the beginning of this run.",
+    "user": "User",
+    "assistant": "Assistant",
+    "progress": "Progress",
+    "answer": "Answer",
+    "longMessage": "Expand long message",
+    "input": "Input",
+    "output": "Output",
+    "noOutput": "No output reported",
+    "truncated": "Output truncated · original size: {bytes} bytes"
+  },
+  "events": {
+    "title": "Technical event log",
+    "sequence": "Sequence",
+    "type": "Event",
+    "time": "Time"
+  },
+  "status": {
+    "accepted": "Accepted",
+    "starting": "Starting",
+    "running": "Running",
+    "cancelling": "Cancelling",
+    "finalizing": "Finalizing",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "pending": "Pending",
+    "skipped": "Skipped",
+    "unknown": "Unknown",
+    "unavailable": "Unavailable",
+    "stale": "Stale",
+    "fresh": "Fresh",
+    "not_created": "Not created",
+    "provisioning": "Provisioning",
+    "ready": "Ready",
+    "pausing": "Pausing",
+    "paused": "Paused",
+    "resuming": "Resuming"
+  },
+  "phase": {
+    "preparation": "Preparation",
+    "after_create": "After create",
+    "before_run": "Before run",
+    "agent": "Agent",
+    "after_run": "After run",
+    "execution": "Execution",
+    "finalization": "Finalization",
+    "recovery": "Recovery"
+  },
+  "observation": {
+    "attached": "Attached",
+    "reconnecting": "Reconnecting",
+    "uncertain": "Uncertain"
+  },
+  "stop": {
+    "user_request": "User request",
+    "run_timeout": "Run timeout",
+    "token_limit": "Token budget"
+  },
+  "delivery": {
+    "pending": "Awaiting delivery",
+    "sending": "Sending",
+    "delivered": "Delivered",
+    "uncertain": "Delivery uncertain",
+    "rejected": "Rejected"
+  },
+  "completeness": {
+    "complete": "Complete",
+    "truncated": "Output was truncated",
+    "unavailable": "Output unavailable",
+    "unknown": "Output completeness unknown"
+  },
+  "stopMethod": {
+    "graceful": "Graceful",
+    "forced": "Forced"
+  }
+}

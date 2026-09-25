@@ -1,0 +1,55 @@
+name: orpheus-web-dev
+x-core: &core
+  image: orpheus-web-core:${ORPHEUS_CORE_COMMIT:?Use npm run stack:start}
+  build:
+    context: ${ORPHEUS_CORE_CONTEXT:?Use npm run stack:start}
+    dockerfile: .docker/app/prod/Dockerfile
+services:
+  db:
+    image: postgres:16.10
+    environment:
+      POSTGRES_DB: orpheus
+      POSTGRES_USER: orpheus
+      POSTGRES_PASSWORD: fixture-password
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U orpheus]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  migrate:
+    <<: *core
+    command: [migrate, up]
+    environment:
+      DATABASE_URL: postgres://orpheus:fixture-password@db:5432/orpheus
+    depends_on:
+      db: {condition: service_healthy}
+  core:
+    <<: *core
+    environment:
+      DATABASE_URL: postgres://orpheus:fixture-password@db:5432/orpheus
+      PUBLIC_API_KEYS: '["integration-only-key"]'
+      ENV_ENCRYPTION_KEY: Zm9yLWxvY2FsLWRldmVsb3BtZW50LW9ubHktMzJieXQ=
+      ORPHEUS_CONFIG_FILE: /etc/orpheus/config.toml
+      ORPHEUS_BROWSER_AUTH: anonymous
+    volumes: [./core.toml:/etc/orpheus/config.toml:ro]
+    healthcheck:
+      interval: 2s
+      timeout: 3s
+      start_period: 5s
+      retries: 30
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+  ui:
+    build:
+      context: ../..
+      dockerfile: .docker/app/prod/Dockerfile
+    environment:
+      ORPHEUS_UPSTREAM: http://core:8000
+    ports: ['127.0.0.1:18085:8080']
+    healthcheck:
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    depends_on:
+      core: {condition: service_healthy}

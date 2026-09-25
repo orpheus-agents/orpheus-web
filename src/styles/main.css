@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens from branding/interface.md and branding/colors.md. Fonts: branding/fonts/.
+   The theme is the data-theme attribute on <html>: index.html sets it before the first
+   paint and src/composables/useSettings.ts keeps it in sync. */
+@font-face {
+  font-family: 'Martian Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../branding/fonts/MartianGroteskSemiExpanded-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Martian Grotesk';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../../branding/fonts/MartianGroteskSemiExpanded-ExtraBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Martian Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../branding/fonts/MartianMonoCondensed-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Martian Mono';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url('../../branding/fonts/MartianMonoCondensed-SemiBold.woff2') format('woff2');
+}
+
+:root {
+  --color-surface: 247 246 243;
+  --color-surface-raised: 255 255 255;
+  --color-surface-subtle: 241 238 233;
+  --color-ink: 14 14 16;
+  --color-muted: 105 99 91;
+  --color-line: 224 219 211;
+  --color-accent: 0 173 113;
+  --color-accent-ink: 0 126 79;
+  --color-danger: 231 91 97;
+  --color-danger-ink: 180 55 61;
+  --color-term: 11 11 13;
+  --color-term-fg: 216 216 212;
+  --color-term-dim: 139 139 134;
+  --color-term-line: 38 38 43;
+  --color-term-ok: 78 242 170;
+  --color-term-err: 231 91 97;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --color-surface: 14 14 16;
+  --color-surface-raised: 23 23 26;
+  --color-surface-subtle: 28 28 31;
+  --color-ink: 237 237 235;
+  --color-muted: 164 157 148;
+  --color-line: 44 44 48;
+  --color-accent: 78 242 170;
+  --color-accent-ink: 78 242 170;
+  --color-danger-ink: 231 91 97;
+  --color-term-line: 44 44 48;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@layer base {
+  body { @apply font-sans antialiased; }
+  button, a, input, select, summary { @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent; }
+  button:disabled { @apply cursor-not-allowed opacity-50; }
+}
+@layer components {
+  .panel { @apply border border-line bg-surface-raised; }
+  .caps { @apply font-mono text-xs uppercase tracking-caps; }
+  .section-title { @apply font-display text-3xl font-extrabold tracking-display sm:text-4xl; }
+  .panel-title { @apply font-display text-xl font-bold tracking-title; }
+  .button { @apply caps inline-flex h-10 items-center justify-center gap-2 border border-ink px-5 font-semibold text-ink transition hover:bg-surface-subtle; }
+  .button-primary { @apply button bg-ink text-surface hover:bg-ink/85 hover:text-surface; }
+  .icon-button { @apply inline-flex h-8 w-8 shrink-0 items-center justify-center text-muted transition hover:bg-surface-subtle hover:text-ink; }
+  .field { @apply h-10 w-full border border-line bg-surface-raised px-3 text-sm text-ink placeholder:text-muted; }
+  .field-label { @apply caps mb-1.5 block text-[11px] text-muted; }
+  .nav-link { @apply caps inline-flex h-14 items-center border-b-2 border-transparent text-muted transition hover:text-ink; }
+  .nav-link.selected { @apply border-accent font-semibold text-ink; }
+  .marker { @apply inline-block h-2 w-2 shrink-0; }
+  .data-table { @apply w-full border-collapse text-left text-sm; }
+  .data-table th { @apply caps h-9 whitespace-nowrap border-b border-line px-4 text-[11px] font-normal text-muted; }
+  .data-table td { @apply h-11 border-b border-line px-4 py-2 align-middle; }
+  .data-table tbody tr:last-child td { @apply border-b-0; }
+  .data-table tbody tr:hover { @apply bg-surface-subtle; }
+  .console { @apply overflow-auto rounded-win bg-term p-4 font-mono text-xs leading-5 text-term-fg; }
+  .prose-output { @apply break-words text-sm leading-7; }
+  .prose-output p + p { @apply mt-3; }
+  .prose-output pre { @apply my-3 overflow-auto border border-line bg-surface p-4 font-mono text-xs leading-6; }
+  .prose-output code { @apply font-mono text-xs; }
+  .prose-output h1, .prose-output h2, .prose-output h3 { @apply mb-2 mt-5 font-semibold; }
+  .prose-output ul, .prose-output ol { @apply my-3 space-y-1 pl-6; }
+  .prose-output ul { @apply list-disc; }
+  .prose-output ol { @apply list-decimal; }
+  .prose-output a { @apply text-accent-ink underline underline-offset-2; }
+  .prose-output blockquote { @apply my-3 border-l-2 border-accent pl-4 text-muted; }
+  .prose-output table { @apply my-3 block overflow-auto; }
+  .prose-output td, .prose-output th { @apply border border-line px-3 py-1; }
+  .hljs-keyword, .hljs-built_in { @apply text-accent-ink; }
+  .hljs-string, .hljs-addition { @apply text-ink; }
+  .hljs-comment { @apply text-muted; }
+  .hljs-number, .hljs-deletion { @apply text-danger-ink; }
+}
