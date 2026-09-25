@@ -6,7 +6,7 @@ import { get as httpsGet } from 'node:https'
 import { localSnapshot, validateSnapshot } from './api.mjs'
 
 const action = process.argv[2]
-if (!['start', 'stop', 'test'].includes(action)) throw new Error('Expected start, stop, or test')
+if (!['start', 'start-saml', 'stop', 'test'].includes(action)) throw new Error('Expected start, start-saml, stop, or test')
 const lock = JSON.parse(await readFile('api/upstream.lock.json', 'utf8'))
 validateSnapshot(lock, await readFile('api/upstream.yaml'))
 const environment = {
@@ -128,6 +128,10 @@ try {
   else if (action === 'start') {
     await run('docker', [...compose, 'up', '-d', '--build', '--wait', '--wait-timeout', '180'])
     console.log('Orpheus Web: http://127.0.0.1:18085 (disposable local database, no worker)')
+  } else if (action === 'start-saml') {
+    await setupSAML()
+    await run('docker', [...saml, 'up', '-d', '--build', '--wait', '--wait-timeout', '180', 'db', 'migrate', 'core', 'ui', 'keycloak'])
+    console.log('Orpheus Web SAML: https://localhost:18443 (operator / fixture-password)')
   } else {
     try {
       await run('docker', [...compose, 'up', '-d', '--build', '--wait', '--wait-timeout', '180'])

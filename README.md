@@ -46,6 +46,12 @@ With an existing core, run only `npm run dev`, setting `ORPHEUS_UPSTREAM` to its
 For local HTTP development, configure that core with `ORPHEUS_BROWSER_AUTH=anonymous`.
 To test SAML, use the HTTPS integration stack below.
 
+For an interactive local SAML preview, run `npm run stack:start:saml` and open
+<https://localhost:18443>. The disposable Keycloak login is `operator` /
+`fixture-password`; its local HTTPS certificate is self-signed. This command
+reuses the development database if it is already running. `npm run stack:stop`
+stops the preview as well.
+
 ## OpenAPI and generated types
 
 The source of truth is `api/openapi.yaml` in the **core repository**. This repository

@@ -17,6 +17,7 @@
     "test:tools": "node --test scripts/*.test.mjs",
     "knip": "knip",
     "stack:start": "node scripts/stack.mjs start",
+    "stack:start:saml": "node scripts/stack.mjs start-saml",
     "stack:stop": "node scripts/stack.mjs stop",
     "test:integration": "node scripts/stack.mjs test",
     "audit": "npm audit --audit-level=moderate",
