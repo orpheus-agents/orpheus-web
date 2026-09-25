@@ -10,6 +10,7 @@ const {
   data,
   error,
   pending,
+  stale,
   updatedAt,
   disconnected,
   refresh,
@@ -27,22 +28,15 @@ const {
 <template>
   <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <p class="eyebrow">{{ t('sessions.eyebrow') }}</p>
-        <h1 class="section-title mt-2">{{ t('sessions.title') }}</h1>
-      </div>
+      <h1 class="section-title">{{ t('sessions.title') }}</h1>
       <RefreshStatus :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" />
     </div>
-    <div
-      class="inline-flex rounded-lg border border-line bg-surface-raised p-1"
-      role="group"
-      :aria-label="t('sessions.activity')"
-    >
+    <div class="inline-flex border border-ink" role="group" :aria-label="t('sessions.activity')">
       <button
         v-for="activity in [Activity.active, Activity.inactive]"
         :key="activity"
-        class="rounded-md px-5 py-2 text-sm"
-        :class="filters.activity === activity ? 'bg-brand/10 font-medium text-brand' : 'text-muted'"
+        class="caps h-10 px-5 font-semibold transition"
+        :class="filters.activity === activity ? 'bg-ink text-surface' : 'text-muted hover:text-ink'"
         :aria-pressed="filters.activity === activity"
         @click="changeActivity(activity)"
       >
@@ -76,12 +70,12 @@ const {
       <template v-if="filters.activity === Activity.inactive && filters.period === 'custom'">
         <label><span class="field-label">{{ t('filters.from') }}</span><input v-model="fromLocal" type="datetime-local" class="field" required :max="toLocal || undefined"></label><label><span class="field-label">{{ t('filters.to') }}</span><input v-model="toLocal" type="datetime-local" class="field" required :min="fromLocal || undefined"></label>
       </template>
-      <button class="button min-h-10" type="submit">{{ t('filters.apply') }}</button>
+      <button class="button" type="submit">{{ t('filters.apply') }}</button>
     </form>
-    <div v-if="data" class="panel overflow-hidden">
+    <div v-if="data" class="panel overflow-hidden transition-opacity" :class="{ 'opacity-50': stale }" :aria-busy="stale || undefined">
       <SessionsTable :sessions="data.items" />
       <div class="flex items-center justify-between gap-3 border-t border-line px-5 py-4">
-        <p class="text-xs text-muted">{{ t('sessions.shown', data.items.length) }}</p>
+        <p class="font-mono text-xs text-muted">{{ t('sessions.shown', data.items.length) }}</p>
         <div class="flex gap-2">
           <button v-if="hasCursor" class="button" @click="page()">{{ t('common.firstPage') }}</button><button class="button" :disabled="!data.next_cursor || pending" @click="page(data.next_cursor)">
             {{ t('common.nextPage') }}
@@ -90,6 +84,5 @@ const {
       </div>
     </div>
     <PageState v-else :loading="pending" :error="error" @retry="refresh" />
-    <p class="text-xs text-muted">{{ t('sessions.liveHint') }}</p>
   </div>
 </template>

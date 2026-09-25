@@ -9,10 +9,13 @@ import {
   type operations,
 } from '../api/generated'
 import { useResource } from './useResource'
+import { useSettings } from './useSettings'
+import { fromZonedInput, toZonedInput } from '../format'
 
 export function useSessions() {
   const route = useRoute()
   const router = useRouter()
+  const { timeZone } = useSettings()
   const string = (value: unknown) => (typeof value === 'string' ? value : '')
   const activeStatuses = [RunStatus.accepted, RunStatus.starting, RunStatus.running, RunStatus.cancelling, RunStatus.finalizing]
   const inactiveStatuses = [RunStatus.completed, RunStatus.failed, RunStatus.cancelled]
@@ -59,22 +62,17 @@ export function useSessions() {
       last_run_created_to: inactive && q.period === 'custom' ? string(q.to) || undefined : undefined,
     }
   })
-  function localDate(value: string) {
-    if (!value) return ''
-    const date = new Date(value)
-    if (!Number.isFinite(date.valueOf())) return ''
-    return new Date(date.valueOf() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
-  }
+  // The date inputs show and read wall-clock time in the time zone chosen in the header.
   const fromLocal = computed({
-    get: () => localDate(filters.from),
+    get: () => toZonedInput(filters.from, timeZone.value),
     set: (value: string) => {
-      filters.from = value ? new Date(value).toISOString() : ''
+      filters.from = fromZonedInput(value, timeZone.value)
     },
   })
   const toLocal = computed({
-    get: () => localDate(filters.to),
+    get: () => toZonedInput(filters.to, timeZone.value),
     set: (value: string) => {
-      filters.to = value ? new Date(value).toISOString() : ''
+      filters.to = fromZonedInput(value, timeZone.value)
     },
   })
   async function apply() {
@@ -117,6 +115,7 @@ export function useSessions() {
       return result
     },
     () => route.name === 'sessions' ? JSON.stringify([query.value, route.query.period, route.query.at]) : null,
+    { keep: () => true },
   )
   return {
     ...resource,

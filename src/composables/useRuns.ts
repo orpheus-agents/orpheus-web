@@ -1,7 +1,7 @@
 import { ref, watch, type Ref } from 'vue'
 import { get } from '../api/client'
 import { PathsApiV1SessionsSidRunsGetParametersQueryOrder as Order } from '../api/generated'
-import { useResource } from './useResource'
+import { sameSession, useResource } from './useResource'
 
 export function useRuns(sid: Ref<string>) {
   const cursor = ref<string | undefined>()
@@ -20,6 +20,7 @@ export function useRuns(sid: Ref<string>) {
         query: { order: Order.desc, limit: 10, cursor: cursor.value },
       }),
     () => `${sid.value}:${cursor.value}`,
+    { keep: sameSession },
   )
   return { ...resource, cursor }
 }

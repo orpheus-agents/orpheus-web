@@ -40,9 +40,11 @@ Orpheus does not use it.
 | running | `accent` marker, `accent-ink` label |
 | paused | `muted` |
 | done | `ink` |
-| failed | `danger` `#E75B61` |
+| failed | `danger` marker, `danger-ink` label |
 
-`danger` is the only colour besides the accent.
+`danger` `#E75B61` is the only colour besides the accent. As text on the light
+background it is 3.3:1, so labels use `danger-ink` `#B4373D` there (5.1:1); in
+the dark theme `danger-ink` is `#E75B61` again.
 
 ## Console
 

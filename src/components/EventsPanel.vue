@@ -2,10 +2,12 @@
 import { toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEvents } from '../composables/useEvents'
+import { useSettings } from '../composables/useSettings'
 import { formatDate } from '../format'
 import PageState from './PageState.vue'
 const props = defineProps<{ sid: string }>()
 const { t, locale } = useI18n()
+const { timeZone } = useSettings()
 const { data, error, pending, refresh, after } = useEvents(toRef(props, 'sid'))
 </script>
 <template>
@@ -22,7 +24,7 @@ const { data, error, pending, refresh, after } = useEvents(toRef(props, 'sid'))
         <tr v-for="event in data.items" :key="event.id">
           <td class="font-mono text-xs">{{ event.id }}</td>
           <td class="font-mono text-xs">{{ event.type }}</td>
-          <td class="text-xs">{{ formatDate(event.created_at, locale) }}</td>
+          <td class="text-xs">{{ formatDate(event.created_at, locale, timeZone) }}</td>
         </tr>
       </tbody>
     </table>

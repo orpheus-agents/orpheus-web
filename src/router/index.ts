@@ -1,8 +1,11 @@
 import { reactive, watch } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
 import { i18n } from '../i18n'
 
 export const sectionLinks = reactive({ analytics: '/', sessions: '/sessions', limits: '/limits' })
+function screen(route: RouteLocationNormalized) {
+  return route.name === 'session' || route.name === 'run' ? `session:${String(route.params.sid)}` : String(route.name)
+}
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -13,7 +16,11 @@ export const router = createRouter({
     { path: '/limits', name: 'limits', component: () => import('../views/LimitsView.vue') },
     { path: '/:pathMatch(.*)*', name: 'missing', component: () => import('../views/NotFoundView.vue') },
   ],
-  scrollBehavior(_to, _from, savedPosition) { return savedPosition ?? { top: 0 } },
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    // Filters, pages and run selection keep the reader's place; a new screen starts at the top.
+    return screen(to) === screen(from) ? false : { top: 0 }
+  },
 })
 function title() {
   const route = router.currentRoute.value

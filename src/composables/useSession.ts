@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
 import { get } from '../api/client'
-import { useResource } from './useResource'
+import { sameSession, useResource } from './useResource'
 
 export function useSession(sid: Ref<string>, rid: Ref<string | undefined>) {
   const session = useResource(
@@ -13,12 +13,14 @@ export function useSession(sid: Ref<string>, rid: Ref<string | undefined>) {
       path: { sid: sid.value, rid: selected.value! }, signal,
     }),
     () => selected.value ? `${sid.value}:${selected.value}` : null,
+    { keep: sameSession },
   )
   return {
     ...session,
     run: run.data,
     runError: run.error,
     runPending: run.pending,
+    runStale: run.stale,
     sessionPending: session.pending,
     selected,
     disconnected: computed(() => session.disconnected.value || run.disconnected.value),

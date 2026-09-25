@@ -9,7 +9,7 @@ import type { Run, Session } from '../api/generated'
 vi.mock('../api/client', () => ({ get: vi.fn() }))
 let wrapper: ReturnType<typeof mount>
 afterEach(() => { wrapper?.unmount(); vi.resetAllMocks() })
-it('loads a known run in parallel and keeps the session when selecting another run', async () => {
+it('loads a known run in parallel and keeps the session and the shown run when selecting another run', async () => {
   let resolveSession!: (value: Session) => void
   let resolveRun!: (value: Run) => void
   vi.mocked(get).mockImplementation((path) => path.endsWith('/{rid}')
@@ -22,9 +22,11 @@ it('loads a known run in parallel and keeps the session when selecting another r
   resolveSession(session()); resolveRun(run())
   await flushPromises()
   const original = state.data.value
+  const shownRun = state.run.value
   runID.value = 'another-run'
   expect(state.data.value).toBe(original)
-  expect(state.run.value).toBeNull()
+  expect(state.run.value).toBe(shownRun)
+  expect(state.runPending.value).toBe(true)
   resolveRun(run({ id: 'another-run' }))
   await flushPromises()
   expect(state.run.value?.id).toBe('another-run')

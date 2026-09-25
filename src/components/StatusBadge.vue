@@ -6,24 +6,26 @@ const props = defineProps<{
   value: RunStatus | HookResultStatus | ToolCallStatus | AccountLimitItemState | SandboxStateState
 }>()
 const { t } = useI18n()
-const success: readonly string[] = [RunStatus.completed, AccountLimitItemState.fresh, SandboxStateState.ready]
-const danger: readonly string[] = [RunStatus.failed, AccountLimitItemState.unavailable, SandboxStateState.unavailable]
-const warning: readonly string[] = [
-  RunStatus.running,
+// One accent: states in motion glow, settled states are ink, failures are danger, the rest is muted.
+const live: readonly string[] = [
   RunStatus.starting,
+  RunStatus.running,
+  RunStatus.cancelling,
   RunStatus.finalizing,
-  AccountLimitItemState.stale,
+  SandboxStateState.provisioning,
+  SandboxStateState.pausing,
+  SandboxStateState.resuming,
+  AccountLimitItemState.fresh,
 ]
+const settled: readonly string[] = [RunStatus.completed, SandboxStateState.ready]
+const failed: readonly string[] = [RunStatus.failed, AccountLimitItemState.unavailable, SandboxStateState.unavailable]
 const tone = computed(() => {
-  if (success.includes(props.value)) return 'bg-success-bg text-success-fg'
-  if (danger.includes(props.value)) return 'bg-danger-bg text-danger-fg'
-  if (warning.includes(props.value)) return 'bg-warning-bg text-warning-fg'
-  return 'bg-surface text-muted'
+  if (live.includes(props.value)) return { marker: 'bg-accent', text: 'font-semibold text-accent-ink' }
+  if (settled.includes(props.value)) return { marker: 'bg-ink', text: 'text-ink' }
+  if (failed.includes(props.value)) return { marker: 'bg-danger', text: 'text-danger-ink' }
+  return { marker: 'bg-muted', text: 'text-muted' }
 })
 </script>
 <template>
-  <span
-    class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium"
-    :class="tone"
-  ><span class="h-1 w-1 rounded-full bg-current" aria-hidden="true" />{{ t(`status.${value}`) }}</span>
+  <span class="inline-flex items-center gap-2 whitespace-nowrap font-mono text-xs" :class="tone.text"><span class="marker" :class="tone.marker" aria-hidden="true" />{{ t(`status.${value}`) }}</span>
 </template>

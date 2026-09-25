@@ -10,20 +10,20 @@ function percent(value: number) {
 }
 </script>
 <template>
-  <div class="rounded-lg border border-line bg-surface/40 p-4">
+  <div class="border border-line bg-surface p-4">
     <div class="flex items-center justify-between gap-2">
       <h4 class="text-sm font-medium">{{ label }}</h4>
-      <span class="text-xs text-muted">{{
+      <span class="font-mono text-xs text-muted">{{
         window.window_minutes == null
           ? t('limits.unspecifiedWindow')
           : formatDuration(window.window_minutes * 60, locale)
       }}</span>
     </div>
     <div class="mt-5 flex items-baseline justify-between">
-      <strong class="text-2xl font-semibold tabular-nums">{{ percent(window.used_percent) }}</strong><span class="text-xs text-muted">{{ t('limits.remaining', { value: percent(window.remaining_percent) }) }}</span>
+      <strong class="font-display text-2xl font-extrabold tabular-nums tracking-title">{{ percent(window.used_percent) }}</strong><span class="font-mono text-xs text-muted">{{ t('limits.remaining', { value: percent(window.remaining_percent) }) }}</span>
     </div>
     <div
-      class="my-3 h-1.5 overflow-hidden rounded-full bg-line"
+      class="my-3 h-1.5 overflow-hidden bg-line"
       role="meter"
       :aria-label="t('limits.used')"
       :aria-valuemin="0"
@@ -32,8 +32,8 @@ function percent(value: number) {
       :aria-valuetext="percent(window.used_percent)"
     >
       <div
-        class="h-full rounded-full"
-        :class="stale ? 'bg-muted' : window.used_percent >= 90 ? 'bg-warning' : 'bg-brand'"
+        class="h-full"
+        :class="stale ? 'bg-muted' : window.used_percent >= 90 ? 'bg-danger' : 'bg-accent'"
         :style="{ width: `${Math.min(window.used_percent, 100)}%` }"
       />
     </div>

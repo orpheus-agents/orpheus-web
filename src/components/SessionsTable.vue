@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import type { Session } from '../api/generated'
 import { formatCompactNumber, formatNumber } from '../format'
 import StatusBadge from './StatusBadge.vue'
@@ -7,6 +8,14 @@ import RelativeTime from './RelativeTime.vue'
 import EmptyState from './EmptyState.vue'
 defineProps<{ sessions: Session[] }>()
 const { t, locale } = useI18n()
+const router = useRouter()
+// The id link handles its own clicks and modifier keys; the rest of the row is a shortcut to it.
+function open(id: string, event: MouseEvent) {
+  if ((event.target as HTMLElement).closest('a, button') || window.getSelection()?.toString()) return
+  const to = `/sessions/${id}`
+  if (event.metaKey || event.ctrlKey) window.open(router.resolve(to).href, '_blank', 'noopener')
+  else void router.push(to)
+}
 </script>
 <template>
   <EmptyState v-if="!sessions.length" :title="t('sessions.emptyTitle')" :hint="t('sessions.emptyHint')" />
@@ -23,11 +32,11 @@ const { t, locale } = useI18n()
         </tr>
       </thead>
       <tbody>
-        <tr v-for="session in sessions" :key="session.id">
+        <tr v-for="session in sessions" :key="session.id" class="cursor-pointer" @click="open(session.id, $event)">
           <td>
             <RouterLink
               :to="`/sessions/${session.id}`"
-              class="font-mono font-medium text-brand hover:underline"
+              class="font-mono text-accent-ink hover:underline"
               :title="session.id"
             >
               {{ session.id.slice(0, 8) }}
@@ -49,7 +58,7 @@ const { t, locale } = useI18n()
             <StatusBadge :value="session.status" />
             <p v-if="session.phase" class="mt-1 text-xs text-muted">{{ t(`phase.${session.phase}`) }}</p>
           </td>
-          <td class="whitespace-nowrap text-xs text-muted">
+          <td class="whitespace-nowrap font-mono text-xs text-muted">
             <RelativeTime :timestamp="session.last_run_created_at" />
           </td>
           <td class="text-right font-mono tabular-nums" :title="formatNumber(session.usage.total_tokens, locale)">

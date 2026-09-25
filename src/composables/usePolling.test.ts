@@ -62,7 +62,7 @@ it('backs off failures and returns to the normal interval after success', async 
 it('ignores late results after a filter change even if the fetcher ignores abort', async () => {
   const key = ref('old')
   const resolvers: ((value: string) => void)[] = []
-  let resource!: ReturnType<typeof useResource<string>>
+  let resource!: ReturnType<typeof useResource<string, string | null>>
   const wrapper = mount(
     defineComponent({
       setup() {

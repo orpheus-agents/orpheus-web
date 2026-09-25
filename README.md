@@ -9,7 +9,9 @@ Vue 3, TypeScript, Vite and Tailwind CSS.
 
 English/Russian, light/dark themes.
 
-Brand assets, the palette and the interface guide are in [`branding/`](branding/README.md).
+Brand assets, the palette and the interface guide are in [`branding/`](branding/README.md);
+the interface follows [`branding/interface.md`](branding/interface.md), and the fonts
+are served from `branding/fonts/`.
 
 ## Development
 
@@ -112,11 +114,15 @@ Polling runs every 5 seconds on visible analytics/session pages and every 30 sec
 on limits. Requests run serially, back off after failures and abort on filter/route
 changes, hidden tabs or unmount. A failed refresh retains the previous data and
 shows a reconnecting indicator. The first failed load offers a retry.
+Changing filters, pages or the selected run keeps the previous result on screen, dimmed,
+until the next one arrives; if that request fails, the error replaces the kept result.
+Navigation within a screen keeps the scroll position; only a new screen starts at the top.
 The last successful update age remains visible during reconnects. Relative timestamps
 share one visibility-aware clock across the page.
 
 Archive presets (`24h`, `7d`, `30d`) roll forward on each first-page request; their
-URLs store the period, while custom ranges store absolute `from`/`to` dates.
+URLs store the period, while custom ranges store absolute `from`/`to` instants; the
+date inputs show and read them in the time zone chosen in the header.
 Cursor pages also carry an `at` anchor for the window that issued the cursor,
 so pagination and reloading a cursor URL preserve the exact API filters.
 Returning to the first page resumes the rolling window.

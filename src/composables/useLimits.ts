@@ -4,6 +4,6 @@ export function useLimits() {
   return useResource(
     (signal) => get('/api/v1/accounts/limits', { signal }),
     () => 'limits',
-    30_000,
+    { interval: 30_000 },
   )
 }

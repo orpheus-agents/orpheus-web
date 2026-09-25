@@ -11,10 +11,7 @@ const { data, error, pending, disconnected, updatedAt, refresh } = useLimits()
 <template>
   <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <p class="eyebrow">{{ t('limits.eyebrow') }}</p>
-        <h1 class="section-title mt-2">{{ t('limits.title') }}</h1>
-      </div>
+      <h1 class="section-title">{{ t('limits.title') }}</h1>
       <RefreshStatus :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" />
     </div>
     <p class="max-w-3xl text-sm leading-6 text-muted">{{ t('limits.hint') }}</p>

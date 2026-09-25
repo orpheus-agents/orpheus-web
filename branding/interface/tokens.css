@@ -41,7 +41,8 @@
   --line: #E0DBD3;
   --accent: #00AD71;       /* fills: markers, underlines, matrices */
   --accent-ink: #007E4F;   /* text on --bg */
-  --danger: #E75B61;
+  --danger: #E75B61;       /* markers, borders, meters */
+  --danger-ink: #B4373D;   /* text on --bg */
 
   --term-bg: #0B0B0D;      /* the console is dark in both themes */
   --term-fg: #D8D8D4;
@@ -75,6 +76,7 @@
   --line: #2C2C30;
   --accent: #4EF2AA;
   --accent-ink: #4EF2AA;
+  --danger-ink: #E75B61;
   --term-line: #2C2C30;
   color-scheme: dark;
 }
@@ -89,6 +91,7 @@
     --line: #2C2C30;
     --accent: #4EF2AA;
     --accent-ink: #4EF2AA;
+    --danger-ink: #E75B61;
     --term-line: #2C2C30;
     color-scheme: dark;
   }

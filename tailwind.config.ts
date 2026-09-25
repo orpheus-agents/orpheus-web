@@ -1,34 +1,40 @@
 import type { Config } from 'tailwindcss'
 import defaultTheme from 'tailwindcss/defaultTheme'
 
+// Colour, type and shape tokens follow branding/interface.md; values live in src/styles/main.css.
 export default {
   content: ['./index.html', './src/**/*.{vue,ts}'],
-  darkMode: 'media',
+  darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
+    borderRadius: { none: '0', win: '10px' },
+    boxShadow: { none: 'none' },
     extend: {
       colors: {
         surface: 'rgb(var(--color-surface) / <alpha-value>)',
         'surface-raised': 'rgb(var(--color-surface-raised) / <alpha-value>)',
+        'surface-subtle': 'rgb(var(--color-surface-subtle) / <alpha-value>)',
         ink: 'rgb(var(--color-ink) / <alpha-value>)',
         muted: 'rgb(var(--color-muted) / <alpha-value>)',
         line: 'rgb(var(--color-line) / <alpha-value>)',
-        brand: 'rgb(var(--color-brand) / <alpha-value>)',
-        signal: 'rgb(var(--color-signal) / <alpha-value>)',
-        success: 'rgb(var(--color-success) / <alpha-value>)',
-        'success-fg': 'rgb(var(--color-success-fg) / <alpha-value>)',
-        'success-bg': 'rgb(var(--color-success-bg) / <alpha-value>)',
-        warning: 'rgb(var(--color-warning) / <alpha-value>)',
-        'warning-fg': 'rgb(var(--color-warning-fg) / <alpha-value>)',
-        'warning-bg': 'rgb(var(--color-warning-bg) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        'accent-ink': 'rgb(var(--color-accent-ink) / <alpha-value>)',
         danger: 'rgb(var(--color-danger) / <alpha-value>)',
-        'danger-fg': 'rgb(var(--color-danger-fg) / <alpha-value>)',
-        'danger-bg': 'rgb(var(--color-danger-bg) / <alpha-value>)',
-      },
-      boxShadow: {
-        panel: '0 1px 2px rgb(15 23 42 / 0.06)',
+        'danger-ink': 'rgb(var(--color-danger-ink) / <alpha-value>)',
+        term: 'rgb(var(--color-term) / <alpha-value>)',
+        'term-fg': 'rgb(var(--color-term-fg) / <alpha-value>)',
+        'term-dim': 'rgb(var(--color-term-dim) / <alpha-value>)',
+        'term-line': 'rgb(var(--color-term-line) / <alpha-value>)',
+        'term-ok': 'rgb(var(--color-term-ok) / <alpha-value>)',
+        'term-err': 'rgb(var(--color-term-err) / <alpha-value>)',
       },
       fontFamily: {
-        mono: ['JetBrains Mono', ...defaultTheme.fontFamily.mono],
+        display: ['Martian Grotesk', ...defaultTheme.fontFamily.sans],
+        mono: ['Martian Mono', ...defaultTheme.fontFamily.mono],
+      },
+      letterSpacing: {
+        caps: '0.08em',
+        display: '-0.035em',
+        title: '-0.025em',
       },
     },
   },

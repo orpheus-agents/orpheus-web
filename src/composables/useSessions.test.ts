@@ -5,6 +5,7 @@ import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import { get } from '../api/client'
 import { RunStatus, type operations } from '../api/generated'
 import { useSessions } from './useSessions'
+import { useSettings } from './useSettings'
 
 vi.mock('../api/client', () => ({ get: vi.fn() }))
 let wrapper: ReturnType<typeof mount>
@@ -78,4 +79,21 @@ it('offers only terminal statuses for past sessions and ignores incompatible URL
     expect(state.filters.status).toBe(status)
     expect(query().status).toBe(status)
   }
+})
+it('reads and writes the custom range in the time zone chosen in the header, whatever the browser zone is', async () => {
+  const settings = useSettings()
+  settings.setTimeZone('Asia/Tokyo')
+  await start('/sessions?activity=inactive&period=custom&from=2026-09-01T00:00:00Z&to=2026-09-02T00:00:00Z')
+  expect(state.fromLocal.value).toBe('2026-09-01T09:00')
+  expect(state.toLocal.value).toBe('2026-09-02T09:00')
+  state.fromLocal.value = '2026-09-25T10:00'
+  expect(state.filters.from).toBe('2026-09-25T01:00:00.000Z')
+  settings.setTimeZone('America/New_York')
+  expect(state.fromLocal.value).toBe('2026-09-24T21:00')
+  state.toLocal.value = '2026-09-25T10:00'
+  expect(state.filters.to).toBe('2026-09-25T14:00:00.000Z')
+  await state.apply()
+  await flushPromises()
+  expect(query()).toMatchObject({ last_run_created_from: '2026-09-25T01:00:00.000Z', last_run_created_to: '2026-09-25T14:00:00.000Z' })
+  settings.setTimeZone('UTC')
 })

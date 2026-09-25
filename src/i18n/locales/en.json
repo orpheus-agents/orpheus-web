@@ -2,8 +2,22 @@
   "app": {
     "name": "Orpheus",
     "language": "Change language",
-    "otherLanguage": "Русский",
     "skip": "Skip to content"
+  },
+  "settings": {
+    "timezone": "Time zone",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "languages": {
+      "en": "English",
+      "ru": "Русский"
+    },
+    "search": "Search",
+    "nothingFound": "Nothing found"
   },
   "nav": {
     "analytics": "Analytics",
@@ -48,7 +62,6 @@
     "bucket": "Group by",
     "namespace": "Namespace",
     "allNamespaces": "All namespaces",
-    "timezone": "Time zone",
     "apply": "Apply",
     "externalKey": "External key",
     "exactKey": "Exact key",
@@ -68,7 +81,6 @@
     "day": "Daily"
   },
   "analytics": {
-    "eyebrow": "Overview",
     "title": "Orchestrator activity",
     "active": "Active now",
     "activeHint": "Unfinished sessions, across all periods",
@@ -81,14 +93,12 @@
     "activity": "Run activity",
     "chartHint": "Runs accepted in each interval · {timezone}",
     "inProgress": "In progress",
-    "selectInterval": "Select an interval to inspect",
+    "selectInterval": "Run intervals: point at a bar or use the arrow keys",
     "intervalRuns": "No runs | {count} run | {count} runs",
-    "periodHint": "Tokens and duration belong to runs accepted in this period and include their full lifetime through the snapshot time.",
     "cancelledActive": "{cancelled} cancelled · {active} in progress"
   },
   "sessions": {
-    "eyebrow": "Execution",
-    "title": "Session history",
+    "title": "Sessions",
     "activity": "Session activity",
     "active": "Current",
     "inactive": "Past",
@@ -100,13 +110,11 @@
     "tokens": "Session tokens",
     "emptyTitle": "No sessions found",
     "emptyHint": "Sessions matching these filters will appear here.",
-    "shown": "No sessions | {count} session on this page | {count} sessions on this page",
-    "liveHint": "Sorted by the latest accepted run. The list updates as sessions change. The archive period applies to the latest run."
+    "shown": "No sessions | {count} session on this page | {count} sessions on this page"
   },
   "limits": {
-    "eyebrow": "Accounts",
     "title": "Provider limits",
-    "hint": "Shared quotas for each account, including usage outside Orpheus. Observations come from running Codex sessions; sleeping sandboxes are not awakened.",
+    "hint": "Shared quotas for each account, including usage outside Orpheus.",
     "emptyTitle": "No account profiles",
     "emptyHint": "This instance has no configured accounts. API-key profiles do not report account quotas.",
     "profiles": "Profiles",

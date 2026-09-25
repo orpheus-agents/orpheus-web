@@ -10,7 +10,7 @@ const { t, locale } = useI18n()
 </script>
 <template>
   <section class="panel p-5">
-    <h2 class="mb-4 font-semibold">{{ t('session.configuration') }}</h2>
+    <h2 class="panel-title mb-4">{{ t('session.configuration') }}</h2>
     <dl class="space-y-3 text-xs">
       <div>
         <dt class="field-label">{{ t('sessions.profile') }}</dt>
@@ -26,13 +26,13 @@ const { t, locale } = useI18n()
       </div>
     </dl>
     <details class="mt-4">
-      <summary class="cursor-pointer text-xs text-brand">{{ t('session.fullConfiguration') }}</summary>
-      <pre class="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-surface p-3 text-xs">{{
+      <summary class="cursor-pointer text-xs text-accent-ink">{{ t('session.fullConfiguration') }}</summary>
+      <pre class="console mt-3 max-h-96 whitespace-pre-wrap break-words">{{
         JSON.stringify(session.configuration, null, 2)
       }}</pre>
     </details>
     <div class="mt-5 flex items-center justify-between border-t border-line pt-4">
-      <h3 class="text-sm font-semibold">{{ t('session.sandbox') }}</h3>
+      <h3 class="panel-title text-base">{{ t('session.sandbox') }}</h3>
       <StatusBadge :value="session.sandbox.state" />
     </div>
     <dl class="mt-3 space-y-3 text-xs">

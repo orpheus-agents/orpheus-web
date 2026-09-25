@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Activity, Play, Coins, Clock3 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import type { AnalyticsOverview } from '../api/generated'
 import { formatCompactNumber, formatDuration, formatNumber } from '../format'
@@ -9,21 +8,15 @@ const { t, locale } = useI18n()
 <template>
   <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <article class="panel p-5">
-      <div class="flex items-center justify-between text-sm text-muted">
-        <h2>{{ t('analytics.active') }}</h2>
-        <Activity class="h-4 w-4" aria-hidden="true" />
-      </div>
-      <p class="my-5 text-4xl font-semibold tabular-nums tracking-tight">
+      <h2 class="caps text-muted">{{ t('analytics.active') }}</h2>
+      <p class="my-4 font-display text-4xl font-extrabold tabular-nums tracking-display">
         {{ formatNumber(overview.current.active_sessions, locale) }}
       </p>
       <p class="text-xs text-muted">{{ t('analytics.activeHint') }}</p>
     </article>
     <article class="panel p-5">
-      <div class="flex items-center justify-between text-sm text-muted">
-        <h2>{{ t('analytics.runs') }}</h2>
-        <Play class="h-4 w-4" aria-hidden="true" />
-      </div>
-      <p class="my-5 text-4xl font-semibold tabular-nums tracking-tight">
+      <h2 class="caps text-muted">{{ t('analytics.runs') }}</h2>
+      <p class="my-4 font-display text-4xl font-extrabold tabular-nums tracking-display">
         {{ formatNumber(overview.period.runs_count, locale) }}
       </p>
       <p class="text-xs text-muted">
@@ -50,12 +43,9 @@ const { t, locale } = useI18n()
       </p>
     </article>
     <article class="panel p-5">
-      <div class="flex items-center justify-between text-sm text-muted">
-        <h2>{{ t('analytics.tokens') }}</h2>
-        <Coins class="h-4 w-4" aria-hidden="true" />
-      </div>
+      <h2 class="caps text-muted">{{ t('analytics.tokens') }}</h2>
       <p
-        class="my-5 text-4xl font-semibold tabular-nums tracking-tight"
+        class="my-4 font-display text-4xl font-extrabold tabular-nums tracking-display"
         :title="formatNumber(overview.period.usage.total_tokens, locale)"
       >
         {{ formatCompactNumber(overview.period.usage.total_tokens, locale) }}
@@ -70,11 +60,8 @@ const { t, locale } = useI18n()
       </p>
     </article>
     <article class="panel p-5">
-      <div class="flex items-center justify-between text-sm text-muted">
-        <h2>{{ t('analytics.runtime') }}</h2>
-        <Clock3 class="h-4 w-4" aria-hidden="true" />
-      </div>
-      <p class="my-5 text-3xl font-semibold tabular-nums tracking-tight">
+      <h2 class="caps text-muted">{{ t('analytics.runtime') }}</h2>
+      <p class="my-4 font-display text-3xl font-extrabold tabular-nums tracking-display">
         {{ formatDuration(overview.period.runtime_seconds, locale) }}
       </p>
       <p class="text-xs text-muted">{{ t('analytics.runtimeHint') }}</p>

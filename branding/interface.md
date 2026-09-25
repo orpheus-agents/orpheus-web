@@ -28,7 +28,6 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
 |---|---|---|---|
 | Page title | Martian Grotesk SemiExpanded ExtraBold | 40 px | tracking −0.035 em |
 | Panel title | Martian Grotesk SemiExpanded Bold | 22 px | tracking −0.025 em |
-| Section caption | Martian Mono Condensed | 12 px | uppercase, in brackets: `[ SESSIONS ]`, tracking 0.08 em |
 | Navigation, buttons | Martian Mono Condensed | 12 px | uppercase, tracking 0.08 em; active item SemiBold |
 | Table header | Martian Mono Condensed | 11 px | uppercase, `muted` |
 | Data: ids, versions, times | Martian Mono Condensed | 13 px | |
@@ -37,10 +36,13 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
 
 ## Layout
 
-- Page gutter 32 px, content up to 1280 px, 8 px rhythm.
-- Header 56 px: logo 22 px tall, mono navigation, status and account on the
-  right, 1 px rule below. The active item has a 2 px accent underline.
-- Page order: caption → title → one-line description → content.
+- Page gutter 32 px, content up to 1536 px, 8 px rhythm.
+- Header 56 px: logo 22 px tall, mono navigation, 1 px rule below. The active
+  item has a 2 px accent underline. On the right: settings as icon menus
+  (language, time zone, theme), then a 1 px divider, the account name in mono
+  and the sign-out icon.
+- Page order: title → content, with a one-line description under the title
+  only where the screen needs one. No captions or eyebrows above titles.
 - Tables: header row, 44 px rows, 1 px rules, selected row on `bg-subtle`,
   no zebra stripes.
 - Panels: `bg-raised` with a 1 px `line` border, 20 px padding.

@@ -43,7 +43,7 @@ async function logout() {
     </div>
   </main>
   <div class="fixed bottom-5 right-5 z-50 flex max-w-sm flex-col gap-2" role="status" aria-live="polite">
-    <div v-for="toast in toasts" :key="toast.id" class="panel flex items-center gap-3 p-4 shadow-lg">
+    <div v-for="toast in toasts" :key="toast.id" class="panel flex items-center gap-3 p-4">
       <span class="text-sm">{{ toast.message }}</span><button class="icon-button" :aria-label="t('common.dismiss')" @click="dismiss(toast.id)">
         <X class="h-4 w-4" />
       </button>

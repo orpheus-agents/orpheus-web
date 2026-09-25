@@ -7,10 +7,12 @@ import {
   type operations,
 } from '../api/generated'
 import { useResource } from './useResource'
+import { useSettings } from './useSettings'
 
 export function useAnalytics() {
   const route = useRoute()
   const router = useRouter()
+  const { timeZone } = useSettings()
   const query = computed<operations['get_analytics_overview']['parameters']['query']>(() => {
     const q = route.query
     const window = Object.values(Window).find((value) => value === q.window) ?? Window.Value24h
@@ -19,15 +21,15 @@ export function useAnalytics() {
       bucket:
         Object.values(Bucket).find((value) => value === q.bucket) ??
         (window === Window.Value24h ? Bucket.hour : Bucket.day),
-      timezone: typeof q.timezone === 'string' ? q.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone: timeZone.value,
       namespace: typeof q.namespace === 'string' && q.namespace !== '' ? q.namespace : undefined,
     }
   })
-  const filters = reactive({ window: Window.Value24h, bucket: Bucket.hour, timezone: '', namespace: '' })
+  const filters = reactive({ window: Window.Value24h, bucket: Bucket.hour, namespace: '' })
   watch(
     query,
     (q) => {
-      Object.assign(filters, q, { namespace: q?.namespace ?? '' })
+      if (q) Object.assign(filters, { window: q.window, bucket: q.bucket, namespace: q.namespace ?? '' })
     },
     { immediate: true },
   )
@@ -41,6 +43,7 @@ export function useAnalytics() {
   const resource = useResource(
     (signal) => get('/api/v1/analytics/overview', { signal, query: query.value }),
     () => route.name === 'analytics' ? JSON.stringify(query.value) : null,
+    { keep: () => true },
   )
   return { ...resource, filters, apply, changeWindow }
 }

@@ -1,6 +1,6 @@
 import { ref, watch, type Ref } from 'vue'
 import { get } from '../api/client'
-import { useResource } from './useResource'
+import { sameSession, useResource } from './useResource'
 
 export function useEvents(sid: Ref<string>) {
   const after = ref('0')
@@ -19,6 +19,7 @@ export function useEvents(sid: Ref<string>) {
         signal,
       }),
     () => `${sid.value}:${after.value}`,
+    { keep: sameSession },
   )
   return { ...resource, after }
 }

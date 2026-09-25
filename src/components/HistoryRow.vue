@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
-import { UserRound, Sparkles, Terminal } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { MessageItemType, MessageRole, ToolCallOutput_completeness } from '../api/generated'
 import { entity, type HistoryItem } from '../events/history'
@@ -19,46 +18,41 @@ function toggle(event: Event) {
 <template>
   <article class="border-b border-line px-5 py-5 last:border-0 sm:px-6">
     <template v-if="item.type === MessageItemType.message">
-      <div class="mb-3 flex items-center gap-2 text-xs">
-        <component
-          :is="item.message.role === MessageRole.user ? UserRound : Sparkles"
-          class="h-4 w-4 text-brand"
+      <div class="mb-3 flex items-center gap-2 font-mono text-xs text-muted">
+        <span
+          class="marker"
+          :class="item.message.role === MessageRole.user ? 'bg-ink' : 'bg-accent'"
           aria-hidden="true"
-        /><span class="font-semibold">{{ t(`history.${item.message.role}`) }}</span><span v-if="item.message.kind" class="text-muted">{{ t(`history.${item.message.kind}`) }}</span><RelativeTime class="ml-auto text-muted" :timestamp="object.created_at" />
+        /><span class="caps font-semibold text-ink">{{ t(`history.${item.message.role}`) }}</span><span v-if="item.message.kind" class="caps">{{ t(`history.${item.message.kind}`) }}</span><RelativeTime class="ml-auto" :timestamp="object.created_at" />
       </div>
       <details v-if="item.message.text.length > 8000" @toggle="toggle">
-        <summary class="cursor-pointer text-sm text-brand">{{ t('history.longMessage') }}</summary>
+        <summary class="cursor-pointer text-sm text-accent-ink">{{ t('history.longMessage') }}</summary>
         <RichText v-if="expanded" :text="item.message.text" />
       </details>
       <RichText v-else :text="item.message.text" />
-      <p v-if="item.message.delivery_status" class="mt-2 text-xs text-muted">
+      <p v-if="item.message.delivery_status" class="mt-2 font-mono text-xs text-muted">
         {{ t(`delivery.${item.message.delivery_status}`) }}
       </p>
-      <p v-if="item.message.error" class="mt-2 text-xs text-danger-fg">
+      <p v-if="item.message.error" class="mt-2 text-xs text-danger-ink">
         {{ item.message.error.code }}: {{ item.message.error.message }}
       </p>
     </template>
     <details v-else class="text-sm" @toggle="toggle">
       <summary class="flex cursor-pointer flex-wrap items-center gap-2">
-        <Terminal class="h-4 w-4 text-muted" aria-hidden="true" /><span class="font-mono">{{
+        <span class="font-mono text-muted" aria-hidden="true">$</span><span class="font-mono">{{
           item.tool_call.name
         }}</span><StatusBadge :value="item.tool_call.status" /><RelativeTime
-          class="ml-auto text-xs text-muted"
+          class="ml-auto font-mono text-xs text-muted"
           :timestamp="object.created_at"
         />
       </summary>
       <div v-if="expanded" class="mt-4 space-y-3">
         <h4 class="field-label">{{ t('history.input') }}</h4>
-        <pre class="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-surface p-3 text-xs">{{
-          JSON.stringify(item.tool_call.input, null, 2)
-        }}</pre>
+        <pre class="console max-h-64 whitespace-pre-wrap break-words">{{ JSON.stringify(item.tool_call.input, null, 2) }}</pre>
         <h4 class="field-label">{{ t('history.output') }}</h4>
         <ResultOutput v-if="item.tool_call.result" :result="item.tool_call.result" />
         <p v-else class="text-xs text-muted">{{ t('history.noOutput') }}</p>
-        <p
-          v-if="item.tool_call.output_completeness !== ToolCallOutput_completeness.complete"
-          class="text-xs text-warning-fg"
-        >
+        <p v-if="item.tool_call.output_completeness !== ToolCallOutput_completeness.complete" class="text-xs text-muted">
           {{ t(`completeness.${item.tool_call.output_completeness}`)
           }}<span v-if="item.tool_call.truncation_reason"> · {{ item.tool_call.truncation_reason }}</span>
         </p>
