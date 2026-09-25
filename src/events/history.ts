@@ -1,6 +1,7 @@
 import {
   MessageEventType,
   MessageItemType,
+  MessageRole,
   ToolCallEventType,
   ToolItemType,
   type Event,
@@ -24,11 +25,19 @@ export function commandLine(input: unknown): string | null {
 export function entity(item: HistoryItem) {
   return item.type === MessageItemType.message ? item.message : item.tool_call
 }
-function compareItems(a: HistoryItem, b: HistoryItem) {
+function compareItems(a: HistoryItem, b: HistoryItem, startSequence: bigint | null) {
   const x = entity(a),
     y = entity(b)
-  if (x.position && !y.position) return -1
-  if (!x.position && y.position) return 1
+  // Codex injects earlier batch inputs outside the native turn, so they have
+  // no position. The API places those user messages before the turn's input.
+  const group = (item: HistoryItem) => {
+    const value = entity(item)
+    if (item.type === MessageItemType.message && item.message.role === MessageRole.user &&
+      !value.position && startSequence !== null && BigInt(value.registered_sequence) < startSequence) return 0
+    return value.position ? 1 : 2
+  }
+  const order = group(a) - group(b)
+  if (order) return order
   if (x.position && y.position) {
     const position = x.position.run_number - y.position.run_number || x.position.item_index - y.position.item_index
     if (position) return position
@@ -45,13 +54,14 @@ export class HistoryWindow {
   readonly items = new Map<string, HistoryItem>()
   private updates = new Map<string, HistoryItem>()
   private floor: HistoryItem | undefined
+  private startSequence: bigint | null = null
   constructor(
     readonly sid: string,
     readonly rid: string,
     private readonly limit = 200,
   ) {}
   get sorted() {
-    return [...this.items.values()].sort(compareItems)
+    return [...this.items.values()].sort((a, b) => compareItems(a, b, this.startSequence))
   }
   page(page: HistoryPage, first = false) {
     if (first) this.cursor = page.event_cursor
@@ -75,7 +85,8 @@ export class HistoryWindow {
       item = { type: ToolItemType.tool_call, tool_call: event.data }
     if (item) {
       const id = entity(item).id
-      if (this.floor && compareItems(item, this.floor) < 0) {
+      this.observeStart(item)
+      if (this.floor && compareItems(item, this.floor, this.startSequence) < 0) {
         this.items.delete(id)
         this.updates.delete(id)
       } else {
@@ -89,9 +100,15 @@ export class HistoryWindow {
     return true
   }
   private put(item: HistoryItem) {
+    this.observeStart(item)
     const id = entity(item).id
-    if (this.floor && compareItems(item, this.floor) < 0) this.items.delete(id)
+    if (this.floor && compareItems(item, this.floor, this.startSequence) < 0) this.items.delete(id)
     else this.items.set(id, item)
+  }
+  private observeStart(item: HistoryItem) {
+    if (item.type !== MessageItemType.message || item.message.role !== MessageRole.user || item.message.position?.item_index !== 0) return
+    const sequence = BigInt(item.message.registered_sequence)
+    if (this.startSequence === null || sequence < this.startSequence) this.startSequence = sequence
   }
   private bound() {
     const sorted = this.sorted

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { HistoryWindow, commandLine, entity } from './history'
-import { MessageEventType, MessageItemType, type MessageEvent, type HistoryPage } from '../api/generated'
+import { MessageEventType, MessageItemType, MessageRole, type MessageEvent, type HistoryPage } from '../api/generated'
 import { message, rid, sid, timestamp } from '../test/fixtures'
 const event = (id: string, text: string, objectId = 'message'): MessageEvent => ({
   id,
@@ -45,6 +45,21 @@ it('orders positioned objects before unknown positions and compares decimal sequ
     true,
   )
   expect(state.sorted.map((item) => entity(item).id)).toEqual(['c', 'b', 'a'])
+})
+it('keeps injected batch input before the turn and leaves later unpositioned steer after it', () => {
+  const state = new HistoryWindow(sid, rid)
+  const injected = message({ id: 'scrumer', role: MessageRole.user, position: null, registered_sequence: '42' })
+  const start = message({ id: 'question', role: MessageRole.user, position: { run_number: 3, item_index: 0 }, registered_sequence: '43' })
+  const progress = message({ id: 'progress', position: { run_number: 3, item_index: 2 }, registered_sequence: '57' })
+  const steer = message({ id: 'steer', role: MessageRole.user, position: null, registered_sequence: '58' })
+  state.page({
+    items: [injected, start, progress, steer].map((message) => ({ type: MessageItemType.message, message })),
+    event_cursor: '59',
+    next_cursor: null,
+  }, true)
+  expect(state.sorted.map((item) => entity(item).id)).toEqual(['scrumer', 'question', 'progress', 'steer'])
+  state.event(event('60', 'answer', 'answer'))
+  expect(state.sorted.map((item) => entity(item).id)).toEqual(['scrumer', 'question', 'progress', 'answer', 'steer'])
 })
 it('bounds the window and does not reinsert evicted older items', () => {
   const state = new HistoryWindow(sid, rid, 3)
