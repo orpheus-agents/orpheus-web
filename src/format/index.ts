@@ -13,6 +13,14 @@ export function formatDuration(seconds: number, locale: string) {
       : value >= 60 ? [[Math.floor(value / 60), 'minute'], [value % 60, 'second']] : [[value, 'second']]
   return units.filter(([n], i) => n || !i).map(([n, unit]) => new Intl.NumberFormat(locale, { style: 'unit', unit, unitDisplay: 'short' }).format(n)).join(' ')
 }
+/** Time until a moment, coarse enough to stay calm: days and hours, hours and minutes, or whole minutes. */
+export function formatCountdown(seconds: number, locale: string) {
+  const value = Math.max(0, seconds)
+  const units: [number, string][] = value >= 86400 ? [[Math.floor(value / 86400), 'day'], [Math.floor(value % 86400 / 3600), 'hour']]
+    : value >= 3600 ? [[Math.floor(value / 3600), 'hour'], [Math.floor(value % 3600 / 60), 'minute']]
+      : [[Math.max(1, Math.ceil(value / 60)), 'minute']]
+  return units.filter(([n], i) => n || !i).map(([n, unit]) => new Intl.NumberFormat(locale, { style: 'unit', unit, unitDisplay: 'short' }).format(n)).join(' ')
+}
 export function formatRelativeTime(timestamp: string, now: number, locale: string) {
   const seconds = (Date.parse(timestamp) - now) / 1000
   const [scale, unit]: [number, Intl.RelativeTimeFormatUnit] = Math.abs(seconds) < 60 ? [1, 'second'] : Math.abs(seconds) < 3600 ? [60, 'minute'] : Math.abs(seconds) < 86400 ? [3600, 'hour'] : [86400, 'day']

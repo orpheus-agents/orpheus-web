@@ -1,11 +1,25 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { AccountLimitItemState, type AccountLimitItem } from '../api/generated'
-import StatusBadge from './StatusBadge.vue'
 import LimitWindow from './LimitWindow.vue'
 import RelativeTime from './RelativeTime.vue'
-defineProps<{ account: AccountLimitItem }>()
+
+const props = defineProps<{ account: AccountLimitItem }>()
 const { t } = useI18n()
+// One indicator in the corner: the marker carries freshness, the text the observation time or why there is none.
+const indicator = computed(() => {
+  switch (props.account.state) {
+    case AccountLimitItemState.fresh:
+      return { marker: 'bg-accent', text: 'text-accent-ink', label: null }
+    case AccountLimitItemState.stale:
+      return { marker: 'bg-muted', text: 'text-muted', label: t('status.stale') }
+    case AccountLimitItemState.unavailable:
+      return { marker: 'bg-danger', text: 'text-danger-ink', label: t('status.unavailable') }
+    default:
+      return { marker: 'bg-muted', text: 'text-muted', label: t('limits.noObservation') }
+  }
+})
 </script>
 <template>
   <article class="panel p-6">
@@ -14,17 +28,16 @@ const { t } = useI18n()
         <h2 class="font-mono text-base font-semibold">{{ account.account_id }}</h2>
         <p class="mt-1 font-mono text-xs text-muted">{{ t('limits.profiles') }}: {{ account.profiles.join(', ') }}</p>
       </div>
-      <StatusBadge :value="account.state" />
+      <p class="flex items-center gap-2 whitespace-nowrap font-mono text-xs" :class="indicator.text" :title="t(`limits.state.${account.state}`)">
+        <span class="marker" :class="indicator.marker" aria-hidden="true" />{{ indicator.label
+        }}<template v-if="account.observed_at"><template v-if="indicator.label"> · </template><RelativeTime :timestamp="account.observed_at" /></template>
+      </p>
     </div>
-    <p class="my-4 text-sm" :class="account.buckets.length ? 'text-muted' : 'text-ink'">
-      {{ t(`limits.state.${account.state}`) }}
-      <span v-if="account.observed_at">{{ t('limits.observed') }} <RelativeTime :timestamp="account.observed_at" /></span>
-    </p>
-    <p v-if="account.error_code" class="mb-4 text-sm text-danger-ink">
+    <p v-if="account.error_code" class="mt-4 text-sm text-danger-ink">
       {{ t(`limits.errors.${account.error_code}`) }}
       <span v-if="account.last_attempt_at">{{ t('limits.attempt') }} <RelativeTime :timestamp="account.last_attempt_at" /></span>
     </p>
-    <div class="space-y-5">
+    <div v-if="account.buckets.length" class="mt-5 space-y-5">
       <section v-for="bucket in account.buckets" :key="bucket.limit_id">
         <div class="mb-3 flex flex-wrap items-baseline gap-3">
           <h3 class="text-sm font-medium">{{ bucket.limit_name ?? bucket.limit_id }}</h3>
