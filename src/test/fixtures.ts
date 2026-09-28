@@ -8,7 +8,7 @@ export function counts(overrides: Partial<StatusCounts> = {}): StatusCounts {
 }
 export function overview(): AnalyticsOverview {
   return { as_of: timestamp, from: '2026-09-24T06:00:00Z', to: timestamp, bucket: AnalyticsOverviewBucket.hour, timezone: 'UTC', namespace: null,
-    current: { active_sessions: 12 }, period: { runs_count: 248, by_status: counts({ completed: 224, failed: 9, cancelled: 3, running: 12 }), usage: { input_tokens: '12840220', output_tokens: '1940280', total_tokens: '14780500' }, runtime_seconds: 176460 },
+    current: { active_sessions: 12 }, period: { runs_count: 248, by_status: counts({ completed: 224, failed: 9, cancelled: 3, running: 12 }), usage: { input_tokens: '12840220', cached_input_tokens: '4100000', output_tokens: '1940280', reasoning_output_tokens: '760000', total_tokens: '14780500' }, runtime_seconds: 176460 },
     series: Array.from({ length: 24 }, (_, index) => {
       const completed = [2, 1, 0, 1, 3, 6, 8, 12, 15, 19, 16, 11, 7, 9, 14, 17, 10, 8, 13, 16, 7, 9, 12, 8][index]
       const failed = index % 5 === 0 ? 2 : 0
@@ -17,15 +17,15 @@ export function overview(): AnalyticsOverview {
   }
 }
 export function session(overrides: Partial<Session> = {}): Session {
-  return { id: sid, namespace: 'engineering', external_key: 'issue:482', last_run_created_at: timestamp, created_at: timestamp, usage: { input_tokens: 52180, output_tokens: 8400, total_tokens: 60580 }, phase: null, active_run_id: rid, last_run_id: rid, status: RunStatus.running, error: null, final_message: null,
+  return { id: sid, namespace: 'engineering', external_key: 'issue:482', last_run_created_at: timestamp, created_at: timestamp, usage: { input_tokens: 52180, cached_input_tokens: 24000, output_tokens: 8400, reasoning_output_tokens: 3000, total_tokens: 60580 }, phase: null, active_run_id: rid, last_run_id: rid, status: RunStatus.running, error: null, final_message: null,
     configuration: { agent: { profile: 'default', model: 'example-model', instructions: 'Work on the requested task.' }, sandbox: { template: 'codex', env_names: [], env_from: [] }, hooks: { timeout_seconds: 60 }, limits: { max_session_tokens: 100000000, run_timeout_seconds: 3600 } },
     sandbox: { id: 'sandbox-example', workspace: '/workspace/project', state: SandboxStateState.ready, last_known_state: null, error: null }, ...overrides }
 }
 export function run(overrides: Partial<Run> = {}): Run {
-  return { id: rid, session_id: sid, number: 3, status: RunStatus.running, phase: null, usage: { input_tokens: 3200, output_tokens: 1200, total_tokens: 4400 }, agent_status: null, agent_error: null, hooks: [], env_names: [], env_from: [], input_fingerprint: null, cancel_requested_at: null, created_at: timestamp, execution_started_at: timestamp, deadline_at: null, error: null, final_message: null, finished_at: null, observation: null, stop_method: null, stop_reason: null, ...overrides }
+  return { id: rid, session_id: sid, number: 3, status: RunStatus.running, phase: null, usage: { input_tokens: 3200, cached_input_tokens: 1800, output_tokens: 1200, reasoning_output_tokens: 400, total_tokens: 4400 }, agent_status: null, agent_error: null, hooks: [], env_names: [], env_from: [], input_fingerprint: null, cancel_requested_at: null, created_at: timestamp, execution_started_at: timestamp, deadline_at: null, error: null, final_message: null, finished_at: null, observation: null, stop_method: null, stop_reason: null, ...overrides }
 }
 export function message(overrides: Partial<Message> = {}): Message {
-  return { id: '33333333-3333-4333-8333-333333333333', run_id: rid, session_id: sid, created_at: timestamp, role: MessageRole.assistant, text: 'I have checked the API contract and am updating the client types.', kind: null, external_key: null, error: null, delivery_status: null, registered_sequence: '2', position: { run_number: 3, item_index: 1 }, ...overrides }
+  return { id: '33333333-3333-4333-8333-333333333333', run_id: rid, session_id: sid, created_at: timestamp, role: MessageRole.assistant, text: 'I have checked the API contract and am updating the client types.', kind: null, external_key: null, metadata: null, error: null, delivery_status: null, registered_sequence: '2', position: { run_number: 3, item_index: 1 }, ...overrides }
 }
 export function history(): HistoryPage {
   return { event_cursor: '10', next_cursor: null, items: [

@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import type { AnalyticsOverview } from '../api/generated'
 import { formatCompactNumber, formatDuration, formatNumber } from '../format'
+import TokenUsageBreakdown from './TokenUsageBreakdown.vue'
 defineProps<{ overview: AnalyticsOverview }>()
 const { t, locale } = useI18n()
 </script>
@@ -50,14 +51,7 @@ const { t, locale } = useI18n()
       >
         {{ formatCompactNumber(overview.period.usage.total_tokens, locale) }}
       </p>
-      <p class="text-xs text-muted">
-        {{
-          t('analytics.inputOutput', {
-            input: formatCompactNumber(overview.period.usage.input_tokens, locale),
-            output: formatCompactNumber(overview.period.usage.output_tokens, locale),
-          })
-        }}
-      </p>
+      <TokenUsageBreakdown :usage="overview.period.usage" compact />
     </article>
     <article class="panel p-5">
       <h2 class="caps text-muted">{{ t('analytics.runtime') }}</h2>

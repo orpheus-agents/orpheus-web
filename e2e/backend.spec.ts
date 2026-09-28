@@ -5,13 +5,13 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await page.addInitScript(() => localStorage.setItem('orpheus_locale', 'en'))
   const created = await request.post('/api/v1/sessions', {
     headers: { Authorization: 'Bearer integration-only-key', 'Idempotency-Key': crypto.randomUUID() },
-    data: { namespace: 'web-integration', external_key: `test:${crypto.randomUUID()}`, configuration: { agent: { profile: 'default' }, sandbox: { template: 'codex' } }, message: { text: 'Browser integration fixture' } },
+    data: { namespace: 'web-integration', external_key: `test:${crypto.randomUUID()}`, configuration: { agent: { profile: 'default' }, sandbox: { template: 'codex' } }, messages: [{ text: 'Browser integration fixture' }] },
   })
   expect(created.status()).toBe(202)
   const { session_id: sid, run_id: rid } = await created.json()
   await page.goto(`/sessions/${sid}`)
   if (saml) {
-    await expect(page).toHaveURL(/localhost:18444/)
+    await expect(page).toHaveURL(new RegExp(`localhost:${process.env.ORPHEUS_WEB_IDP_PORT || '18444'}`))
     await page.getByLabel('Username or email').fill('operator')
     await page.getByLabel('Password', { exact: true }).fill('fixture-password')
     const callback = page.waitForResponse((response) => new URL(response.url()).pathname === '/auth/callback')

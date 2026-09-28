@@ -8,6 +8,7 @@ import { useSettings } from '../composables/useSettings'
 import StatusBadge from './StatusBadge.vue'
 import HookResultCard from './HookResultCard.vue'
 import ErrorDetails from './ErrorDetails.vue'
+import TokenUsageBreakdown from './TokenUsageBreakdown.vue'
 defineProps<{ run: Run }>()
 const { t, locale } = useI18n()
 const { timeZone } = useSettings()
@@ -75,13 +76,8 @@ usePolling(async () => {
         <dt class="font-mono text-muted">{{ t('analytics.tokens') }}</dt>
         <dd class="font-mono">{{ formatNumber(run.usage.total_tokens, locale) }}</dd>
       </div>
-      <div class="flex justify-between gap-3">
-        <dt class="font-mono text-muted">{{ t('run.inputOutput') }}</dt>
-        <dd class="font-mono">
-          {{ formatNumber(run.usage.input_tokens, locale) }} / {{ formatNumber(run.usage.output_tokens, locale) }}
-        </dd>
-      </div>
     </dl>
+    <TokenUsageBreakdown :usage="run.usage" class="mt-3" />
     <ErrorDetails v-if="run.error" class="mt-4" :error="run.error" />
     <ErrorDetails v-if="run.agent_error" class="mt-4" :error="run.agent_error" />
     <div v-if="run.hooks.length" class="mt-5 space-y-2 border-t border-line pt-4">

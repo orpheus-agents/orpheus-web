@@ -87,7 +87,6 @@
     "runs": "Запуски",
     "completedFailed": "Завершены {completed} · с ошибкой {failed}",
     "tokens": "Токены запусков",
-    "inputOutput": "{input} input · {output} output",
     "runtime": "Суммарное время запусков",
     "runtimeHint": "Полная длительность выбранных запусков",
     "activity": "Динамика запусков",
@@ -157,6 +156,12 @@
     "latestRun": "Последний запуск",
     "newerRun": "Начался новый запуск — показать последний"
   },
+  "usage": {
+    "input": "Ввод",
+    "cachedInput": "Из них кешировано",
+    "output": "Вывод",
+    "reasoningOutput": "Из них на рассуждение"
+  },
   "run": {
     "title": "Запуск №{number}",
     "list": "Запуски",
@@ -169,7 +174,6 @@
     "agent": "Результат агента",
     "observation": "Наблюдение",
     "stopReason": "Причина остановки",
-    "inputOutput": "Токены input / output",
     "hooks": "Хуки",
     "exitCode": "Код завершения"
   },

@@ -87,7 +87,6 @@
     "runs": "Runs",
     "completedFailed": "{completed} completed · {failed} failed",
     "tokens": "Run tokens",
-    "inputOutput": "{input} input · {output} output",
     "runtime": "Combined run time",
     "runtimeHint": "Full duration of selected runs",
     "activity": "Run activity",
@@ -157,6 +156,12 @@
     "latestRun": "Latest run",
     "newerRun": "A newer run has started — show the latest"
   },
+  "usage": {
+    "input": "Input",
+    "cachedInput": "Of which cached",
+    "output": "Output",
+    "reasoningOutput": "Of which reasoning"
+  },
   "run": {
     "title": "Run #{number}",
     "list": "Runs",
@@ -169,7 +174,6 @@
     "agent": "Agent result",
     "observation": "Observation",
     "stopReason": "Stop reason",
-    "inputOutput": "Input / output tokens",
     "hooks": "Hooks",
     "exitCode": "Exit code"
   },

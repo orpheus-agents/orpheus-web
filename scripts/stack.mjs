@@ -9,8 +9,14 @@ const action = process.argv[2]
 if (!['start', 'start-saml', 'stop', 'test'].includes(action)) throw new Error('Expected start, start-saml, stop, or test')
 const lock = JSON.parse(await readFile('api/upstream.lock.json', 'utf8'))
 validateSnapshot(lock, await readFile('api/upstream.yaml'))
+const httpPort = process.env.ORPHEUS_WEB_HTTP_PORT || '18085'
+const httpsPort = process.env.ORPHEUS_WEB_HTTPS_PORT || '18443'
+const idpPort = process.env.ORPHEUS_WEB_IDP_PORT || '18444'
 const environment = {
   ...process.env,
+  ORPHEUS_WEB_HTTP_PORT: httpPort,
+  ORPHEUS_WEB_HTTPS_PORT: httpsPort,
+  ORPHEUS_WEB_IDP_PORT: idpPort,
   ORPHEUS_CORE_COMMIT: lock.commit,
   ORPHEUS_CORE_CONTEXT: `${lock.repository}.git#${lock.commit}`,
 }
@@ -28,7 +34,7 @@ async function run(command, args, extraEnv = {}) {
 function descriptor(ca) {
   return new Promise((resolve, reject) => {
     const request = httpsGet(
-      'https://localhost:18444/realms/orpheus-web/protocol/saml/descriptor',
+      `https://localhost:${idpPort}/realms/orpheus-web/protocol/saml/descriptor`,
       { ca, timeout: 2000 },
       (response) => {
         const chunks = []
@@ -74,7 +80,7 @@ async function setupSAML() {
         clientId: 'orpheus-web-test',
         enabled: true,
         protocol: 'saml',
-        redirectUris: ['https://localhost:18443/auth/callback'],
+        redirectUris: [`https://localhost:${httpsPort}/auth/callback`],
         attributes: {
           'saml.assertion.signature': 'true',
           'saml.authnstatement': 'true',
@@ -83,7 +89,7 @@ async function setupSAML() {
           'saml.signature.algorithm': 'RSA_SHA256',
           'saml.signing.certificate': certificate,
           'saml.force.post.binding': 'true',
-          saml_assertion_consumer_url_post: 'https://localhost:18443/auth/callback',
+          saml_assertion_consumer_url_post: `https://localhost:${httpsPort}/auth/callback`,
           saml_name_id_format: 'username',
         },
       },
@@ -127,19 +133,19 @@ try {
   if (action === 'stop') await run('docker', [...compose, 'down', '--remove-orphans'])
   else if (action === 'start') {
     await run('docker', [...compose, 'up', '-d', '--build', '--wait', '--wait-timeout', '180'])
-    console.log('Orpheus Web: http://127.0.0.1:18085 (disposable local database, no worker)')
+    console.log(`Orpheus Web: http://127.0.0.1:${httpPort} (disposable local database, no worker)`)
   } else if (action === 'start-saml') {
     await setupSAML()
     await run('docker', [...saml, 'up', '-d', '--build', '--wait', '--wait-timeout', '180', 'db', 'migrate', 'core', 'ui', 'keycloak'])
-    console.log('Orpheus Web SAML: https://localhost:18443 (operator / fixture-password)')
+    console.log(`Orpheus Web SAML: https://localhost:${httpsPort} (operator / fixture-password)`)
   } else {
     try {
       await run('docker', [...compose, 'up', '-d', '--build', '--wait', '--wait-timeout', '180'])
-      await run('npx', ['playwright', 'test', 'e2e/backend.spec.ts'], { INTEGRATION_URL: 'http://127.0.0.1:18085' })
+      await run('npx', ['playwright', 'test', 'e2e/backend.spec.ts'], { INTEGRATION_URL: `http://127.0.0.1:${httpPort}` })
       await setupSAML()
       await run('docker', [...saml, 'up', '-d', '--wait', '--wait-timeout', '180', 'core', 'ui'])
       await run('npx', ['playwright', 'test', 'e2e/backend.spec.ts'], {
-        INTEGRATION_URL: 'https://localhost:18443',
+        INTEGRATION_URL: `https://localhost:${httpsPort}`,
         INTEGRATION_SAML: '1',
       })
     } catch (error) {
