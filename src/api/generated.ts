@@ -345,46 +345,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Health
-         * @description Health
-         */
-        get: operations["health"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ready": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Ready
-         * @description Ready
-         */
-        get: operations["ready"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 };
 export type webhooks = Record<string, never>;
 export type components = {
@@ -628,15 +588,6 @@ export type components = {
             items: components["schemas"]["Event"][];
             /** Next Cursor */
             next_cursor: string;
-        };
-        /** HealthResponse */
-        HealthResponse: {
-            /**
-             * Status
-             * @default ok
-             * @constant
-             */
-            status: "ok";
         };
         HooksConfiguration: {
             after_create?: string;
@@ -1135,15 +1086,6 @@ export type components = {
              */
             type: TruncatedResultType;
         };
-        /** UnavailableResponse */
-        UnavailableResponse: {
-            /**
-             * Status
-             * @default unavailable
-             * @constant
-             */
-            status: "unavailable";
-        };
     };
     responses: never;
     parameters: never;
@@ -1173,7 +1115,6 @@ export type ErrorDetail = components['schemas']['ErrorDetail'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];
 export type Event = components['schemas']['Event'];
 export type EventPage = components['schemas']['EventPage'];
-export type HealthResponse = components['schemas']['HealthResponse'];
 export type HooksConfiguration = components['schemas']['HooksConfiguration'];
 export type HooksInput = components['schemas']['HooksInput'];
 export type HookResult = components['schemas']['HookResult'];
@@ -1204,7 +1145,6 @@ export type ToolResult = components['schemas']['ToolResult'];
 export type ToolCallEvent = components['schemas']['ToolCallEvent'];
 export type ToolItem = components['schemas']['ToolItem'];
 export type TruncatedResult = components['schemas']['TruncatedResult'];
-export type UnavailableResponse = components['schemas']['UnavailableResponse'];
 export type $defs = Record<string, never>;
 export interface operations {
     get_account_limits: {
@@ -2681,55 +2621,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    health: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthResponse"];
-                };
-            };
-        };
-    };
-    ready: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UnavailableResponse"];
                 };
             };
         };
