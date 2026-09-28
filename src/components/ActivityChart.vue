@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RunStatus, type AnalyticsOverview, type StatusCounts } from '../api/generated'
+import { RunStatus, type AnalyticsOverview } from '../api/generated'
 import { formatAxisTime, formatDate, formatNumber } from '../format'
+import { fill } from '../charts/palette'
+import { groupCount, runGroups, runTone } from '../charts/runs'
 const props = defineProps<{ overview: AnalyticsOverview }>()
 const { t, locale } = useI18n()
 const selected = ref(0)
@@ -16,15 +18,6 @@ onMounted(() => {
   if (plot.value) resize.observe(plot.value)
 })
 onUnmounted(() => resize.disconnect())
-const activeCount = (counts: StatusCounts) =>
-  counts.accepted + counts.starting + counts.running + counts.cancelling + counts.finalizing
-const groups = [RunStatus.completed, RunStatus.failed, RunStatus.cancelled, RunStatus.running] as const
-const color = {
-  [RunStatus.completed]: 'var(--color-ink)',
-  [RunStatus.failed]: 'var(--color-danger)',
-  [RunStatus.cancelled]: 'var(--color-muted)',
-  [RunStatus.running]: 'var(--color-accent)',
-}
 const max = computed(() => Math.max(1, ...props.overview.series.map((bucket) => bucket.runs_count)))
 const step = computed(() => (width.value - 55) / Math.max(1, props.overview.series.length))
 const bars = computed(() =>
@@ -33,8 +26,8 @@ const bars = computed(() =>
     return {
       bucket,
       index,
-      segments: groups.map((status) => {
-        const count = status === RunStatus.running ? activeCount(bucket.by_status) : bucket.by_status[status]
+      segments: runGroups.map((status) => {
+        const count = groupCount(bucket.by_status, status)
         const height = (count / max.value) * 190
         total += height
         return { status, height, y: 210 - total }
@@ -73,7 +66,7 @@ function date(value: string) {
         <p class="mt-1 font-mono text-xs text-muted">{{ t('analytics.chartHint', { timezone: overview.timezone }) }}</p>
       </div>
       <div class="flex flex-wrap gap-4 font-mono text-xs text-muted">
-        <span v-for="status in groups" :key="status" class="flex items-center gap-1.5"><span class="marker" :style="{ background: `rgb(${color[status]})` }" />{{
+        <span v-for="status in runGroups" :key="status" class="flex items-center gap-1.5"><span class="marker" :style="{ background: fill(runTone[status]) }" />{{
           t(status === RunStatus.running ? 'analytics.inProgress' : `status.${status}`)
         }}</span>
       </div>
@@ -128,7 +121,7 @@ function date(value: string) {
             :y="segment.y"
             :width="step * 0.66"
             :height="segment.height"
-            :fill="`rgb(${color[segment.status]})`"
+            :fill="fill(runTone[segment.status])"
           />
           <title>{{ date(bar.bucket.from) }} — {{ formatNumber(bar.bucket.runs_count, locale) }}</title>
         </g>
@@ -153,8 +146,8 @@ function date(value: string) {
     >
       <span class="text-muted">{{ date(current.from) }} — {{ date(current.to) }}</span>
       <div class="flex flex-wrap gap-4 tabular-nums">
-        <span class="font-medium">{{ t('analytics.intervalRuns', current.runs_count) }}</span><span v-for="status in groups" :key="status" class="text-muted">{{ t(status === RunStatus.running ? 'analytics.inProgress' : `status.${status}`) }}:
-          {{ status === RunStatus.running ? activeCount(current.by_status) : current.by_status[status] }}</span>
+        <span class="font-medium">{{ t('analytics.intervalRuns', current.runs_count) }}</span><span v-for="status in runGroups" :key="status" class="text-muted">{{ t(status === RunStatus.running ? 'analytics.inProgress' : `status.${status}`) }}:
+          {{ groupCount(current.by_status, status) }}</span>
       </div>
     </div>
   </section>

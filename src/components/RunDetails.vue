@@ -73,7 +73,7 @@ usePolling(async () => {
         </dd>
       </div>
       <div class="flex justify-between gap-3 border-t border-line pt-3">
-        <dt class="font-mono text-muted">{{ t('analytics.tokens') }}</dt>
+        <dt class="font-mono text-muted">{{ t('run.tokens') }}</dt>
         <dd class="font-mono">{{ formatNumber(run.usage.total_tokens, locale) }}</dd>
       </div>
     </dl>
