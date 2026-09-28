@@ -85,17 +85,14 @@
     "active": "Активны сейчас",
     "activeHint": "Незавершённые сессии за всё время",
     "runs": "Запуски",
-    "completedFailed": "Завершены {completed} · с ошибкой {failed}",
     "tokens": "Токены запусков",
-    "inputOutput": "{input} input · {output} output",
     "runtime": "Суммарное время запусков",
     "runtimeHint": "Полная длительность выбранных запусков",
     "activity": "Динамика запусков",
     "chartHint": "Принятые запуски за каждый интервал · {timezone}",
     "inProgress": "Выполняются",
     "selectInterval": "Интервалы запусков: наведите на столбец или используйте стрелки",
-    "intervalRuns": "{count} запуск | {count} запуска | {count} запусков",
-    "cancelledActive": "отменены {cancelled} · выполняются {active}"
+    "intervalRuns": "{count} запуск | {count} запуска | {count} запусков"
   },
   "sessions": {
     "title": "Сессии",
@@ -157,6 +154,12 @@
     "latestRun": "Последний запуск",
     "newerRun": "Начался новый запуск — показать последний"
   },
+  "usage": {
+    "input": "Ввод",
+    "cachedInput": "Из кеша",
+    "output": "Вывод",
+    "reasoningOutput": "Рассуждение"
+  },
   "run": {
     "title": "Запуск №{number}",
     "list": "Запуски",
@@ -169,7 +172,7 @@
     "agent": "Результат агента",
     "observation": "Наблюдение",
     "stopReason": "Причина остановки",
-    "inputOutput": "Токены input / output",
+    "tokens": "Токены",
     "hooks": "Хуки",
     "exitCode": "Код завершения"
   },

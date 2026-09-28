@@ -63,6 +63,12 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   keys in `accent-ink`, values in `ink`, smaller than the body.
 - Matrix: 10 px squares on a 14 px pitch; `bg-subtle` empty, `line` idle,
   `accent` busy. For pools and activity at a glance, not for exact numbers.
+- Bars: a stacked bar 8 px tall, square, on `bg-subtle`, segments without
+  gaps in `ink`, `accent`, `muted` and `danger`. A share nested in a segment
+  (cached input inside input) is the same colour hatched: 2 px stripes on a
+  5 px pitch over `bg-raised`. A mono legend with markers follows the bar,
+  hatched markers for nested shares; the numbers live in the legend, and no
+  percentages are shown.
 - Dither: Bayer fields for hero areas and empty states, as on agentbox.ru;
   ink or accent on `bg` at low density.
 

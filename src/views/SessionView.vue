@@ -15,6 +15,7 @@ import EventsPanel from '../components/EventsPanel.vue'
 import PageState from '../components/PageState.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
 import ErrorDetails from '../components/ErrorDetails.vue'
+import TokenUsageBreakdown from '../components/TokenUsageBreakdown.vue'
 const { t, locale } = useI18n()
 const props = defineProps<{ sid: string; rid?: string }>()
 const sid = toRef(props, 'sid')
@@ -44,6 +45,7 @@ const { data, run, runError, runPending, runStale, sessionPending, selected, err
             t('session.totalTokens', { value: formatCompactNumber(data.usage.total_tokens, locale) })
           }}</span>
         </p>
+        <TokenUsageBreakdown :usage="data.usage" compact class="mt-3 max-w-sm" />
       </div>
       <ErrorDetails v-if="data.error" :error="data.error" />
       <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">

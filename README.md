@@ -3,7 +3,7 @@
 Dashboard for [Orpheus](https://github.com/orpheus-agents/orpheus).
 Vue 3, TypeScript, Vite and Tailwind CSS.
 
-- **Analytics:** active sessions, runs, tokens, runtime and an hourly/daily activity chart.
+- **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime and an hourly/daily activity chart.
 - **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state.
 - **Limits:** provider quota windows grouped by account, with explicit freshness and error states.
 
@@ -43,8 +43,9 @@ Stopping this stack discards its database. For faster local builds, pass
 `ORPHEUS_CORE_PATH=../orpheus` to stack commands; that clone must contain the
 pinned commit. Its Git tree is exported to a temporary build context; working-tree
 edits are not included. The default needs no neighboring
-repository. Dev and integration stacks use the same loopback ports; stop one before
-starting the other.
+repository. Dev and integration stacks use the same loopback ports by default. To
+run them together, set `ORPHEUS_WEB_HTTP_PORT`, `ORPHEUS_WEB_HTTPS_PORT` and
+`ORPHEUS_WEB_IDP_PORT` to free ports for the second stack.
 
 With an existing core, run only `npm run dev`, setting `ORPHEUS_UPSTREAM` to its URL.
 For local HTTP development, configure that core with `ORPHEUS_BROWSER_AUTH=anonymous`.

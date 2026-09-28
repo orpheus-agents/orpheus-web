@@ -442,10 +442,12 @@ export type components = {
             /** Format: int64 */
             cancelled: number;
         };
-        /** @description Totals for runs accepted in the period. Decimal strings preserve values beyond JavaScript Number precision. */
+        /** @description Totals for runs accepted in the period. Cached input and reasoning output are included in input and output respectively. The breakdown is recorded only since collection began; historical usage is not reconstructed. Decimal strings preserve values beyond JavaScript Number precision. */
         AggregateUsage: {
             input_tokens: string;
+            cached_input_tokens: string;
             output_tokens: string;
+            reasoning_output_tokens: string;
             total_tokens: string;
         };
         AnalyticsBucket: {
@@ -501,6 +503,7 @@ export type components = {
             /**
              * Message Id
              * Format: uuid
+             * @description ID of the last accepted message in the ordered batch.
              */
             message_id: string;
             /**
@@ -567,7 +570,8 @@ export type components = {
             /** @description Opaque input snapshot version for the first run; does not deduplicate requests. Opaque identifier, 1–256 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
             input_fingerprint?: string;
             configuration: components["schemas"]["ConfigurationInput"];
-            message: components["schemas"]["TextMessage"];
+            /** @description Ordered user messages accepted atomically. The last starts the run; earlier messages are injected into the agent context first. */
+            messages: components["schemas"]["TextMessage"][];
             /** @description Explicit environment variables for the first run's before_run and after_run hooks only. Override session sources with the same names; never passed to the harness, after_create, or before_remove. */
             env?: {
                 [key: string]: string;
@@ -711,12 +715,16 @@ export type components = {
              */
             run_timeout_seconds: number;
         };
-        /** @description Last reported token consumption; missed reports are not reconstructed from history. Cached input and reasoning output are already included. */
+        /** @description Last reported token consumption; missed reports are not reconstructed from history. Cached input and reasoning output are included in input and output respectively. The breakdown is recorded only since collection began; historical usage is not reconstructed. */
         Usage: {
             /** Format: int64 */
             input_tokens: number;
             /** Format: int64 */
+            cached_input_tokens: number;
+            /** Format: int64 */
             output_tokens: number;
+            /** Format: int64 */
+            reasoning_output_tokens: number;
             /** Format: int64 */
             total_tokens: number;
         };
@@ -724,6 +732,10 @@ export type components = {
         Message: {
             /** @description External key supplied for an incoming message; null for agent messages. Opaque identifier, 1–512 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
             external_key: string | null;
+            /** @description Opaque integration data for an incoming message; never sent to the agent. Null for messages without metadata and agent messages. */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Created At
              * Format: date-time
@@ -940,7 +952,8 @@ export type components = {
         CreateRun: {
             /** @description Opaque input snapshot version for this run; does not deduplicate requests. Opaque identifier, 1–256 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
             input_fingerprint?: string;
-            message: components["schemas"]["TextMessage"];
+            /** @description Ordered user messages accepted atomically. The last starts the run; earlier messages are injected into the agent context first. */
+            messages: components["schemas"]["TextMessage"][];
             /** @description Explicit environment variables available only to this run's before_run and after_run hooks. Override session sources with the same names; never passed to the harness, after_create, or before_remove. */
             env?: {
                 [key: string]: string;
@@ -950,7 +963,8 @@ export type components = {
         };
         /** SendMessage */
         SendMessage: {
-            message: components["schemas"]["TextMessage"];
+            /** @description Ordered user messages accepted atomically for the active run. */
+            messages: components["schemas"]["TextMessage"][];
         };
         /** Session */
         Session: {
@@ -994,6 +1008,10 @@ export type components = {
             external_key?: string;
             /** Text */
             text: string;
+            /** @description Opaque integration data retained with the message, never sent to the agent. If present, must be a JSON object. */
+            metadata?: {
+                [key: string]: unknown;
+            };
         };
         /** TextResult */
         TextResult: {

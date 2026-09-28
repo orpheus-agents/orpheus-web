@@ -85,17 +85,14 @@
     "active": "Active now",
     "activeHint": "Unfinished sessions, across all periods",
     "runs": "Runs",
-    "completedFailed": "{completed} completed · {failed} failed",
     "tokens": "Run tokens",
-    "inputOutput": "{input} input · {output} output",
     "runtime": "Combined run time",
     "runtimeHint": "Full duration of selected runs",
     "activity": "Run activity",
     "chartHint": "Runs accepted in each interval · {timezone}",
     "inProgress": "In progress",
     "selectInterval": "Run intervals: point at a bar or use the arrow keys",
-    "intervalRuns": "No runs | {count} run | {count} runs",
-    "cancelledActive": "{cancelled} cancelled · {active} in progress"
+    "intervalRuns": "No runs | {count} run | {count} runs"
   },
   "sessions": {
     "title": "Sessions",
@@ -157,6 +154,12 @@
     "latestRun": "Latest run",
     "newerRun": "A newer run has started — show the latest"
   },
+  "usage": {
+    "input": "Input",
+    "cachedInput": "Cached",
+    "output": "Output",
+    "reasoningOutput": "Reasoning"
+  },
   "run": {
     "title": "Run #{number}",
     "list": "Runs",
@@ -169,7 +172,7 @@
     "agent": "Agent result",
     "observation": "Observation",
     "stopReason": "Stop reason",
-    "inputOutput": "Input / output tokens",
+    "tokens": "Tokens",
     "hooks": "Hooks",
     "exitCode": "Exit code"
   },

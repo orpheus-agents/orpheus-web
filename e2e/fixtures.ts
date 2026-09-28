@@ -18,7 +18,7 @@ export async function mockAPI(page: Page) {
     else if (url.pathname.endsWith('/events')) data = { items: [], has_more: false, next_cursor: '0' }
     else if (url.pathname.endsWith('/runs')) data = { items: [run(), run({ id: '44444444-4444-4444-8444-444444444444', number: 2, status: RunStatus.completed, finished_at: timestamp })], next_cursor: null }
     else if (url.pathname.includes('/runs/')) data = run({ id: url.pathname.split('/').at(-1) ?? rid })
-    else if (url.pathname.endsWith('/sessions')) data = { items: [session(), session({ id: '55555555-5555-4555-8555-555555555555', namespace: 'support', external_key: 'thread:192', status: RunStatus.finalizing, usage: { input_tokens: 28840, output_tokens: 7600, total_tokens: 36440 } })], next_cursor: url.searchParams.has('cursor') ? null : 'next-page' }
+    else if (url.pathname.endsWith('/sessions')) data = { items: [session(), session({ id: '55555555-5555-4555-8555-555555555555', namespace: 'support', external_key: 'thread:192', status: RunStatus.finalizing, usage: { input_tokens: 28840, cached_input_tokens: 12000, output_tokens: 7600, reasoning_output_tokens: 2800, total_tokens: 36440 } })], next_cursor: url.searchParams.has('cursor') ? null : 'next-page' }
     else data = session()
     await route.fulfill({ json: data })
   })
