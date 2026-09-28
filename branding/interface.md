@@ -68,7 +68,9 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   (cached input inside input) is the same colour hatched: 2 px stripes on a
   5 px pitch over `bg-raised`. A mono legend with markers follows the bar,
   hatched markers for nested shares; the numbers live in the legend, and no
-  percentages are shown.
+  percentages are shown. A ranked list (namespaces) puts the name and value
+  on one mono line above a full-width bar scaled to the largest row, without
+  a legend; the breakdown is a tooltip.
 - Dither: Bayer fields for hero areas and empty states, as on agentbox.ru;
   ink or accent on `bg` at low density.
 

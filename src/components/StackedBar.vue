@@ -2,10 +2,10 @@
 import { computed } from 'vue'
 import { fill, hatch, type Count, type Segment } from '../charts/palette'
 
-const props = defineProps<{ segments: Segment[]; total?: Count }>()
+const props = withDefaults(defineProps<{ segments: Segment[]; total?: Count; legend?: boolean }>(), { total: 0, legend: true })
 // Segments are shares of the total; when they add up to more, the sum is the scale.
 const scale = computed(() => {
-  const total = BigInt(props.total ?? 0)
+  const total = BigInt(props.total)
   const sum = props.segments.reduce((value, segment) => value + BigInt(segment.value), 0n)
   return total > sum ? total : sum
 })
@@ -32,7 +32,7 @@ function width(value: Count, of: bigint) {
         />
       </div>
     </div>
-    <dl class="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
+    <dl v-if="legend" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
       <template v-for="segment in segments" :key="segment.key">
         <div class="flex items-center gap-1.5">
           <dt class="flex items-center gap-1.5 text-muted"><span class="marker" :style="{ background: fill(segment.tone) }" />{{ segment.label }}</dt>

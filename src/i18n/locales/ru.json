@@ -81,7 +81,7 @@
     "day": "По дням"
   },
   "analytics": {
-    "title": "Активность оркестратора",
+    "title": "Аналитика",
     "active": "Активны сейчас",
     "activeHint": "Незавершённые сессии за всё время",
     "runs": "Запуски",
@@ -92,7 +92,13 @@
     "chartHint": "Принятые запуски за каждый интервал · {timezone}",
     "inProgress": "Выполняются",
     "selectInterval": "Интервалы запусков: наведите на столбец или используйте стрелки",
-    "intervalRuns": "{count} запуск | {count} запуска | {count} запусков"
+    "intervalRuns": "{count} запуск | {count} запуска | {count} запусков",
+    "noNamespace": "Без пространства имён",
+    "filterNamespace": "Показать только {namespace}",
+    "emptyNamespaces": "За период запусков не было",
+    "namespaceRuns": "Запуски по пространствам имён",
+    "namespaceTokens": "Токены по пространствам имён",
+    "namespaceRuntime": "Время по пространствам имён"
   },
   "sessions": {
     "title": "Сессии",

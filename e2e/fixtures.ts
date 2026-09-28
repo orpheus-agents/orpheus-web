@@ -8,7 +8,11 @@ export async function mockAPI(page: Page) {
     const url = new URL(route.request().url())
     let data: unknown
     if (url.pathname.endsWith('/auth/session')) data = { mode: BrowserAuthSessionMode.anonymous, authenticated: false, read_access: true, user: null, expires_at: null }
-    else if (url.pathname.endsWith('/analytics/overview')) data = { ...overview(), timezone: url.searchParams.get('timezone') ?? 'UTC' }
+    else if (url.pathname.endsWith('/analytics/overview')) {
+      const namespace = url.searchParams.get('namespace')
+      const snapshot = overview()
+      data = { ...snapshot, timezone: url.searchParams.get('timezone') ?? 'UTC', namespace, namespaces: namespace ? snapshot.namespaces.filter((group) => group.namespace === namespace) : snapshot.namespaces }
+    }
     else if (url.pathname.endsWith('/accounts/limits')) data = limits()
     else if (url.pathname.endsWith('/events/stream')) {
       const event = { type: MessageEventType.message_updated, id: '11', session_id: sid, created_at: timestamp, data: message({ text: 'The pagination fix is ready. **All tests pass.**' }) }

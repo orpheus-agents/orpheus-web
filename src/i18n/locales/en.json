@@ -81,7 +81,7 @@
     "day": "Daily"
   },
   "analytics": {
-    "title": "Orchestrator activity",
+    "title": "Analytics",
     "active": "Active now",
     "activeHint": "Unfinished sessions, across all periods",
     "runs": "Runs",
@@ -92,7 +92,13 @@
     "chartHint": "Runs accepted in each interval · {timezone}",
     "inProgress": "In progress",
     "selectInterval": "Run intervals: point at a bar or use the arrow keys",
-    "intervalRuns": "No runs | {count} run | {count} runs"
+    "intervalRuns": "No runs | {count} run | {count} runs",
+    "noNamespace": "No namespace",
+    "filterNamespace": "Show only {namespace}",
+    "emptyNamespaces": "No runs in this period",
+    "namespaceRuns": "Runs by namespace",
+    "namespaceTokens": "Tokens by namespace",
+    "namespaceRuntime": "Run time by namespace"
   },
   "sessions": {
     "title": "Sessions",

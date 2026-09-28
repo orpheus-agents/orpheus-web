@@ -29,7 +29,7 @@ export type paths = {
         };
         /**
          * Dashboard analytics snapshot
-         * @description Counts and usage of runs accepted during [from,to), plus current active sessions. All timestamps are UTC.
+         * @description Counts and usage of runs accepted during [from,to), the same totals per namespace, plus current active sessions. All timestamps are UTC.
          */
         get: operations["get_analytics_overview"];
         put?: never;
@@ -484,6 +484,18 @@ export type components = {
                 runtime_seconds: number;
             };
             series: components["schemas"]["AnalyticsBucket"][];
+            /** @description The period's runs grouped by session namespace, most runs first; null is the group of sessions without a namespace. The groups add up to period. */
+            namespaces: components["schemas"]["AnalyticsNamespace"][];
+        };
+        /** @description Runs accepted during [from,to) whose session has this namespace, with the same definitions as period. */
+        AnalyticsNamespace: {
+            namespace: string | null;
+            /** Format: int64 */
+            runs_count: number;
+            by_status: components["schemas"]["StatusCounts"];
+            usage: components["schemas"]["AggregateUsage"];
+            /** Format: double */
+            runtime_seconds: number;
         };
         BrowserAuthSession: {
             /** @enum {string} */
@@ -1147,6 +1159,7 @@ export type StatusCounts = components['schemas']['StatusCounts'];
 export type AggregateUsage = components['schemas']['AggregateUsage'];
 export type AnalyticsBucket = components['schemas']['AnalyticsBucket'];
 export type AnalyticsOverview = components['schemas']['AnalyticsOverview'];
+export type AnalyticsNamespace = components['schemas']['AnalyticsNamespace'];
 export type BrowserAuthSession = components['schemas']['BrowserAuthSession'];
 export type Accepted = components['schemas']['Accepted'];
 export type AgentConfiguration = components['schemas']['AgentConfiguration'];

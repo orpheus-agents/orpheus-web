@@ -75,3 +75,10 @@ it('sizes decimal-string aggregate counters without converting them to floating 
 
   expect(widths(wrapper)).toEqual([[25, []], [75, []]])
 })
+
+it('can stand alone without a legend', () => {
+  const wrapper = mount(StackedBar, { props: { segments, total: 14_780_500, legend: false } })
+
+  expect(wrapper.findAll('[aria-hidden] > div')).toHaveLength(2)
+  expect(wrapper.find('dl').exists()).toBe(false)
+})
