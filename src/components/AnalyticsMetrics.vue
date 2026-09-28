@@ -3,23 +3,17 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RunStatus, type AnalyticsOverview } from '../api/generated'
 import { formatCompactNumber, formatDuration, formatNumber } from '../format'
-import type { Segment } from '../charts/palette'
-import { groupCount, runGroups, runTone } from '../charts/runs'
+import { statusSegments } from '../charts/runs'
 import TokenUsageBreakdown from './TokenUsageBreakdown.vue'
 import StackedBar from './StackedBar.vue'
 const props = defineProps<{ overview: AnalyticsOverview }>()
 const { t, locale } = useI18n()
-const runs = computed<Segment[]>(() =>
-  runGroups.map((group) => {
-    const value = groupCount(props.overview.period.by_status, group)
-    return {
-      key: group,
-      tone: runTone[group],
-      label: t(group === RunStatus.running ? 'analytics.inProgress' : `status.${group}`),
-      value,
-      display: formatNumber(value, locale.value),
-    }
-  }),
+const runs = computed(() =>
+  statusSegments(
+    props.overview.period.by_status,
+    (group) => t(group === RunStatus.running ? 'analytics.inProgress' : `status.${group}`),
+    (value) => formatNumber(value, locale.value),
+  ),
 )
 </script>
 <template>

@@ -9,6 +9,11 @@ export function counts(overrides: Partial<StatusCounts> = {}): StatusCounts {
 export function overview(): AnalyticsOverview {
   return { as_of: timestamp, from: '2026-09-24T06:00:00Z', to: timestamp, bucket: AnalyticsOverviewBucket.hour, timezone: 'UTC', namespace: null,
     current: { active_sessions: 12 }, period: { runs_count: 248, by_status: counts({ completed: 224, failed: 9, cancelled: 3, running: 12 }), usage: { input_tokens: '12840220', cached_input_tokens: '4100000', output_tokens: '1940280', reasoning_output_tokens: '760000', total_tokens: '14780500' }, runtime_seconds: 176460 },
+    namespaces: [
+      { namespace: 'engineering', runs_count: 160, by_status: counts({ completed: 146, failed: 6, cancelled: 2, running: 6 }), usage: { input_tokens: '3500000', cached_input_tokens: '1000000', output_tokens: '600000', reasoning_output_tokens: '240000', total_tokens: '4100000' }, runtime_seconds: 50000 },
+      { namespace: 'support', runs_count: 80, by_status: counts({ completed: 72, failed: 3, cancelled: 1, running: 4 }), usage: { input_tokens: '9000000', cached_input_tokens: '3000000', output_tokens: '1300000', reasoning_output_tokens: '500000', total_tokens: '10300000' }, runtime_seconds: 120000 },
+      { namespace: null, runs_count: 8, by_status: counts({ completed: 6, running: 2 }), usage: { input_tokens: '340220', cached_input_tokens: '100000', output_tokens: '40280', reasoning_output_tokens: '20000', total_tokens: '380500' }, runtime_seconds: 6460 },
+    ],
     series: Array.from({ length: 24 }, (_, index) => {
       const completed = [2, 1, 0, 1, 3, 6, 8, 12, 15, 19, 16, 11, 7, 9, 14, 17, 10, 8, 13, 16, 7, 9, 12, 8][index]
       const failed = index % 5 === 0 ? 2 : 0

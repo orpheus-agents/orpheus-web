@@ -7,10 +7,15 @@ import {
 } from '../api/generated'
 import AnalyticsMetrics from '../components/AnalyticsMetrics.vue'
 import ActivityChart from '../components/ActivityChart.vue'
+import AnalyticsNamespaces from '../components/AnalyticsNamespaces.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
 import PageState from '../components/PageState.vue'
 const { t } = useI18n()
 const { data, error, pending, stale, updatedAt, disconnected, refresh, filters, apply, changeWindow } = useAnalytics()
+function selectNamespace(namespace: string) {
+  filters.namespace = namespace
+  void apply()
+}
 </script>
 <template>
   <div class="space-y-6">
@@ -36,6 +41,7 @@ const { data, error, pending, stale, updatedAt, disconnected, refresh, filters, 
     <div v-if="data" class="space-y-6 transition-opacity" :class="{ 'opacity-50': stale }" :aria-busy="stale || undefined">
       <AnalyticsMetrics :overview="data" />
       <ActivityChart :overview="data" />
+      <AnalyticsNamespaces v-if="data.namespace === null" :overview="data" @select="selectNamespace" />
     </div>
     <PageState v-else :loading="pending" :error="error" @retry="refresh" />
   </div>

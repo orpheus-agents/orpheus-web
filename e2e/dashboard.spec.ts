@@ -5,9 +5,9 @@ import { AccountLimitItemState } from '../src/api/generated'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
 
-test('analytics has only metrics and chart; periods and section filters are independent', async ({ page }) => {
+test('analytics has metrics, chart and namespaces; periods and section filters are independent', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Orchestrator activity' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible()
   await expect(page.getByText('14.8M', { exact: true })).toBeVisible()
   const tokens = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Run tokens' }) })
   await expect(tokens.getByText('Cached', { exact: true })).toBeVisible()
@@ -18,6 +18,10 @@ test('analytics has only metrics and chart; periods and section filters are inde
   await expect(runs.getByText('In progress', { exact: true })).toBeVisible()
   await expect(runs.getByText('224', { exact: true })).toBeVisible()
   await expect(page.getByRole('table')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Show only support', exact: true })).toHaveCount(3)
+  await expect(page.getByText('No namespace', { exact: true })).toHaveCount(3)
+  await expect(page.getByText('10.3M', { exact: true })).toBeVisible()
+  await expect(page.getByText('1 day 9 hr', { exact: true })).toBeVisible()
   const request = page.waitForRequest((r) => r.url().includes('analytics/overview') && r.url().includes('window=7d'))
   await page.getByLabel('Period', { exact: true }).selectOption('7d')
   expect(new URL((await request).url()).searchParams.get('bucket')).toBe('day')
@@ -33,6 +37,19 @@ test('analytics has only metrics and chart; periods and section filters are inde
   await page.getByRole('link', { name: 'Sessions', exact: true }).click()
   await expect(page.getByLabel('Namespace', { exact: true })).toHaveValue('engineering')
   await expect(page.getByRole('button', { name: 'Past', exact: true })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('a namespace in the widgets filters the analytics page and hides the widgets', async ({ page }) => {
+  await page.goto('/')
+  const filtered = page.waitForRequest((r) => r.url().includes('analytics/overview') && r.url().includes('namespace=support'))
+  await page.getByRole('button', { name: 'Show only support', exact: true }).first().click()
+  await filtered
+  await expect(page.getByLabel('Namespace', { exact: true })).toHaveValue('support')
+  await expect(page).toHaveURL(/namespace=support/)
+  await expect(page.getByRole('button', { name: 'Show only support', exact: true })).toHaveCount(0)
+  await page.getByLabel('Namespace', { exact: true }).fill('')
+  await page.getByRole('button', { name: 'Apply', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Show only support', exact: true })).toHaveCount(3)
 })
 
 test('session pagination and links preserve the list filters; history is updated through SSE', async ({ page }) => {
@@ -127,7 +144,7 @@ test('Russian navigation, dates and page titles survive reload', async ({ page }
   await page.goto('/')
   await page.getByRole('button', { name: 'Change language' }).click()
   await page.getByRole('option', { name: 'Русский' }).click()
-  await expect(page.getByRole('heading', { name: 'Активность оркестратора' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Аналитика', exact: true })).toBeVisible()
   await expect(page.getByText('Из кеша', { exact: true })).toBeVisible()
   await expect(page).toHaveTitle('Аналитика / Orpheus')
   await page.screenshot({ path: 'test-results/analytics-ru.png', fullPage: true, animations: 'disabled' })

@@ -3,7 +3,7 @@
 Dashboard for [Orpheus](https://github.com/orpheus-agents/orpheus).
 Vue 3, TypeScript, Vite and Tailwind CSS.
 
-- **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime and an hourly/daily activity chart.
+- **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime, an hourly/daily activity chart and ranked runs, tokens and run time per namespace, where a namespace click filters the page.
 - **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state.
 - **Limits:** provider quota windows grouped by account, with explicit freshness and error states.
 

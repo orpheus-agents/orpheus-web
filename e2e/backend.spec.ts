@@ -33,7 +33,7 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await page.reload()
   await expect(page.getByText('Browser integration fixture', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Analytics', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Orchestrator activity' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Limits', exact: true }).click()
   await expect(page.getByText('fixture-account', { exact: true })).toBeVisible()
   const noBearer = await page.request.post('/api/v1/sessions', { data: {} })
