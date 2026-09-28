@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { formatNumber, formatCompactNumber, formatDuration, formatDate, formatPercent, formatAxisTime, fromZonedInput, shortenKey, toZonedInput } from './index'
+import { formatNumber, formatCompactNumber, formatCountdown, formatDuration, formatDate, formatPercent, formatAxisTime, fromZonedInput, shortenKey, toZonedInput } from './index'
 import { AnalyticsOverviewBucket as Bucket } from '../api/generated'
 it('preserves aggregate token precision beyond Number.MAX_SAFE_INTEGER', () => {
   expect(formatNumber('9007199254740993123', 'en-US')).toBe('9,007,199,254,740,993,123')
@@ -47,4 +47,13 @@ it('shortens long external keys for headings while keeping their structure', () 
   expect(shortenKey('issue:482')).toBe('issue:482')
   expect(shortenKey('34d085fe9b27f59e4ecee636c2396d1e:channel:t8txc1dadidmmfhzrggfbyiyry:thread:wruhgzq8wpbr8cfihmg9n3b8fh')).toBe('34d085fe…:channel:t8txc1da…:thread:wruhgzq8…')
   expect(shortenKey('x'.repeat(80))).toBe(`${'x'.repeat(38)}…${'x'.repeat(8)}`)
+})
+
+it('formats countdowns without seconds and never below one minute', () => {
+  expect(formatCountdown(5 * 86400 + 9 * 3600 + 59 * 60, 'en-US')).toBe('5 days 9 hr')
+  expect(formatCountdown(3 * 3600 + 12 * 60 + 30, 'en-US')).toBe('3 hr 12 min')
+  expect(formatCountdown(86400, 'en-US')).toBe('1 day')
+  expect(formatCountdown(59, 'en-US')).toBe('1 min')
+  expect(formatCountdown(-5, 'en-US')).toBe('1 min')
+  expect(formatCountdown(40 * 60, 'ru-RU')).toBe('40 мин')
 })

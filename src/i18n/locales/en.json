@@ -121,15 +121,10 @@
     "emptyTitle": "No account profiles",
     "emptyHint": "This instance has no configured accounts. API-key profiles do not report account quotas.",
     "profiles": "Profiles",
-    "observed": "Observed",
     "attempt": "Last attempt",
     "primary": "Primary window",
     "secondary": "Secondary window",
     "noWindows": "The provider did not report usage windows.",
-    "unspecifiedWindow": "Window not specified",
-    "remaining": "{value} remaining",
-    "used": "Used quota",
-    "reset": "Resets",
     "state": {
       "fresh": "Recent observation.",
       "stale": "Last known values; the observation is out of date.",
@@ -142,7 +137,14 @@
       "invalid_response": "The response could not be read.",
       "no_data": "The provider returned no quota data.",
       "authentication_unavailable": "Account authentication is unavailable."
-    }
+    },
+    "remaining": "left",
+    "usedOver": "{value} used",
+    "remainingQuota": "Remaining quota",
+    "resetIn": "Resets in {value}",
+    "resetAt": "Reset {value}",
+    "resetUnknown": "Reset time unknown",
+    "noObservation": "No observation yet"
   },
   "session": {
     "back": "Back to sessions",

@@ -39,6 +39,9 @@ export function history(): HistoryPage {
     { type: ToolItemType.tool_call, tool_call: { id: 'tool-1', session_id: sid, run_id: rid, created_at: timestamp, name: 'exec_command', input: { command: 'npm test' }, result: { type: TextResultType.text, text: 'All 24 tests passed.', original_bytes: 20, exit_code: 0 }, status: ToolCallStatus.completed, position: { run_number: 3, item_index: 2 }, registered_sequence: '3', output_completeness: ToolCallOutput_completeness.complete, truncation_reason: null } },
   ] }
 }
+// Quota times are relative to the real clock so countdowns and freshness render as in production.
 export function limits(): AccountLimits {
-  return { as_of: timestamp, stale_after_seconds: 300, items: [{ account_id: 'team-main', profiles: ['default', 'deep'], state: AccountLimitItemState.fresh, observed_at: timestamp, last_attempt_at: timestamp, error_code: null, buckets: [{ limit_id: 'codex', limit_name: 'Codex', plan_type: 'Team', rate_limit_reached_type: null, primary: { used_percent: 34, remaining_percent: 66, window_minutes: 300, resets_at: '2026-09-25T10:00:00Z' }, secondary: { used_percent: 62, remaining_percent: 38, window_minutes: 10080, resets_at: '2026-09-28T00:00:00Z' } }] }] }
+  const observed = new Date(Date.now() - 3 * 60_000).toISOString()
+  const inMinutes = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString()
+  return { as_of: observed, stale_after_seconds: 300, items: [{ account_id: 'team-main', profiles: ['default', 'deep'], state: AccountLimitItemState.fresh, observed_at: observed, last_attempt_at: observed, error_code: null, buckets: [{ limit_id: 'codex', limit_name: 'Codex', plan_type: 'Team', rate_limit_reached_type: null, primary: { used_percent: 34, remaining_percent: 66, window_minutes: 300, resets_at: inMinutes(130) }, secondary: { used_percent: 62, remaining_percent: 38, window_minutes: 10080, resets_at: inMinutes(5 * 1440 + 9 * 60 + 20) } }] }] }
 }

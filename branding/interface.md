@@ -71,6 +71,11 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   percentages are shown. A ranked list (namespaces) puts the name and value
   on one mono line above a full-width bar scaled to the largest row, without
   a legend; the breakdown is a tooltip.
+- Quota window: the window name and the reset countdown on one line, then
+  what is left as the number and as the bar fill (`ink`, `danger` under 10 %,
+  `muted` when stale). Usage above 100 % is spelled out next to the number.
+  The account's freshness is one marker with the observation time in the
+  card corner, not a sentence.
 - Dither: Bayer fields for hero areas and empty states, as on agentbox.ru;
   ink or accent on `bg` at low density.
 
