@@ -80,7 +80,7 @@ test('quota states and values above 100% remain explicit', async ({ page }) => {
   data.items[0].state = AccountLimitItemState.stale
   data.items[0].buckets[0].primary!.used_percent = 120
   data.items[0].buckets[0].primary!.remaining_percent = 0
-  data.items.push({ account_id: 'new-account', profiles: ['new'], state: AccountLimitItemState.unknown, observed_at: null, last_attempt_at: null, error_code: null, buckets: [] })
+  data.items.push({ account_id: 'new-account', profiles: ['new'], state: AccountLimitItemState.unknown, observed_at: null, last_attempt_at: null, error_code: null, reset_credits_available: null, buckets: [] })
   await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ json: data }))
   await page.goto('/limits')
   await expect(page.getByText('120% used', { exact: true })).toBeVisible()
@@ -88,7 +88,37 @@ test('quota states and values above 100% remain explicit', async ({ page }) => {
   await expect(page.getByText('No observation yet', { exact: true })).toBeVisible()
   await expect(page.getByText('No observation yet', { exact: true })).toHaveAttribute('title', 'No observation yet. This does not mean the quota is unused.')
   await expect(page.getByText('Stale', { exact: false })).toBeVisible()
+  await expect(page.getByText('2 resets available', { exact: true })).toBeVisible()
+  await expect(page.locator('article p:has(.marker) + p')).toHaveText('2 resets available')
+  await expect(page.locator('article').filter({ has: page.getByRole('heading', { name: 'new-account', exact: true }) }).getByText(/resets? available/)).toHaveCount(0)
 })
+
+for (const locale of ['en', 'ru'] as const) {
+  test(`reset counts update through polling in ${locale}, light and dark layouts`, async ({ page }) => {
+    await page.addInitScript((value) => localStorage.setItem('orpheus_locale', value), locale)
+    await page.clock.install()
+    const data = limits()
+    await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ json: data }))
+    await page.goto('/limits')
+    const twoResets = locale === 'ru' ? 'Доступно 2 сброса' : '2 resets available'
+    await expect(page.getByText(twoResets, { exact: true })).toBeVisible()
+    for (const theme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme: theme })
+      await page.setViewportSize(theme === 'light' ? { width: 1440, height: 1000 } : { width: 390, height: 844 })
+      await expect(page.getByText(twoResets, { exact: true })).toBeVisible()
+      await expect(page.locator('article p:has(.marker) + p')).toHaveText(twoResets)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.screenshot({ path: `test-results/resets-${locale}-${theme}.png`, fullPage: true, animations: 'disabled' })
+    }
+    data.items[0].reset_credits_available = 0
+    await page.clock.fastForward(30_000)
+    await expect(page.getByText(locale === 'ru' ? 'Доступно 0 сбросов' : '0 resets available', { exact: true })).toBeVisible()
+    data.items[0].reset_credits_available = null
+    await page.clock.fastForward(30_000)
+    await expect(page.getByText(locale === 'ru' ? /Доступ(?:ен|но) \d+ сброс/ : /\d+ resets? available/)).toHaveCount(0)
+    await expect(page.locator('article p:has(.marker) + p')).toHaveCount(0)
+  })
+}
 
 test('failed first request can be retried; a later failure preserves the snapshot', async ({ page }) => {
   let fail = true

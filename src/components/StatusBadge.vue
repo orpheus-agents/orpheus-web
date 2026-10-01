@@ -15,6 +15,7 @@ const live: readonly string[] = [
   SandboxStateState.provisioning,
   SandboxStateState.pausing,
   SandboxStateState.resuming,
+  SandboxStateState.deleting,
   AccountLimitItemState.fresh,
 ]
 const settled: readonly string[] = [RunStatus.completed, SandboxStateState.ready]

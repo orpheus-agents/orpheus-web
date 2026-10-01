@@ -22,7 +22,7 @@ export function overview(): AnalyticsOverview {
   }
 }
 export function session(overrides: Partial<Session> = {}): Session {
-  return { id: sid, namespace: 'engineering', external_key: 'issue:482', last_run_created_at: timestamp, created_at: timestamp, usage: { input_tokens: 52180, cached_input_tokens: 24000, output_tokens: 8400, reasoning_output_tokens: 3000, total_tokens: 60580 }, phase: null, active_run_id: rid, last_run_id: rid, status: RunStatus.running, error: null, final_message: null,
+  return { id: sid, allow_multiple_runs: true, namespace: 'engineering', external_key: 'issue:482', last_run_created_at: timestamp, created_at: timestamp, usage: { input_tokens: 52180, cached_input_tokens: 24000, output_tokens: 8400, reasoning_output_tokens: 3000, total_tokens: 60580 }, phase: null, active_run_id: rid, last_run_id: rid, status: RunStatus.running, error: null, final_message: null,
     configuration: { agent: { profile: 'default', model: 'example-model', instructions: 'Work on the requested task.' }, sandbox: { template: 'codex', env_names: [], env_from: [] }, hooks: { timeout_seconds: 60 }, limits: { max_session_tokens: 100000000, run_timeout_seconds: 3600 } },
     sandbox: { id: 'sandbox-example', workspace: '/workspace/project', state: SandboxStateState.ready, last_known_state: null, error: null }, ...overrides }
 }
@@ -43,5 +43,5 @@ export function history(): HistoryPage {
 export function limits(): AccountLimits {
   const observed = new Date(Date.now() - 3 * 60_000).toISOString()
   const inMinutes = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString()
-  return { as_of: observed, stale_after_seconds: 300, items: [{ account_id: 'team-main', profiles: ['default', 'deep'], state: AccountLimitItemState.fresh, observed_at: observed, last_attempt_at: observed, error_code: null, buckets: [{ limit_id: 'codex', limit_name: 'Codex', plan_type: 'Team', rate_limit_reached_type: null, primary: { used_percent: 34, remaining_percent: 66, window_minutes: 300, resets_at: inMinutes(130) }, secondary: { used_percent: 62, remaining_percent: 38, window_minutes: 10080, resets_at: inMinutes(5 * 1440 + 9 * 60 + 20) } }] }] }
+  return { as_of: observed, stale_after_seconds: 300, items: [{ account_id: 'team-main', profiles: ['default', 'deep'], state: AccountLimitItemState.fresh, reset_credits_available: 2, observed_at: observed, last_attempt_at: observed, error_code: null, buckets: [{ limit_id: 'codex', limit_name: 'Codex', plan_type: 'Team', rate_limit_reached_type: null, primary: { used_percent: 34, remaining_percent: 66, window_minutes: 300, resets_at: inMinutes(130) }, secondary: { used_percent: 62, remaining_percent: 38, window_minutes: 10080, resets_at: inMinutes(5 * 1440 + 9 * 60 + 20) } }] }] }
 }

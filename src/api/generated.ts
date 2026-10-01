@@ -276,7 +276,7 @@ export type paths = {
         put?: never;
         /**
          * Create Run
-         * @description Create Run
+         * @description Create a subsequent run. Sessions created with allow_multiple_runs=false reject this operation with 409 multiple_runs_not_allowed, regardless of the first run or sandbox state. Idempotent replay of an accepted request returns the original acceptance.
          */
         post: operations["create_run"];
         delete?: never;
@@ -377,6 +377,8 @@ export type components = {
             last_attempt_at: string | null;
             error_code: AccountLimitItemError_codeAnyOf0 | null;
             buckets: components["schemas"]["AccountLimitBucket"][];
+            /** @description Available earned rate-limit resets for the account; null when unknown. Uses the same observation time and freshness state as the quota windows. */
+            reset_credits_available: number | null;
         };
         AccountLimits: {
             /** Format: date-time */
@@ -535,6 +537,11 @@ export type components = {
         };
         /** CreateSession */
         CreateSession: {
+            /**
+             * @description Immutable session policy. If false, only the run created with the session is allowed and its sandbox is deleted after completion, failure or cancellation. If true, the sandbox is paused for subsequent runs. Recovery and messages within the current run are allowed in either mode.
+             * @default false
+             */
+            allow_multiple_runs: boolean;
             /** @description Logical integration or workflow name. Opaque identifier, 1–128 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
             namespace?: string;
             /** @description Source-qualified external object key; not unique across sessions. Opaque identifier, 1–512 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
@@ -601,9 +608,9 @@ export type components = {
             after_create?: string;
             /** @description Executable script text with a shebang; runs before every assignment. */
             before_run?: string;
-            /** @description Executable script text with a shebang; runs after confirmed agent completion, before pause. */
+            /** @description Executable script text with a shebang; runs after confirmed agent completion, before sandbox pause or deletion. */
             after_run?: string;
-            /** @description Accepted for future explicit sandbox removal; never called by this API version. */
+            /** @description Reserved for future use; never called, including before automatic sandbox deletion. */
             before_remove?: string;
             /**
              * @description Timeout for each hook invocation.
@@ -899,7 +906,7 @@ export type components = {
         /** SandboxState */
         SandboxState: {
             error: components["schemas"]["Error"] | null;
-            /** @description AgentBox sandbox ID, if known. A retained ID does not guarantee that an unavailable sandbox is accessible. */
+            /** @description AgentBox sandbox ID, if known. Retained for diagnostics after deletion or loss; does not guarantee accessibility. */
             id: string | null;
             /** Last Known State */
             last_known_state: string | null;
@@ -931,6 +938,8 @@ export type components = {
         };
         /** Session */
         Session: {
+            /** @description Immutable policy allowing subsequent runs. False means the sandbox is deleted after the first run terminates; session history remains available. */
+            allow_multiple_runs: boolean;
             /**
              * Format: date-time
              * @description Creation time of the latest run, not the last activity time.
@@ -2786,6 +2795,8 @@ export enum SandboxStateState {
     pausing = "pausing",
     paused = "paused",
     resuming = "resuming",
+    deleting = "deleting",
+    deleted = "deleted",
     unavailable = "unavailable"
 }
 export enum SessionPhaseAnyOf0 {

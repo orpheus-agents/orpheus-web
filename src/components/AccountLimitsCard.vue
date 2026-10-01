@@ -2,12 +2,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { AccountLimitItemState, type AccountLimitItem } from '../api/generated'
+import { formatNumber } from '../format'
 import LimitWindow from './LimitWindow.vue'
 import RelativeTime from './RelativeTime.vue'
 
 const props = defineProps<{ account: AccountLimitItem }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 // One indicator in the corner: the marker carries freshness, the text the observation time or why there is none.
+// The reset count sits right under it, so a stale count is read together with its staleness.
 const indicator = computed(() => {
   switch (props.account.state) {
     case AccountLimitItemState.fresh:
@@ -28,10 +30,15 @@ const indicator = computed(() => {
         <h2 class="font-mono text-base font-semibold">{{ account.account_id }}</h2>
         <p class="mt-1 font-mono text-xs text-muted">{{ t('limits.profiles') }}: {{ account.profiles.join(', ') }}</p>
       </div>
-      <p class="flex items-center gap-2 whitespace-nowrap font-mono text-xs" :class="indicator.text" :title="t(`limits.state.${account.state}`)">
-        <span class="marker" :class="indicator.marker" aria-hidden="true" />{{ indicator.label
-        }}<template v-if="account.observed_at"><template v-if="indicator.label"> · </template><RelativeTime :timestamp="account.observed_at" /></template>
-      </p>
+      <div class="font-mono text-xs sm:text-right">
+        <p class="flex items-center gap-2 whitespace-nowrap leading-6 sm:justify-end" :class="indicator.text" :title="t(`limits.state.${account.state}`)">
+          <span class="marker" :class="indicator.marker" aria-hidden="true" />{{ indicator.label
+          }}<template v-if="account.observed_at"><template v-if="indicator.label"> · </template><RelativeTime :timestamp="account.observed_at" /></template>
+        </p>
+        <p v-if="account.reset_credits_available !== null" class="mt-1" :class="account.state === AccountLimitItemState.fresh ? 'text-ink' : 'text-muted'">
+          {{ t('limits.resetsAvailable', { value: formatNumber(account.reset_credits_available, locale) }, account.reset_credits_available) }}
+        </p>
+      </div>
     </div>
     <p v-if="account.error_code" class="mt-4 text-sm text-danger-ink">
       {{ t(`limits.errors.${account.error_code}`) }}
