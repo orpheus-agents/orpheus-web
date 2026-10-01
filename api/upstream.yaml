@@ -29,7 +29,7 @@ components:
         AccountLimitItem:
             type: object
             additionalProperties: false
-            required: [account_id, profiles, state, observed_at, last_attempt_at, error_code, buckets]
+            required: [account_id, profiles, state, observed_at, last_attempt_at, error_code, buckets, reset_credits_available]
             properties:
                 account_id: {type: string}
                 profiles:
@@ -47,6 +47,13 @@ components:
                 buckets:
                     type: array
                     items: {$ref: '#/components/schemas/AccountLimitBucket'}
+                reset_credits_available:
+                    description: Available earned rate-limit resets for the account; null when unknown. Uses the same observation time and freshness state as the quota windows.
+                    anyOf:
+                        - type: integer
+                          format: int64
+                          minimum: 0
+                        - type: 'null'
         AccountLimits:
             type: object
             additionalProperties: false
@@ -268,6 +275,10 @@ components:
         CreateSession:
             additionalProperties: false
             properties:
+                allow_multiple_runs:
+                    description: Immutable session policy. If false, only the run created with the session is allowed and its sandbox is deleted after completion, failure or cancellation. If true, the sandbox is paused for subsequent runs. Recovery and messages within the current run are allowed in either mode.
+                    type: boolean
+                    default: false
                 namespace:
                     description: Logical integration or workflow name. Opaque identifier, 1–128 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization.
                     type: string
@@ -424,10 +435,10 @@ components:
                     description: Executable script text with a shebang; runs before every assignment.
                     type: string
                 after_run:
-                    description: Executable script text with a shebang; runs after confirmed agent completion, before pause.
+                    description: Executable script text with a shebang; runs after confirmed agent completion, before sandbox pause or deletion.
                     type: string
                 before_remove:
-                    description: Accepted for future explicit sandbox removal; never called by this API version.
+                    description: Reserved for future use; never called, including before automatic sandbox deletion.
                     type: string
                 timeout_seconds:
                     description: Timeout for each hook invocation.
@@ -1015,7 +1026,7 @@ components:
                     anyOf:
                         - type: string
                         - type: "null"
-                    description: AgentBox sandbox ID, if known. A retained ID does not guarantee that an unavailable sandbox is accessible.
+                    description: AgentBox sandbox ID, if known. Retained for diagnostics after deletion or loss; does not guarantee accessibility.
                 last_known_state:
                     anyOf:
                         - type: string
@@ -1029,6 +1040,8 @@ components:
                         - pausing
                         - paused
                         - resuming
+                        - deleting
+                        - deleted
                         - unavailable
                     title: State
                     type: string
@@ -1090,6 +1103,9 @@ components:
             type: object
         Session:
             properties:
+                allow_multiple_runs:
+                    description: Immutable policy allowing subsequent runs. False means the sandbox is deleted after the first run terminates; session history remains available.
+                    type: boolean
                 last_run_created_at:
                     description: Creation time of the latest run, not the last activity time.
                     format: date-time
@@ -1144,6 +1160,7 @@ components:
                 status:
                     $ref: '#/components/schemas/RunStatus'
             required:
+                - allow_multiple_runs
                 - usage
                 - phase
                 - namespace
@@ -2353,7 +2370,7 @@ paths:
                 - BrowserSession: []
             summary: List Runs
         post:
-            description: Create Run
+            description: Create a subsequent run. Sessions created with allow_multiple_runs=false reject this operation with 409 multiple_runs_not_allowed, regardless of the first run or sandbox state. Idempotent replay of an accepted request returns the original acceptance.
             operationId: create_run
             parameters:
                 - in: path

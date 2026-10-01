@@ -75,7 +75,9 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   what is left as the number and as the bar fill (`ink`, `danger` under 10 %,
   `muted` when stale). Usage above 100 % is spelled out next to the number.
   The account's freshness is one marker with the observation time in the
-  card corner, not a sentence.
+  card corner, not a sentence. The count of available resets is the line
+  right under it: `ink` when fresh, `muted` with the marker when stale,
+  absent when unknown; zero is shown.
 - Dither: Bayer fields for hero areas and empty states, as on agentbox.ru;
   ink or accent on `bg` at low density.
 

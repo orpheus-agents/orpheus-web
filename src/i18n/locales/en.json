@@ -121,6 +121,7 @@
     "emptyTitle": "No account profiles",
     "emptyHint": "This instance has no configured accounts. API-key profiles do not report account quotas.",
     "profiles": "Profiles",
+    "resetsAvailable": "{value} reset available | {value} resets available",
     "attempt": "Last attempt",
     "primary": "Primary window",
     "secondary": "Secondary window",
@@ -226,7 +227,9 @@
     "ready": "Ready",
     "pausing": "Pausing",
     "paused": "Paused",
-    "resuming": "Resuming"
+    "resuming": "Resuming",
+    "deleting": "Deleting",
+    "deleted": "Deleted"
   },
   "phase": {
     "preparation": "Preparation",
