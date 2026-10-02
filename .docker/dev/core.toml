@@ -1,4 +1,8 @@
+[templates.codex]
+description = "Integration sandbox"
+
 [profiles.default]
+description = "Default integration profile"
 harness = "codex"
 model = "fixture-model"
 [profiles.default.auth]
@@ -11,6 +15,7 @@ type = "s3"
 bucket = "fixture-credentials"
 region = "us-east-1"
 [profiles.account]
+description = "Account integration profile"
 harness = "codex"
 model = "fixture-model"
 [profiles.account.auth]

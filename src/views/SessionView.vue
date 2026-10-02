@@ -2,6 +2,7 @@
 import { ref, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowLeft } from 'lucide-vue-next'
+import { useCatalogs } from '../composables/useCatalogs'
 import { useSession } from '../composables/useSession'
 import { sectionLinks } from '../router'
 import { formatCompactNumber, formatNumber, shortenKey } from '../format'
@@ -16,6 +17,7 @@ import PageState from '../components/PageState.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
 import ErrorDetails from '../components/ErrorDetails.vue'
 import TokenUsageBreakdown from '../components/TokenUsageBreakdown.vue'
+const catalogs = useCatalogs()
 const { t, locale } = useI18n()
 const props = defineProps<{ sid: string; rid?: string }>()
 const sid = toRef(props, 'sid')
@@ -29,7 +31,7 @@ const { data, run, runError, runPending, runStale, sessionPending, selected, err
     <div class="flex items-center justify-between gap-4">
       <RouterLink :to="sectionLinks.sessions" class="caps flex items-center gap-2 text-muted hover:text-ink">
         <ArrowLeft class="h-4 w-4" aria-hidden="true" />{{ t('session.back') }}
-      </RouterLink><RefreshStatus :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" />
+      </RouterLink><RefreshStatus :updated-at="updatedAt" :disconnected="disconnected || catalogs.disconnected.value" :pending="pending" @refresh="refresh(); catalogs.refresh()" />
     </div>
     <template v-if="data">
       <div>
@@ -74,7 +76,7 @@ const { data, run, runError, runPending, runStale, sessionPending, selected, err
         </div>
         <aside class="space-y-5">
           <RunDetails v-if="run" :run="run" class="transition-opacity" :class="{ 'opacity-50': runStale }" :aria-busy="runStale || undefined" /><RunsPanel :sid="sid" :selected="selected ?? ''" /><SessionInfo
-            :session="data"
+            :session="data" :profiles="catalogs.profiles.value" :templates="catalogs.templates.value"
           />
         </aside>
       </div>

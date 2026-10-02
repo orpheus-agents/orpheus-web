@@ -16,6 +16,10 @@ Vue 3, TypeScript, Vite and Tailwind CSS.
 - **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state.
 - **Limits:** provider quota windows and available earned resets grouped by account, with explicit freshness and error states. Zero resets means none are available; the reset row is hidden when the count is unknown. Stale accounts keep their last observed count with the existing freshness indicator.
 
+Profile and template names show current descriptions on hover or keyboard focus.
+Catalog failures do not block session data; stored names remain visible when an
+entry is removed.
+
 English/Russian, light/dark themes.
 
 Brand assets, the palette and the interface guide are in [`branding/`](branding/README.md);

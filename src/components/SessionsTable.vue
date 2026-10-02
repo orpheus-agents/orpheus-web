@@ -2,11 +2,13 @@
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import type { Session } from '../api/generated'
+import type { CatalogDescriptions } from '../composables/useCatalogs'
 import { formatCompactNumber, formatNumber } from '../format'
+import DescribedName from './DescribedName.vue'
 import StatusBadge from './StatusBadge.vue'
 import RelativeTime from './RelativeTime.vue'
 import EmptyState from './EmptyState.vue'
-defineProps<{ sessions: Session[] }>()
+defineProps<{ sessions: Session[]; profiles?: CatalogDescriptions }>()
 const { t, locale } = useI18n()
 const router = useRouter()
 // The id link handles its own clicks and modifier keys; the rest of the row is a shortcut to it.
@@ -51,7 +53,7 @@ function open(id: string, event: MouseEvent) {
             </p>
           </td>
           <td>
-            <p>{{ session.configuration.agent.profile }}</p>
+            <p><DescribedName :name="session.configuration.agent.profile" :description="profiles?.get(session.configuration.agent.profile)" /></p>
             <p class="mt-1 whitespace-nowrap text-xs text-muted">{{ session.configuration.agent.model }}</p>
           </td>
           <td>

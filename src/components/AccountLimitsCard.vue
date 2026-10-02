@@ -2,11 +2,13 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { AccountLimitItemState, type AccountLimitItem } from '../api/generated'
+import type { CatalogDescriptions } from '../composables/useCatalogs'
 import { formatNumber } from '../format'
+import DescribedName from './DescribedName.vue'
 import LimitWindow from './LimitWindow.vue'
 import RelativeTime from './RelativeTime.vue'
 
-const props = defineProps<{ account: AccountLimitItem }>()
+const props = defineProps<{ account: AccountLimitItem; profiles?: CatalogDescriptions }>()
 const { t, locale } = useI18n()
 // One indicator in the corner: the marker carries freshness, the text the observation time or why there is none.
 // The reset count sits right under it, so a stale count is read together with its staleness.
@@ -28,7 +30,7 @@ const indicator = computed(() => {
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h2 class="font-mono text-base font-semibold">{{ account.account_id }}</h2>
-        <p class="mt-1 font-mono text-xs text-muted">{{ t('limits.profiles') }}: {{ account.profiles.join(', ') }}</p>
+        <p class="mt-1 font-mono text-xs text-muted">{{ t('limits.profiles') }}: <template v-for="(profile, index) in account.profiles" :key="profile">{{ index ? ', ' : '' }}<DescribedName :name="profile" :description="profiles?.get(profile)" /></template></p>
       </div>
       <div class="font-mono text-xs sm:text-right">
         <p class="flex items-center gap-2 whitespace-nowrap leading-6 sm:justify-end" :class="indicator.text" :title="t(`limits.state.${account.state}`)">
