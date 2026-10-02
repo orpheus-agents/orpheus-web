@@ -1,5 +1,45 @@
 // Generated from api/upstream.yaml by npm run generate:api. Do not edit.
 export type paths = {
+    "/api/v1/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List configured profiles
+         * @description Returns the complete catalog sorted by name from local configuration. No provider or credential lookups are performed.
+         */
+        get: operations["get_profiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List configured templates
+         * @description Returns the complete catalog sorted by name from local configuration. No provider or credential lookups are performed.
+         */
+        get: operations["get_templates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/limits": {
         parameters: {
             query?: never;
@@ -349,6 +389,34 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
     schemas: {
+        Profile: {
+            name: string;
+            description: string | null;
+            /** @enum {string} */
+            harness: ProfileHarness;
+            model: string | null;
+            codex: components["schemas"]["CodexProfile"];
+            instructions: string;
+        };
+        CodexProfile: {
+            /** @enum {string} */
+            effort?: CodexProfileEffort;
+            /** @enum {string} */
+            summary?: CodexProfileSummary;
+            /** @enum {string} */
+            personality?: CodexProfilePersonality;
+            service_tier?: string;
+        };
+        Profiles: {
+            items: components["schemas"]["Profile"][];
+        };
+        Template: {
+            name: string;
+            description: string | null;
+        };
+        Templates: {
+            items: components["schemas"]["Template"][];
+        };
         AccountLimitWindow: {
             /** Format: double */
             used_percent: number;
@@ -564,7 +632,10 @@ export type components = {
             code: string;
             /** Details */
             details: components["schemas"]["ErrorDetail"][];
-            /** Message */
+            /**
+             * Message
+             * @description Human-readable error message. Harness execution failures include the original harness message and additional details when available; otherwise a generic message is returned.
+             */
             message: string;
             /** Phase */
             phase: ErrorPhaseAnyOf0 | null;
@@ -1102,6 +1173,11 @@ export type components = {
     headers: never;
     pathItems: never;
 };
+export type Profile = components['schemas']['Profile'];
+export type CodexProfile = components['schemas']['CodexProfile'];
+export type Profiles = components['schemas']['Profiles'];
+export type Template = components['schemas']['Template'];
+export type Templates = components['schemas']['Templates'];
 export type AccountLimitWindow = components['schemas']['AccountLimitWindow'];
 export type AccountLimitBucket = components['schemas']['AccountLimitBucket'];
 export type AccountLimitItem = components['schemas']['AccountLimitItem'];
@@ -1156,6 +1232,82 @@ export type ToolItem = components['schemas']['ToolItem'];
 export type TruncatedResult = components['schemas']['TruncatedResult'];
 export type $defs = Record<string, never>;
 export interface operations {
+    get_profiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configured profiles */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profiles"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authentication temporarily unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_templates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configured templates */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Templates"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authentication temporarily unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_account_limits: {
         parameters: {
             query?: never;
@@ -2664,6 +2816,30 @@ export enum PathsApiV1SessionsGetParametersQueryOrder {
 export enum PathsApiV1SessionsSidRunsGetParametersQueryOrder {
     asc = "asc",
     desc = "desc"
+}
+export enum ProfileHarness {
+    codex = "codex"
+}
+export enum CodexProfileEffort {
+    none = "none",
+    minimal = "minimal",
+    low = "low",
+    medium = "medium",
+    high = "high",
+    xhigh = "xhigh",
+    max = "max",
+    ultra = "ultra"
+}
+export enum CodexProfileSummary {
+    auto = "auto",
+    concise = "concise",
+    detailed = "detailed",
+    none = "none"
+}
+export enum CodexProfilePersonality {
+    none = "none",
+    friendly = "friendly",
+    pragmatic = "pragmatic"
 }
 export enum AccountLimitItemState {
     unknown = "unknown",

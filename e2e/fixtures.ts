@@ -13,6 +13,12 @@ export async function mockAPI(page: Page) {
       const snapshot = overview()
       data = { ...snapshot, timezone: url.searchParams.get('timezone') ?? 'UTC', namespace, namespaces: namespace ? snapshot.namespaces.filter((group) => group.namespace === namespace) : snapshot.namespaces }
     }
+    else if (url.pathname.endsWith('/profiles')) data = { items: [
+      { name: 'default', description: 'General research profile', harness: 'codex', model: 'example-model', codex: {}, instructions: '' },
+      { name: 'fast', description: 'Quick requests', harness: 'codex', model: null, codex: {}, instructions: '' },
+      { name: 'deep', description: 'Detailed research', harness: 'codex', model: null, codex: {}, instructions: '' },
+    ] }
+    else if (url.pathname.endsWith('/templates')) data = { items: [{ name: 'codex', description: 'Sandbox with development tools' }] }
     else if (url.pathname.endsWith('/accounts/limits')) data = limits()
     else if (url.pathname.endsWith('/events/stream')) {
       const event = { type: MessageEventType.message_updated, id: '11', session_id: sid, created_at: timestamp, data: message({ text: 'The pagination fix is ready. **All tests pass.**' }) }

@@ -24,6 +24,12 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await expect(page.getByRole('heading', { name: 'Conversation', exact: true })).toBeVisible()
   await expect(page.getByText('Browser integration fixture', { exact: true })).toBeVisible()
   await expect(page.getByText('Awaiting delivery', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'default', exact: true }).focus()
+  await expect(page.getByRole('tooltip')).toHaveText('Default integration profile')
+  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'codex', exact: true }).hover()
+  await expect(page.getByRole('tooltip')).toHaveText('Integration sandbox')
+  await page.mouse.move(0, 0)
   // No worker is needed: cancelling an accepted run publishes a message delivery update.
   const cancelled = await request.post(`/api/v1/sessions/${sid}/runs/${rid}/cancel`, {
     headers: { Authorization: 'Bearer integration-only-key' },

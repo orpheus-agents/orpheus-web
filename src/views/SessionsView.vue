@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { PathsApiV1SessionsGetParametersQueryActivity as Activity } from '../api/generated'
+import { useCatalogs } from '../composables/useCatalogs'
 import { useSessions } from '../composables/useSessions'
 import SessionsTable from '../components/SessionsTable.vue'
 import PageState from '../components/PageState.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
+const catalogs = useCatalogs()
 const { t } = useI18n()
 const {
   data,
@@ -29,7 +31,7 @@ const {
   <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h1 class="section-title">{{ t('sessions.title') }}</h1>
-      <RefreshStatus :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" />
+      <RefreshStatus :updated-at="updatedAt" :disconnected="disconnected || catalogs.disconnected.value" :pending="pending" @refresh="refresh(); catalogs.refresh()" />
     </div>
     <div class="inline-flex border border-ink" role="group" :aria-label="t('sessions.activity')">
       <button
@@ -73,7 +75,7 @@ const {
       <button class="button" type="submit">{{ t('filters.apply') }}</button>
     </form>
     <div v-if="data" class="panel overflow-hidden transition-opacity" :class="{ 'opacity-50': stale }" :aria-busy="stale || undefined">
-      <SessionsTable :sessions="data.items" />
+      <SessionsTable :sessions="data.items" :profiles="catalogs.profiles.value" />
       <div class="flex items-center justify-between gap-3 border-t border-line px-5 py-4">
         <p class="font-mono text-xs text-muted">{{ t('sessions.shown', data.items.length) }}</p>
         <div class="flex gap-2">
