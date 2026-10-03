@@ -13,7 +13,7 @@ Dashboard for [Orpheus](https://github.com/orpheus-agents/orpheus).
 Vue 3, TypeScript, Vite and Tailwind CSS.
 
 - **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime, an hourly/daily activity chart and ranked runs, tokens and run time per namespace, where a namespace click filters the page.
-- **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state.
+- **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state. Session details show whether only one run is allowed or the session can continue. Sandbox cleanup state and errors remain separate from the run result.
 - **Limits:** provider quota windows and available earned resets grouped by account, with explicit freshness and error states. Zero resets means none are available; the reset row is hidden when the count is unknown. Stale accounts keep their last observed count with the existing freshness indicator.
 
 Profile and template names show current descriptions on hover or keyboard focus.

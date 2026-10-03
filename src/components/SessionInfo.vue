@@ -15,6 +15,10 @@ const { t, locale } = useI18n()
     <h2 class="panel-title mb-4">{{ t('session.configuration') }}</h2>
     <dl class="space-y-3 text-xs">
       <div>
+        <dt class="field-label">{{ t('session.mode') }}</dt>
+        <dd>{{ session.allow_multiple_runs ? t('session.multipleRuns') : t('session.singleRun') }}</dd>
+      </div>
+      <div>
         <dt class="field-label">{{ t('sessions.profile') }}</dt>
         <dd><DescribedName :name="session.configuration.agent.profile" :description="profiles?.get(session.configuration.agent.profile)" /> · {{ session.configuration.agent.model }}</dd>
       </div>
