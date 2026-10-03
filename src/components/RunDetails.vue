@@ -8,6 +8,7 @@ import { useSettings } from '../composables/useSettings'
 import StatusBadge from './StatusBadge.vue'
 import HookResultCard from './HookResultCard.vue'
 import ErrorDetails from './ErrorDetails.vue'
+import ServiceList from './ServiceList.vue'
 import TokenUsageBreakdown from './TokenUsageBreakdown.vue'
 defineProps<{ run: Run }>()
 const { t, locale } = useI18n()
@@ -78,6 +79,7 @@ usePolling(async () => {
       </div>
     </dl>
     <TokenUsageBreakdown :usage="run.usage" class="mt-3" />
+    <ServiceList :services="run.services" :hint="t('services.runScope')" class="mt-5 border-t border-line pt-4" />
     <ErrorDetails v-if="run.error" class="mt-4" :error="run.error" />
     <ErrorDetails v-if="run.agent_error" class="mt-4" :error="run.agent_error" />
     <div v-if="run.hooks.length" class="mt-5 space-y-2 border-t border-line pt-4">

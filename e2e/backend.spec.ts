@@ -5,7 +5,7 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await page.addInitScript(() => localStorage.setItem('orpheus_locale', 'en'))
   const created = await request.post('/api/v1/sessions', {
     headers: { Authorization: 'Bearer integration-only-key', 'Idempotency-Key': crypto.randomUUID() },
-    data: { namespace: 'web-integration', external_key: `test:${crypto.randomUUID()}`, configuration: { agent: { profile: 'default' }, sandbox: { template: 'codex' } }, messages: [{ text: 'Browser integration fixture' }] },
+    data: { namespace: 'web-integration', external_key: `test:${crypto.randomUUID()}`, configuration: { agent: { profile: 'default' }, sandbox: { template: 'codex', services: ['development'] } }, services: ['notifications'], messages: [{ text: 'Browser integration fixture' }] },
   })
   expect(created.status()).toBe(202)
   const { session_id: sid, run_id: rid } = await created.json()
@@ -24,6 +24,23 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await expect(page.getByRole('heading', { name: 'Conversation', exact: true })).toBeVisible()
   await expect(page.getByText('Browser integration fixture', { exact: true })).toBeVisible()
   await expect(page.getByText('Awaiting delivery', { exact: true })).toBeVisible()
+  const sessionCard = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Configuration', exact: true }) })
+  const runCard = page.locator('aside section').filter({ has: page.getByRole('heading', { name: 'Run #1', exact: true }) })
+  const hint = 'These services are available to before_run and after_run hooks only.'
+  await expect(sessionCard.getByText('Run integration service', { exact: true })).toHaveCount(0)
+  await expect(sessionCard.getByText(hint, { exact: true })).toHaveCount(0)
+  await expect(runCard.getByText('Session integration service', { exact: true })).toHaveCount(0)
+  await expect(runCard.getByText(hint, { exact: true })).toBeVisible()
+  for (const { card, description, variable } of [
+    { card: sessionCard, description: 'Session integration service', variable: 'DEVELOPMENT_TOKEN' },
+    { card: runCard, description: 'Run integration service', variable: 'NOTIFICATIONS_TOKEN' },
+  ]) {
+    const service = card.locator('li').filter({ has: page.getByText(description, { exact: true }) })
+    await expect(service).toBeVisible()
+    await expect(service.getByText(variable, { exact: true })).toBeHidden()
+    await service.locator('summary').click()
+    await expect(service.getByText(variable, { exact: true })).toBeVisible()
+  }
   await page.getByRole('button', { name: 'default', exact: true }).focus()
   await expect(page.getByRole('tooltip')).toHaveText('Default integration profile')
   await page.keyboard.press('Escape')

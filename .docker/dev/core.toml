@@ -23,3 +23,13 @@ mode = "account"
 account_id = "fixture-account"
 store = "fixture"
 key = "fixture/auth.json"
+
+[services.development]
+name = "Development tools"
+description = "Session integration service"
+env_from = ["DEVELOPMENT_TOKEN"]
+
+[services.notifications]
+name = "Notifications"
+description = "Run integration service"
+env_from = ["NOTIFICATIONS_TOKEN"]

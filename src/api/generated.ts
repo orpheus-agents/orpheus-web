@@ -40,6 +40,26 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List configured services
+         * @description Returns the complete catalog sorted by code from local configuration. No provider or credential lookups are performed.
+         */
+        get: operations["get_services"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/limits": {
         parameters: {
             query?: never;
@@ -417,6 +437,18 @@ export type components = {
         Templates: {
             items: components["schemas"]["Template"][];
         };
+        /** @description Unique configured service codes. Order is insignificant; an unknown code rejects the entire request. */
+        ServiceCodes: string[];
+        Service: {
+            code: string;
+            name: string;
+            description: string;
+            /** @description Sorted environment variable names; never their values. */
+            env_from: string[];
+        };
+        Services: {
+            items: components["schemas"]["Service"][];
+        };
         AccountLimitWindow: {
             /** Format: double */
             used_percent: number;
@@ -623,6 +655,8 @@ export type components = {
             env?: {
                 [key: string]: string;
             };
+            /** @description Services available only to this run's before_run and after_run hooks, as with run env_from. Never passed to the harness, after_create, or before_remove. */
+            services?: components["schemas"]["ServiceCodes"];
             /** @description Allowlisted orchestrator environment variable names for the first run's before_run and after_run hooks only. Resolved before each hook; override session sources and are never passed to the harness, after_create, or before_remove. */
             env_from?: string[];
         };
@@ -872,7 +906,9 @@ export type components = {
             hooks: components["schemas"]["HookResult"][];
             /** @description Sorted names of explicit variables supplied for this run; values are never returned. */
             env_names: string[];
-            /** @description Sorted orchestrator environment variable names supplied for this run. */
+            /** @description Immutable service descriptions and environment names resolved when accepted. */
+            services: components["schemas"]["Service"][];
+            /** @description Sorted orchestrator environment variable names for this run, including expanded services. */
             env_from: string[];
             /** @description Input snapshot version supplied when the run was accepted. Opaque identifier, 1–256 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
             input_fingerprint: string | null;
@@ -936,7 +972,12 @@ export type components = {
         };
         /** SandboxConfiguration */
         SandboxConfiguration: {
-            /** Env From */
+            /** @description Immutable service descriptions and environment names resolved when accepted. */
+            services: components["schemas"]["Service"][];
+            /**
+             * Env From
+             * @description Sorted orchestrator environment variable names, including expanded services.
+             */
             env_from: string[];
             /** Env Names */
             env_names: string[];
@@ -969,6 +1010,8 @@ export type components = {
             env?: {
                 [key: string]: string;
             };
+            /** @description Services available to the agent and session hooks, expanded together with env_from. */
+            services?: components["schemas"]["ServiceCodes"];
             /** Env From */
             env_from?: string[];
             /** Template */
@@ -999,6 +1042,8 @@ export type components = {
             env?: {
                 [key: string]: string;
             };
+            /** @description Services available only to this run's before_run and after_run hooks, as with run env_from. Never passed to the harness, after_create, or before_remove. */
+            services?: components["schemas"]["ServiceCodes"];
             /** @description Allowlisted orchestrator environment variable names available only to this run's before_run and after_run hooks. Resolved before each hook; override session sources and are never passed to the harness, after_create, or before_remove. */
             env_from?: string[];
         };
@@ -1178,6 +1223,9 @@ export type CodexProfile = components['schemas']['CodexProfile'];
 export type Profiles = components['schemas']['Profiles'];
 export type Template = components['schemas']['Template'];
 export type Templates = components['schemas']['Templates'];
+export type ServiceCodes = components['schemas']['ServiceCodes'];
+export type Service = components['schemas']['Service'];
+export type Services = components['schemas']['Services'];
 export type AccountLimitWindow = components['schemas']['AccountLimitWindow'];
 export type AccountLimitBucket = components['schemas']['AccountLimitBucket'];
 export type AccountLimitItem = components['schemas']['AccountLimitItem'];
@@ -1286,6 +1334,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Templates"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authentication temporarily unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_services: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configured services */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Services"];
                 };
             };
             /** @description Unauthorized */
