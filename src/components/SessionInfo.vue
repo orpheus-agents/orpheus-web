@@ -33,7 +33,7 @@ const { t, locale } = useI18n()
     </dl>
     <details class="mt-4">
       <summary class="cursor-pointer text-xs text-accent-ink">{{ t('session.fullConfiguration') }}</summary>
-      <pre class="console mt-3 max-h-96 whitespace-pre-wrap break-words">{{
+      <pre class="console mt-3 max-h-96 whitespace-pre-wrap wrap-break-word">{{
         JSON.stringify(session.configuration, null, 2)
       }}</pre>
     </details>

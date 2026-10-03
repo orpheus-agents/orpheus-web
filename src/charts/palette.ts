@@ -14,10 +14,10 @@ export interface Segment extends Share {
   nested?: Share
 }
 export function fill(tone: Tone) {
-  return `rgb(var(--color-${tone}))`
+  return `var(--color-${tone})`
 }
 /** Stripes at 40% of the pitch: 2 px on 5 px for bars, finer for 8 px legend markers. */
 export function hatch(tone: Tone, pitch = 5) {
   const stripe = pitch * 0.4
-  return `repeating-linear-gradient(135deg, ${fill(tone)} 0 ${stripe}px, rgb(var(--color-surface-raised)) ${stripe}px ${pitch}px)`
+  return `repeating-linear-gradient(135deg, ${fill(tone)} 0 ${stripe}px, var(--color-surface-raised) ${stripe}px ${pitch}px)`
 }

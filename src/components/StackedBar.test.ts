@@ -22,7 +22,7 @@ it('sizes segments against the total and nested shares against their parent', ()
   expect(input[1][0]).toBeCloseTo(31.93, 1)
   expect(output[0]).toBeCloseTo(13.13, 1)
   expect(output[1][0]).toBeCloseTo(39.17, 1)
-  expect(wrapper.find('[aria-hidden] > div').attributes('style')).toContain('rgb(var(--color-ink))')
+  expect(wrapper.find('[aria-hidden] > div').attributes('style')).toContain('var(--color-ink)')
   expect(wrapper.find('[aria-hidden] > div > div').attributes('style')).toContain('repeating-linear-gradient')
 })
 

@@ -14,7 +14,7 @@ it('shows run statuses as a bar in the activity chart colours with a legend', ()
   expect(runs.findAll('dd').map((item) => item.text())).toEqual(['224', '9', '3', '12'])
   const segments = runs.findAll('[aria-hidden] > div')
   expect(segments.map((segment) => (segment.element as HTMLElement).style.background)).toEqual(
-    ['ink', 'danger', 'muted', 'accent'].map((tone) => `rgb(var(--color-${tone}))`),
+    ['ink', 'danger', 'muted', 'accent'].map((tone) => `var(--color-${tone})`),
   )
   expect(parseFloat((segments[0].element as HTMLElement).style.width)).toBeCloseTo(90.32, 1)
 })

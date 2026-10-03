@@ -5,6 +5,44 @@ import { AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, 
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
 
+for (const theme of ['light', 'dark'] as const) {
+  test(`semantic styles, focus and code typography work in ${theme}`, async ({ page }) => {
+    const dark = theme === 'dark'
+    const ink = dark ? 'rgb(237, 237, 235)' : 'rgb(14, 14, 16)'
+    const line = dark ? 'rgb(44, 44, 48)' : 'rgb(224, 219, 211)'
+    const accent = dark ? 'rgb(78, 242, 170)' : 'rgb(0, 173, 113)'
+    await page.emulateMedia({ colorScheme: theme })
+    await page.goto('/')
+    await expect(page.locator('body')).toHaveCSS('background-color', dark ? 'rgb(14, 14, 16)' : 'rgb(247, 246, 243)')
+    await expect(page.locator('.panel').first()).toHaveCSS('background-color', dark ? 'rgb(23, 23, 26)' : 'rgb(255, 255, 255)')
+    await expect(page.locator('.panel').first()).toHaveCSS('color', ink)
+    await expect(page.locator('svg line[stroke-dasharray]').first()).toHaveCSS('stroke', line)
+    await expect(page.locator('.nav-link.selected')).toHaveCSS('border-bottom-color', accent)
+    const apply = page.getByRole('button', { name: 'Apply', exact: true })
+    await apply.focus()
+    await expect(apply).toHaveCSS('outline-width', '2px')
+    await expect(apply).toHaveCSS('outline-style', 'solid')
+    await expect(apply).toHaveCSS('cursor', 'pointer')
+    await apply.hover()
+    await expect(apply).toHaveCSS('background-color', dark ? 'rgb(28, 28, 31)' : 'rgb(241, 238, 233)')
+
+    await page.goto(`/sessions/${sid}`)
+    const config = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Configuration', exact: true }) })
+    await expect(config.locator('.field-label').first()).toHaveCSS('line-height', '16px')
+    await config.locator('summary').click()
+    const code = config.locator('pre')
+    await expect(code).toHaveCSS('font-family', /JetBrains Mono/)
+    await expect(code).toHaveCSS('border-radius', '10px')
+    await expect(code).toHaveCSS('background-color', 'rgb(11, 11, 13)')
+    await expect(code).toHaveCSS('color', 'rgb(216, 216, 212)')
+    await expect(code).toHaveCSS('overflow-wrap', 'break-word')
+    await expect(page.locator(`header img[src="/orpheus-logo${dark ? '' : '-light'}.svg"]`)).toBeVisible()
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(page.locator('header img').first()).toBeVisible()
+    await expect(page.locator(`header img[src="/orpheus-logo${dark ? '' : '-light'}.svg"]`)).toBeHidden()
+  })
+}
+
 test('analytics has metrics, chart and namespaces; periods and section filters are independent', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible()

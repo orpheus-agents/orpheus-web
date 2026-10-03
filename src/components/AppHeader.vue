@@ -27,13 +27,13 @@ function changeLocale(value: 'en' | 'ru') {
 </script>
 <template>
   <header class="border-b border-line bg-surface">
-    <div class="mx-auto flex max-w-screen-2xl flex-wrap items-center gap-x-8 px-5 sm:px-8">
+    <div class="mx-auto flex max-w-(--breakpoint-2xl) flex-wrap items-center gap-x-8 px-5 sm:px-8">
       <RouterLink to="/" class="flex h-14 items-center" :aria-label="t('app.name')">
         <img src="/orpheus-mark.svg" class="h-6 w-auto sm:hidden" alt="">
         <img src="/orpheus-logo-light.svg" class="hidden h-[22px] w-auto sm:block dark:sm:hidden" alt="">
         <img src="/orpheus-logo.svg" class="hidden h-[22px] w-auto dark:sm:block" alt="">
       </RouterLink>
-      <nav v-if="ready" class="order-3 flex w-full gap-6 sm:order-none sm:w-auto" :aria-label="t('nav.main')">
+      <nav v-if="ready" class="order-3 flex w-full gap-6 sm:order-0 sm:w-auto" :aria-label="t('nav.main')">
         <RouterLink
           v-for="item in nav"
           :key="item"

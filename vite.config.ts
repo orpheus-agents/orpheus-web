@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 
 const target = process.env.ORPHEUS_UPSTREAM ?? 'http://127.0.0.1:8000'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), tailwindcss()],
   server: {
     proxy: Object.fromEntries(['/api/', '/auth/', '/saml/'].map((path) => [path, { target }])),
   },
