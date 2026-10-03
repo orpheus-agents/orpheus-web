@@ -27,7 +27,7 @@ async function logout() {
     :pending="auth.pending.value"
     @logout="logout"
   />
-  <main id="main" class="mx-auto max-w-screen-2xl px-5 py-8 sm:px-8 sm:py-10">
+  <main id="main" class="mx-auto max-w-(--breakpoint-2xl) px-5 py-8 sm:px-8 sm:py-10">
     <RouterView v-if="auth.state.value === 'ready'" />
     <div v-else-if="auth.state.value === 'loading'" class="panel p-8" :aria-label="t('common.loading')">
       <SkeletonBlock height="8rem" />

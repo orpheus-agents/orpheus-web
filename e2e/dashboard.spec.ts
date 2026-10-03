@@ -1,9 +1,47 @@
 import { expect, test } from '@playwright/test'
 import { mockAPI } from './fixtures'
-import { sid, rid, limits, run } from '../src/test/fixtures'
-import { AccountLimitItemState } from '../src/api/generated'
+import { sid, rid, limits, run, session, timestamp } from '../src/test/fixtures'
+import { AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`semantic styles, focus and code typography work in ${theme}`, async ({ page }) => {
+    const dark = theme === 'dark'
+    const ink = dark ? 'rgb(237, 237, 235)' : 'rgb(14, 14, 16)'
+    const line = dark ? 'rgb(44, 44, 48)' : 'rgb(224, 219, 211)'
+    const accent = dark ? 'rgb(78, 242, 170)' : 'rgb(0, 173, 113)'
+    await page.emulateMedia({ colorScheme: theme })
+    await page.goto('/')
+    await expect(page.locator('body')).toHaveCSS('background-color', dark ? 'rgb(14, 14, 16)' : 'rgb(247, 246, 243)')
+    await expect(page.locator('.panel').first()).toHaveCSS('background-color', dark ? 'rgb(23, 23, 26)' : 'rgb(255, 255, 255)')
+    await expect(page.locator('.panel').first()).toHaveCSS('color', ink)
+    await expect(page.locator('svg line[stroke-dasharray]').first()).toHaveCSS('stroke', line)
+    await expect(page.locator('.nav-link.selected')).toHaveCSS('border-bottom-color', accent)
+    const apply = page.getByRole('button', { name: 'Apply', exact: true })
+    await apply.focus()
+    await expect(apply).toHaveCSS('outline-width', '2px')
+    await expect(apply).toHaveCSS('outline-style', 'solid')
+    await expect(apply).toHaveCSS('cursor', 'pointer')
+    await apply.hover()
+    await expect(apply).toHaveCSS('background-color', dark ? 'rgb(28, 28, 31)' : 'rgb(241, 238, 233)')
+
+    await page.goto(`/sessions/${sid}`)
+    const config = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Configuration', exact: true }) })
+    await expect(config.locator('.field-label').first()).toHaveCSS('line-height', '16px')
+    await config.locator('summary').click()
+    const code = config.locator('pre')
+    await expect(code).toHaveCSS('font-family', /JetBrains Mono/)
+    await expect(code).toHaveCSS('border-radius', '10px')
+    await expect(code).toHaveCSS('background-color', 'rgb(11, 11, 13)')
+    await expect(code).toHaveCSS('color', 'rgb(216, 216, 212)')
+    await expect(code).toHaveCSS('overflow-wrap', 'break-word')
+    await expect(page.locator(`header img[src="/orpheus-logo${dark ? '' : '-light'}.svg"]`)).toBeVisible()
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(page.locator('header img').first()).toBeVisible()
+    await expect(page.locator(`header img[src="/orpheus-logo${dark ? '' : '-light'}.svg"]`)).toBeHidden()
+  })
+}
 
 test('analytics has metrics, chart and namespaces; periods and section filters are independent', async ({ page }) => {
   await page.goto('/')
@@ -91,6 +129,58 @@ test('quota states and values above 100% remain explicit', async ({ page }) => {
   await expect(page.getByText('2 resets available', { exact: true })).toBeVisible()
   await expect(page.locator('article p:has(.marker) + p')).toHaveText('2 resets available')
   await expect(page.locator('article').filter({ has: page.getByRole('heading', { name: 'new-account', exact: true }) }).getByText(/resets? available/)).toHaveCount(0)
+})
+
+for (const locale of ['en', 'ru'] as const) {
+  test(`session mode follows the API policy in ${locale}`, async ({ page }) => {
+    await page.addInitScript((value) => localStorage.setItem('orpheus_locale', value), locale)
+    let data = session()
+    await page.route(`**/api/v1/sessions/${sid}`, (route) => route.fulfill({ json: data }))
+    for (const multiple of [false, true]) {
+      data = session({ allow_multiple_runs: multiple })
+      await page.emulateMedia({ colorScheme: multiple ? 'dark' : 'light' })
+      await page.setViewportSize(multiple ? { width: 390, height: 844 } : { width: 1440, height: 1000 })
+      await page.goto(`/sessions/${sid}`)
+      const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: locale === 'ru' ? 'Конфигурация' : 'Configuration', exact: true }) })
+      await expect(panel.getByText(locale === 'ru' ? 'Режим сессии' : 'Session mode', { exact: true })).toBeVisible()
+      const label = locale === 'ru'
+        ? multiple ? 'Можно продолжать' : 'Один запуск'
+        : multiple ? 'Can continue' : 'Single run'
+      await expect(panel.getByText(label, { exact: true })).toBeVisible()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await panel.screenshot({ path: `test-results/session-mode-${locale}-${multiple ? 'multiple' : 'single'}.png`, animations: 'disabled' })
+    }
+  })
+}
+
+test('sandbox deletion updates through SSE without changing a completed run or its session mode', async ({ page }) => {
+  const data = session({ allow_multiple_runs: false, status: RunStatus.completed, active_run_id: null })
+  data.sandbox.state = SandboxStateState.deleting
+  data.sandbox.error = { code: 'sandbox_delete_failed', message: 'Deletion will be retried', phase: null, details: [] }
+  await page.route(`**/api/v1/sessions/${sid}`, (route) => route.fulfill({ json: data }))
+  await page.route(`**/api/v1/sessions/${sid}/runs/${rid}`, (route) => route.fulfill({ json: run({ status: RunStatus.completed, finished_at: timestamp }) }))
+  let publish: (() => Promise<void>) | undefined
+  await page.route('**/events/stream**', (route) => {
+    publish = async () => {
+      const event: Event = { type: SandboxEventType.sandbox_updated, id: '11', session_id: sid, created_at: timestamp, data: data.sandbox }
+      await route.fulfill({ contentType: 'text/event-stream', body: `id: 11\nevent: sandbox.updated\ndata: ${JSON.stringify(event)}\n\n` })
+    }
+  })
+  await page.goto(`/sessions/${sid}`)
+  const config = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Configuration', exact: true }) })
+  const result = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Run #3', exact: true }) })
+  await expect(config.getByText('Single run', { exact: true })).toBeVisible()
+  await expect(config.getByText('Deleting', { exact: true })).toBeVisible()
+  await expect(config.getByRole('alert')).toContainText('Deletion will be retried')
+  await expect(result.getByText('Completed', { exact: true })).toBeVisible()
+  await expect(result.getByRole('alert')).toHaveCount(0)
+  await expect.poll(() => !!publish).toBe(true)
+  data.sandbox = { ...data.sandbox, state: SandboxStateState.deleted, error: null }
+  await publish!()
+  await expect(config.getByText('Deleted', { exact: true })).toBeVisible()
+  await expect(config.getByRole('alert')).toHaveCount(0)
+  await expect(config.getByText('Single run', { exact: true })).toBeVisible()
+  await expect(result.getByText('Completed', { exact: true })).toBeVisible()
 })
 
 for (const locale of ['en', 'ru'] as const) {

@@ -89,10 +89,10 @@ function date(value: string) {
             :x2="width - 10"
             :y1="210 - part * 190"
             :y2="210 - part * 190"
-            stroke="rgb(var(--color-line))"
+            stroke="var(--color-line)"
             stroke-dasharray="3 5"
           />
-          <text x="32" :y="215 - part * 190" class="font-mono" text-anchor="end" fill="rgb(var(--color-muted))" font-size="11">
+          <text x="32" :y="215 - part * 190" class="font-mono" text-anchor="end" fill="var(--color-muted)" font-size="11">
             {{ formatNumber(Math.round(max * part), locale) }}
           </text>
         </g>
@@ -112,7 +112,7 @@ function date(value: string) {
             y="20"
             :width="step"
             height="190"
-            :fill="bar.index === selected ? 'rgb(var(--color-line) / 0.3)' : 'transparent'"
+            :fill="bar.index === selected ? 'color-mix(in srgb, var(--color-line) 30%, transparent)' : 'transparent'"
           />
           <rect
             v-for="segment in bar.segments"
@@ -132,7 +132,7 @@ function date(value: string) {
           y="240"
           class="font-mono"
           :text-anchor="n === 0 ? 'start' : n === ticks.length - 1 ? 'end' : 'middle'"
-          fill="rgb(var(--color-muted))"
+          fill="var(--color-muted)"
           font-size="11"
         >
           {{ tick(overview.series[index].from) }}

@@ -15,6 +15,10 @@ const { t, locale } = useI18n()
     <h2 class="panel-title mb-4">{{ t('session.configuration') }}</h2>
     <dl class="space-y-3 text-xs">
       <div>
+        <dt class="field-label">{{ t('session.mode') }}</dt>
+        <dd>{{ session.allow_multiple_runs ? t('session.multipleRuns') : t('session.singleRun') }}</dd>
+      </div>
+      <div>
         <dt class="field-label">{{ t('sessions.profile') }}</dt>
         <dd><DescribedName :name="session.configuration.agent.profile" :description="profiles?.get(session.configuration.agent.profile)" /> · {{ session.configuration.agent.model }}</dd>
       </div>
@@ -29,7 +33,7 @@ const { t, locale } = useI18n()
     </dl>
     <details class="mt-4">
       <summary class="cursor-pointer text-xs text-accent-ink">{{ t('session.fullConfiguration') }}</summary>
-      <pre class="console mt-3 max-h-96 whitespace-pre-wrap break-words">{{
+      <pre class="console mt-3 max-h-96 whitespace-pre-wrap wrap-break-word">{{
         JSON.stringify(session.configuration, null, 2)
       }}</pre>
     </details>
