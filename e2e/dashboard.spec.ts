@@ -5,6 +5,46 @@ import { AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, 
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
 
+for (const locale of ['en', 'ru'] as const) {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`service snapshots expand with the keyboard in ${locale}, ${theme}`, async ({ page }) => {
+      await page.addInitScript((value) => localStorage.setItem('orpheus_locale', value), locale)
+      await page.emulateMedia({ colorScheme: theme })
+      const saved = session()
+      saved.configuration.sandbox.services = [{ code: 'old', name: 'Saved service', description: 'Saved description', env_from: ['SAVED_TOKEN', 'SAVED_HOST'] }]
+      await page.route(`**/api/v1/sessions/${sid}`, (route) => route.fulfill({ json: saved }))
+      await page.route(`**/api/v1/sessions/${sid}/runs/${rid}`, (route) => route.fulfill({ json: run({ services: [
+        { code: 'hooks', name: 'Hook service', description: 'Hook description', env_from: ['HOOK_TOKEN'] },
+      ] }) }))
+      await page.route('**/api/v1/services', () => { throw new Error('Snapshot display must not request the catalog') })
+      await page.goto(`/sessions/${sid}/runs/${rid}`)
+      const sessionCard = page.locator('section').filter({ has: page.getByRole('heading', { name: locale === 'en' ? 'Configuration' : 'Конфигурация', exact: true }) })
+      const runCard = page.locator('aside section').filter({ has: page.getByRole('heading', { name: locale === 'en' ? 'Run #3' : 'Запуск №3', exact: true }) })
+      const hint = locale === 'en' ? 'These services are available to before_run and after_run hooks only.' : 'Эти сервисы доступны только хукам before_run и after_run.'
+      await expect(sessionCard.getByText('Saved description', { exact: true })).toBeVisible()
+      await expect(sessionCard.getByText('Hook description', { exact: true })).toHaveCount(0)
+      await expect(sessionCard.getByText(hint, { exact: true })).toHaveCount(0)
+      await expect(runCard.getByText('Hook description', { exact: true })).toBeVisible()
+      await expect(runCard.getByText('Saved description', { exact: true })).toHaveCount(0)
+      await expect(runCard.getByText(hint, { exact: true })).toBeVisible()
+      for (const [name, variable] of [['Saved service', 'SAVED_TOKEN'], ['Hook service', 'HOOK_TOKEN']]) {
+        const item = page.locator('li').filter({ has: page.getByText(name, { exact: true }) })
+        const toggle = item.locator('summary')
+        await expect(toggle).toHaveText(locale === 'en' ? 'Environment variables' : 'Переменные окружения')
+        await expect(toggle).toHaveAccessibleName(`${locale === 'en' ? 'Environment variables' : 'Переменные окружения'}: ${name}`)
+        await expect(item.getByText(variable, { exact: true })).toBeHidden()
+        await toggle.focus()
+        await page.keyboard.press('Enter')
+        await expect(item.getByText(variable, { exact: true })).toBeVisible()
+        await page.keyboard.press('Space')
+        await expect(item.getByText(variable, { exact: true })).toBeHidden()
+      }
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect(page.getByText('Saved service', { exact: true })).toBeVisible()
+    })
+  }
+}
+
 for (const theme of ['light', 'dark'] as const) {
   test(`semantic styles, focus and code typography work in ${theme}`, async ({ page }) => {
     const dark = theme === 'dark'

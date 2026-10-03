@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/orpheus-agents/orpheus",
   "path": "api/openapi.yaml",
-  "ref": "v0.5.0",
-  "commit": "0b8c886cc51b40d4db025565c7e23aaf4606c50d",
-  "sha256": "cdfc6b952ff5842f196c663bb43fd44a88628c841327d4a6dc9a6edd7fc1cbe5"
+  "ref": "v0.6.0",
+  "commit": "3a5bdc0fdca1dc9fd3e19c162846f2cc01c56d2a",
+  "sha256": "dc1621d1a9eb8d3bf3612de814326a66026cadfcb1c9d3a98e565553e9476a24"
 }

@@ -7,6 +7,7 @@ import DescribedName from './DescribedName.vue'
 import StatusBadge from './StatusBadge.vue'
 import CopyButton from './CopyButton.vue'
 import ErrorDetails from './ErrorDetails.vue'
+import ServiceList from './ServiceList.vue'
 defineProps<{ session: Session; profiles?: CatalogDescriptions; templates?: CatalogDescriptions }>()
 const { t, locale } = useI18n()
 </script>
@@ -37,6 +38,7 @@ const { t, locale } = useI18n()
         JSON.stringify(session.configuration, null, 2)
       }}</pre>
     </details>
+    <ServiceList :services="session.configuration.sandbox.services" class="mt-5 border-t border-line pt-4" />
     <div class="mt-5 flex items-center justify-between border-t border-line pt-4">
       <h3 class="panel-title text-base">{{ t('session.sandbox') }}</h3>
       <StatusBadge :value="session.sandbox.state" />

@@ -270,5 +270,12 @@
   "stopMethod": {
     "graceful": "Штатная остановка",
     "forced": "Принудительная остановка"
+  },
+  "services": {
+    "title": "Сервисы",
+    "empty": "Не выбраны",
+    "environment": "Переменные окружения",
+    "runScope": "Эти сервисы доступны только хукам before_run и after_run.",
+    "environmentFor": "Переменные окружения: {name}"
   }
 }
