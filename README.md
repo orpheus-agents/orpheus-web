@@ -20,6 +20,10 @@ Profile and template names show current descriptions on hover or keyboard focus.
 Catalog failures do not block session data; stored names remain visible when an
 entry is removed.
 
+Session and run service cards show accepted names, descriptions and expandable
+ENV names, never values. Session access and run-hook access are shown separately.
+These snapshots remain readable when the current catalog changes.
+
 English/Russian, light/dark themes.
 
 Requires Safari 16.4+, Chrome 111+ or Firefox 128+ (Tailwind CSS 4 browser baseline).
