@@ -20,9 +20,10 @@ Profile and template names show current descriptions on hover or keyboard focus.
 Catalog failures do not block session data; stored names remain visible when an
 entry is removed.
 
-Session and run service cards show accepted names, descriptions and expandable
-ENV names, never values. Session access and run-hook access are shown separately.
-These snapshots remain readable when the current catalog changes.
+Session and run cards list accepted services by name in one row. A name shows
+its description and ENV names on hover or keyboard focus, never values. Session
+access and run-hook access are shown separately. These snapshots remain readable
+when the current catalog changes.
 
 English/Russian, light/dark themes.
 

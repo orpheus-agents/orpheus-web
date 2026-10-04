@@ -31,6 +31,10 @@ const { t, locale } = useI18n()
         <dt class="field-label">{{ t('session.runTimeout') }}</dt>
         <dd>{{ formatDuration(session.configuration.limits.run_timeout_seconds, locale) }}</dd>
       </div>
+      <div>
+        <dt class="field-label">{{ t('services.title') }}</dt>
+        <dd><ServiceList :services="session.configuration.sandbox.services" /></dd>
+      </div>
     </dl>
     <details class="mt-4">
       <summary class="cursor-pointer text-xs text-accent-ink">{{ t('session.fullConfiguration') }}</summary>
@@ -38,7 +42,6 @@ const { t, locale } = useI18n()
         JSON.stringify(session.configuration, null, 2)
       }}</pre>
     </details>
-    <ServiceList :services="session.configuration.sandbox.services" class="mt-5 border-t border-line pt-4" />
     <div class="mt-5 flex items-center justify-between border-t border-line pt-4">
       <h3 class="panel-title text-base">{{ t('session.sandbox') }}</h3>
       <StatusBadge :value="session.sandbox.state" />

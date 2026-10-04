@@ -26,21 +26,23 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await expect(page.getByText('Awaiting delivery', { exact: true })).toBeVisible()
   const sessionCard = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Configuration', exact: true }) })
   const runCard = page.locator('aside section').filter({ has: page.getByRole('heading', { name: 'Run #1', exact: true }) })
-  const hint = 'These services are available to before_run and after_run hooks only.'
-  await expect(sessionCard.getByText('Run integration service', { exact: true })).toHaveCount(0)
-  await expect(sessionCard.getByText(hint, { exact: true })).toHaveCount(0)
-  await expect(runCard.getByText('Session integration service', { exact: true })).toHaveCount(0)
-  await expect(runCard.getByText(hint, { exact: true })).toBeVisible()
-  for (const { card, description, variable } of [
-    { card: sessionCard, description: 'Session integration service', variable: 'DEVELOPMENT_TOKEN' },
-    { card: runCard, description: 'Run integration service', variable: 'NOTIFICATIONS_TOKEN' },
+  const tooltip = page.getByRole('tooltip')
+  await expect(sessionCard.getByText('Notifications', { exact: true })).toHaveCount(0)
+  await expect(sessionCard.getByText('Hook services', { exact: true })).toHaveCount(0)
+  await expect(runCard.getByText('Development tools', { exact: true })).toHaveCount(0)
+  for (const { card, name, description, variable } of [
+    { card: sessionCard, name: 'Development tools', description: 'Session integration service', variable: 'DEVELOPMENT_TOKEN' },
+    { card: runCard, name: 'Notifications', description: 'Run integration service', variable: 'NOTIFICATIONS_TOKEN' },
   ]) {
-    const service = card.locator('li').filter({ has: page.getByText(description, { exact: true }) })
-    await expect(service).toBeVisible()
-    await expect(service.getByText(variable, { exact: true })).toBeHidden()
-    await service.locator('summary').click()
-    await expect(service.getByText(variable, { exact: true })).toBeVisible()
+    await expect(page.getByText(variable, { exact: true })).toHaveCount(0)
+    await card.getByRole('button', { name, exact: true }).focus()
+    await expect(tooltip.getByText(description, { exact: true })).toBeVisible()
+    await expect(tooltip.getByRole('list', { name: 'Environment variables', exact: true }).getByRole('listitem')).toHaveText([variable])
+    await page.keyboard.press('Escape')
   }
+  await runCard.getByRole('button', { name: 'Hook services', exact: true }).hover()
+  await expect(tooltip).toHaveText('These services are available to before_run and after_run hooks only.')
+  await page.mouse.move(0, 0)
   await page.getByRole('button', { name: 'default', exact: true }).focus()
   await expect(page.getByRole('tooltip')).toHaveText('Default integration profile')
   await page.keyboard.press('Escape')

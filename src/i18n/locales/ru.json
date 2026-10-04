@@ -273,9 +273,9 @@
   },
   "services": {
     "title": "Сервисы",
+    "hooks": "Сервисы хуков",
     "empty": "Не выбраны",
     "environment": "Переменные окружения",
-    "runScope": "Эти сервисы доступны только хукам before_run и after_run.",
-    "environmentFor": "Переменные окружения: {name}"
+    "runScope": "Эти сервисы доступны только хукам before_run и after_run."
   }
 }

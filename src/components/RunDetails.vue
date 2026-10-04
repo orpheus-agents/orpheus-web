@@ -6,6 +6,7 @@ import { formatDate, formatDuration, formatNumber } from '../format'
 import { usePolling } from '../composables/usePolling'
 import { useSettings } from '../composables/useSettings'
 import StatusBadge from './StatusBadge.vue'
+import DescribedName from './DescribedName.vue'
 import HookResultCard from './HookResultCard.vue'
 import ErrorDetails from './ErrorDetails.vue'
 import ServiceList from './ServiceList.vue'
@@ -73,13 +74,16 @@ usePolling(async () => {
           {{ run.stop_method ? t(`stopMethod.${run.stop_method}`) : t('common.notSet') }}
         </dd>
       </div>
+      <div class="flex justify-between gap-3">
+        <dt class="shrink-0 font-mono text-muted"><DescribedName :name="t('services.hooks')" :description="t('services.runScope')" /></dt>
+        <dd><ServiceList :services="run.services" class="justify-end" /></dd>
+      </div>
       <div class="flex justify-between gap-3 border-t border-line pt-3">
         <dt class="font-mono text-muted">{{ t('run.tokens') }}</dt>
         <dd class="font-mono">{{ formatNumber(run.usage.total_tokens, locale) }}</dd>
       </div>
     </dl>
     <TokenUsageBreakdown :usage="run.usage" class="mt-3" />
-    <ServiceList :services="run.services" :hint="t('services.runScope')" class="mt-5 border-t border-line pt-4" />
     <ErrorDetails v-if="run.error" class="mt-4" :error="run.error" />
     <ErrorDetails v-if="run.agent_error" class="mt-4" :error="run.agent_error" />
     <div v-if="run.hooks.length" class="mt-5 space-y-2 border-t border-line pt-4">
