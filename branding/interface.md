@@ -47,6 +47,11 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
 - Tables: header row, 44 px rows, 1 px rules, selected row on `bg-subtle`,
   no zebra stripes.
 - Panels: `bg-raised` with a 1 px `line` border, 20 px padding.
+- Detail cards: every fact is one labelled row. A set of names (services) is a
+  row of plain text separated by commas, not a card per item. A name with more
+  to say has a dotted underline and shows its description and details on hover,
+  focus or tap. An empty set is a word in the row; the dithered empty state is
+  for empty pages and lists.
 - Buttons: 40 px tall, square. Primary is `ink` with `bg` text; secondary is
   a 1 px `ink` border.
 

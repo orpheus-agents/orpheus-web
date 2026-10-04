@@ -273,9 +273,9 @@
   },
   "services": {
     "title": "Services",
+    "hooks": "Hook services",
     "empty": "Not selected",
     "environment": "Environment variables",
-    "runScope": "These services are available to before_run and after_run hooks only.",
-    "environmentFor": "Environment variables: {name}"
+    "runScope": "These services are available to before_run and after_run hooks only."
   }
 }
