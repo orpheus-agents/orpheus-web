@@ -259,3 +259,8 @@ packages in the final nginx image.
 CI additionally verifies snapshot provenance against GitHub and runs both browser
 suites before a tagged image can be published. `@intlify/devtools-types` is an explicit development dependency because the
 pinned vue-i18n declaration files import it; knip ignores only that indirect type use.
+
+## License
+
+Licensed under the GNU Affero General Public License, version 3 only
+(`AGPL-3.0-only`). See [LICENSE](LICENSE).
