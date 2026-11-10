@@ -260,6 +260,14 @@ CI additionally verifies snapshot provenance against GitHub and runs both browse
 suites before a tagged image can be published. `@intlify/devtools-types` is an explicit development dependency because the
 pinned vue-i18n declaration files import it; knip ignores only that indirect type use.
 
+## Dependency type checking
+
+Application code remains strictly type-checked. `skipLibCheck` avoids checking
+third-party declarations because the patched vue-i18n 11.4 release imports
+Vue 3.6's `GenericComponentInstance` while supporting stable Vue 3.5 at runtime
+([upstream issue](https://github.com/intlify/vue-i18n/issues/2335)). Remove this
+option once the upstream declarations support the installed stable Vue version.
+
 ## License
 
 Licensed under the GNU Affero General Public License, version 3 only
