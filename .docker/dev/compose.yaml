@@ -24,6 +24,27 @@ services:
       DATABASE_URL: postgres://orpheus:fixture-password@db:5432/orpheus
     depends_on:
       db: {condition: service_healthy}
+  seed:
+    image: postgres:16.10
+    command: [psql, --set, ON_ERROR_STOP=1, --file, /fixtures/templates.sql]
+    environment:
+      PGHOST: db
+      PGDATABASE: orpheus
+      PGUSER: orpheus
+      PGPASSWORD: fixture-password
+    volumes: [./templates.sql:/fixtures/templates.sql:ro]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+  agentbox:
+    image: node:26.7.0-alpine
+    user: node
+    command: [node, /fixtures/agentbox.mjs]
+    volumes: [./agentbox.mjs:/fixtures/agentbox.mjs:ro]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8090/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
   core:
     <<: *core
     environment:
@@ -32,6 +53,9 @@ services:
       ENV_ENCRYPTION_KEY: Zm9yLWxvY2FsLWRldmVsb3BtZW50LW9ubHktMzJieXQ=
       ORPHEUS_CONFIG_FILE: /etc/orpheus/config.toml
       ORPHEUS_BROWSER_AUTH: anonymous
+      ORPHEUS_PUBLIC_URL: ${ORPHEUS_PUBLIC_URL:?Use npm run stack:start}
+      AGENTBOX_API_URL: http://agentbox:8090
+      AGENTBOX_API_KEY: fixture-agentbox-key
     volumes: [./core.toml:/etc/orpheus/config.toml:ro]
     healthcheck:
       interval: 2s
@@ -39,7 +63,8 @@ services:
       start_period: 5s
       retries: 30
     depends_on:
-      migrate: {condition: service_completed_successfully}
+      seed: {condition: service_completed_successfully}
+      agentbox: {condition: service_healthy}
   ui:
     build:
       context: ../..

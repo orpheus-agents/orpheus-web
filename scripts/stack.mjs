@@ -14,6 +14,7 @@ const httpsPort = process.env.ORPHEUS_WEB_HTTPS_PORT || '18443'
 const idpPort = process.env.ORPHEUS_WEB_IDP_PORT || '18444'
 const environment = {
   ...process.env,
+  ORPHEUS_PUBLIC_URL: process.env.ORPHEUS_PUBLIC_URL || `http://127.0.0.1:${httpPort}`,
   ORPHEUS_WEB_HTTP_PORT: httpPort,
   ORPHEUS_WEB_HTTPS_PORT: httpsPort,
   ORPHEUS_WEB_IDP_PORT: idpPort,

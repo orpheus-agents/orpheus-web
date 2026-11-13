@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import type { Session } from '../api/generated'
+import type { Session, Template } from '../api/generated'
 import type { CatalogDescriptions } from '../composables/useCatalogs'
 import { formatDuration, formatNumber } from '../format'
 import DescribedName from './DescribedName.vue'
@@ -8,7 +8,7 @@ import StatusBadge from './StatusBadge.vue'
 import CopyButton from './CopyButton.vue'
 import ErrorDetails from './ErrorDetails.vue'
 import ServiceList from './ServiceList.vue'
-defineProps<{ session: Session; profiles?: CatalogDescriptions; templates?: CatalogDescriptions }>()
+defineProps<{ session: Session; profiles?: CatalogDescriptions; template?: Template }>()
 const { t, locale } = useI18n()
 </script>
 <template>
@@ -49,7 +49,7 @@ const { t, locale } = useI18n()
     <dl class="mt-3 space-y-3 text-xs">
       <div>
         <dt class="field-label">{{ t('session.template') }}</dt>
-        <dd class="font-mono"><DescribedName :name="session.configuration.sandbox.template" :description="templates?.get(session.configuration.sandbox.template)" /></dd>
+        <dd class="font-mono"><DescribedName :name="session.configuration.sandbox.template" :description="template?.description" /></dd>
       </div>
       <div>
         <dt class="field-label">{{ t('session.sandboxId') }}</dt>

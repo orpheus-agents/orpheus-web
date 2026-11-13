@@ -1,7 +1,56 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 const saml = !!process.env.INTEGRATION_SAML
 
-test('production nginx, pinned core and browser auth work together', async ({ page, request }) => {
+async function checkTemplates(page: Page, origin: string) {
+  await page.getByRole('link', { name: 'Templates', exact: true }).click()
+  await expect(page.getByRole('link', { name: 'codex', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Add template' }).click()
+  await page.getByLabel('AgentBox template').fill('missing')
+  await page.getByRole('button', { name: 'Add template' }).click()
+  await expect(page.getByText('This AgentBox project has no such template.', { exact: true })).toBeVisible()
+  await page.getByLabel('AgentBox template').fill('team/codex')
+  await page.getByLabel('Tag').fill('missing')
+  await page.getByRole('button', { name: 'Add template' }).click()
+  await expect(page.getByText('The template has no such tag.', { exact: true })).toBeVisible()
+  await page.getByLabel('Tag').fill('v1')
+  const creation = page.waitForResponse((response) => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/v1/templates')
+  await page.getByRole('button', { name: 'Add template' }).click()
+  const created = await creation
+  expect(created.status()).toBe(201)
+  expect(created.request().headers()['authorization']).toBeUndefined()
+  expect(created.request().headers()['x-orpheus-csrf']).toBe('1')
+  const record = await created.json()
+  expect(record).toMatchObject({ template_name: 'team/codex', tag: 'v1', active: true })
+  const path = `/api/v1/templates/${record.id}`
+  await expect(page.getByRole('heading', { name: 'team/codex:v1', exact: true })).toBeVisible()
+
+  // Browser mutations use the real cookie/anonymous boundary, with no injected bearer key.
+  const wrongOrigin = await page.request.patch(path, { headers: { Origin: 'https://wrong.example.test', 'X-Orpheus-CSRF': '1' }, data: { active: false } })
+  expect(wrongOrigin.status()).toBe(403)
+  expect((await wrongOrigin.json()).error.code).toBe('invalid_origin')
+  expect((await page.request.delete(path, { headers: { Origin: origin } })).status()).toBe(403)
+  await page.getByLabel('Description', { exact: true }).fill('Description from the browser')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(page.getByText('Description saved', { exact: true })).toBeVisible()
+  expect((await (await page.request.get(path)).json()).description).toBe('Description from the browser')
+  await page.getByRole('button', { name: 'Disable', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Enable', exact: true })).toBeVisible()
+  expect((await (await page.request.get(path)).json()).active).toBe(false)
+  await page.getByRole('link', { name: 'Back to templates', exact: true }).click()
+  const link = page.getByRole('link', { name: 'team/codex', exact: true })
+  await expect(page.getByRole('link', { name: 'codex', exact: true })).toBeVisible()
+  await expect(link).toHaveCount(0)
+  await page.getByRole('group', { name: 'Activity' }).getByRole('button', { name: 'Inactive', exact: true }).click()
+  await link.click()
+  await page.getByRole('button', { name: 'Delete', exact: true }).click()
+  await page.getByRole('button', { name: 'Delete record', exact: true }).click()
+  await expect(page).toHaveURL(/\/settings\/templates\?active=false$/)
+  expect((await page.request.get(path)).status()).toBe(404)
+  await page.getByRole('link', { name: 'Limits', exact: true }).click()
+}
+
+test('production nginx, pinned core and browser auth work together', async ({ page, request, baseURL }) => {
+  test.setTimeout(90_000)
   await page.addInitScript(() => localStorage.setItem('orpheus_locale', 'en'))
   const created = await request.post('/api/v1/sessions', {
     headers: { Authorization: 'Bearer integration-only-key', 'Idempotency-Key': crypto.randomUUID() },
@@ -65,6 +114,7 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   const accountLimits = await page.request.get('/api/v1/accounts/limits')
   expect(accountLimits.status()).toBe(200)
   expect((await accountLimits.json()).items[0].reset_credits_available).toBeNull()
+  await checkTemplates(page, baseURL!)
   const noBearer = await page.request.post('/api/v1/sessions', { data: {} })
   expect([401, 403]).toContain(noBearer.status())
   const missing = await request.get('/api/v1/not-a-route', { headers: { Authorization: 'Bearer integration-only-key' } })

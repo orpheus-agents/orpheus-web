@@ -420,8 +420,11 @@ test('profile and template descriptions support hover and keyboard without openi
   await page.keyboard.press('Escape')
   await expect(page.getByRole('tooltip')).toHaveCount(0)
   expect(requests.filter((path) => path.endsWith('/profiles'))).toHaveLength(1)
-  expect(requests.filter((path) => path.endsWith('/templates'))).toHaveLength(1)
+  // The list loads profiles only; template descriptions are read per session by exact name.
+  expect(requests.filter((path) => path.endsWith('/templates'))).toHaveLength(0)
   await page.getByRole('link', { name: sid.slice(0, 8), exact: true }).click()
+  await expect(page.getByRole('button', { name: 'codex', exact: true })).toBeVisible()
+  expect(requests.filter((path) => path.endsWith('/templates'))).toHaveLength(1)
   await page.getByRole('button', { name: 'codex', exact: true }).focus()
   await expect(page.getByRole('tooltip')).toHaveText('Sandbox with development tools')
   for (const colorScheme of ['light', 'dark'] as const) {

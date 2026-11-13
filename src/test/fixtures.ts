@@ -1,4 +1,4 @@
-import { AccountLimitItemState, AnalyticsOverviewBucket, RunStatus, SandboxStateState, MessageRole, MessageItemType, ToolItemType, ToolCallStatus, ToolCallOutput_completeness, TextResultType, type Session, type Run, type AnalyticsOverview, type StatusCounts, type HistoryPage, type Message, type AccountLimits } from '../api/generated'
+import { AccountLimitItemState, AnalyticsOverviewBucket, RunStatus, SandboxStateState, MessageRole, MessageItemType, ToolItemType, ToolCallStatus, ToolCallOutput_completeness, TextResultType, type Session, type Run, type AnalyticsOverview, type StatusCounts, type HistoryPage, type Message, type AccountLimits, type Template } from '../api/generated'
 
 export const sid = '11111111-1111-4111-8111-111111111111'
 export const rid = '22222222-2222-4222-8222-222222222222'
@@ -44,4 +44,9 @@ export function limits(): AccountLimits {
   const observed = new Date(Date.now() - 3 * 60_000).toISOString()
   const inMinutes = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString()
   return { as_of: observed, stale_after_seconds: 300, items: [{ account_id: 'team-main', profiles: ['default', 'deep'], state: AccountLimitItemState.fresh, reset_credits_available: 2, observed_at: observed, last_attempt_at: observed, error_code: null, buckets: [{ limit_id: 'codex', limit_name: 'Codex', plan_type: 'Team', rate_limit_reached_type: null, primary: { used_percent: 34, remaining_percent: 66, window_minutes: 300, resets_at: inMinutes(130) }, secondary: { used_percent: 62, remaining_percent: 38, window_minutes: 10080, resets_at: inMinutes(5 * 1440 + 9 * 60 + 20) } }] }] }
+}
+export const templateId = '33333333-3333-4333-8333-333333333333'
+export function template(overrides: Partial<Template> = {}): Template {
+  const base = { id: templateId, template_name: 'orpheus-codex', tag: null, description: 'Corporate Codex environment', active: true, ...overrides }
+  return { ...base, name: base.tag ? `${base.template_name}:${base.tag}` : base.template_name, ...overrides }
 }

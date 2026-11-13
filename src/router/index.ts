@@ -25,7 +25,12 @@ export const router = createRouter({
       name: 'settings',
       meta: { section: 'settings' },
       redirect: { name: 'limits' },
-      children: [{ path: 'limits', name: 'limits', meta: { subsection: 'limits' }, component: () => import('../views/LimitsView.vue') }],
+      children: [
+        { path: 'limits', name: 'limits', meta: { subsection: 'limits' }, component: () => import('../views/LimitsView.vue') },
+        { path: 'templates', name: 'templates', meta: { subsection: 'templates' }, component: () => import('../views/TemplatesView.vue') },
+        { path: 'templates/new', name: 'newTemplate', meta: { subsection: 'templates' }, component: () => import('../views/NewTemplateView.vue') },
+        { path: 'templates/:id', name: 'template', props: true, meta: { subsection: 'templates' }, component: () => import('../views/TemplateView.vue') },
+      ],
     },
     { path: '/:pathMatch(.*)*', name: 'missing', component: () => import('../views/NotFoundView.vue') },
   ],
@@ -36,7 +41,8 @@ export const router = createRouter({
   },
 })
 function screen(route: RouteLocationNormalized) {
-  return route.name === 'session' || route.name === 'run' ? `session:${String(route.params.sid)}` : String(route.name)
+  if (route.name === 'session' || route.name === 'run') return `session:${String(route.params.sid)}`
+  return route.params.id ? `${String(route.name)}:${String(route.params.id)}` : String(route.name)
 }
 
 const isMenuItem = (key: 'section' | 'subsection') => (route: RouteRecordRaw) => route.name !== undefined && route.name === route.meta?.[key]
@@ -54,9 +60,13 @@ export const sectionLinks = reactive<Record<string, string>>(
 function title() {
   const route = router.currentRoute.value
   const t = i18n.global.t
-  const sections = [route.meta.subsection, route.meta.section ?? String(route.name)].filter(Boolean).map((key) => t(`nav.${key}`))
-  const details = route.params.rid ? [String(route.params.rid).slice(0, 8), String(route.params.sid).slice(0, 8)] : route.params.sid ? [String(route.params.sid).slice(0, 8)] : []
-  document.title = [...details, ...sections, t('app.name')].join(' / ')
+  const { section, subsection } = route.meta
+  const name = String(route.name)
+  // A detail screen is named by its short id; any other screen below a menu item by its own label.
+  const details = [route.params.rid, route.params.sid, route.params.id].filter(Boolean).map((id) => String(id).slice(0, 8))
+  const own = !details.length && name !== section && name !== subsection ? [name] : []
+  const labels = [...own, subsection, section].filter(Boolean).map((key) => t(`nav.${key}`))
+  document.title = [...details, ...labels, t('app.name')].join(' / ')
   document.documentElement.lang = i18n.global.locale.value
 }
 router.afterEach((to) => {

@@ -14,7 +14,7 @@ Vue 3, TypeScript, Vite and Tailwind CSS 4 through `@tailwindcss/vite`.
 
 - **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime, an hourly/daily activity chart and ranked runs, tokens and run time per namespace, where a namespace click filters the page.
 - **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state. Session details show whether only one run is allowed or the session can continue. Sandbox cleanup state and errors remain separate from the run result.
-- **Limits:** provider quota windows and available earned resets grouped by account, with explicit freshness and error states. Zero resets means none are available; the reset row is hidden when the count is unknown. Stale accounts keep their last observed count with the existing freshness indicator.
+- **Settings:** provider limits and the [sandbox template catalog](docs/templates.md).
 
 Profile and template names show current descriptions on hover or keyboard focus.
 Catalog failures do not block session data; stored names remain visible when an
@@ -45,19 +45,27 @@ Use the Node version in `.node-version` and Docker Compose v2 for integration te
 ```sh
 npm ci
 npm run stack:start
-ORPHEUS_UPSTREAM=http://127.0.0.1:18085 npm run dev
+# Open http://127.0.0.1:18085
 ```
 
-The Vite URL is printed on startup. The built nginx application is also available at
-<http://127.0.0.1:18085>. Vite forwards `/api/`, `/auth/` and `/saml/` to the specified
-upstream; only nginx/Vite know its address. No build-time API address or credentials
-are embedded in the client.
+For Vite with hot reload, use its exact browser origin for writes:
+
+```sh
+ORPHEUS_PUBLIC_URL=http://127.0.0.1:5173 npm run stack:start
+ORPHEUS_UPSTREAM=http://127.0.0.1:18085 npm run dev -- --port 5173
+```
+
+Open the configured origin (`127.0.0.1` and `localhost` are different origins).
+Vite forwards `/api/`, `/auth/` and `/saml/` to the upstream; no API address or
+credentials are embedded in the client build.
 
 The example stack builds the **exact core commit** from `api/upstream.lock.json`,
-runs migrations and starts an anonymous read-only core with a disposable Postgres
-database. It has no worker and never calls an LLM provider. Initially there are no
-sessions, and the example account has no limit observation. Its fixture API key,
-password and encryption key are public test values, not deployment credentials.
+runs migrations, seeds a template record and starts an anonymous core with a
+disposable Postgres database. A local AgentBox fixture exposes `codex` and
+`team/codex` with `default` and `v1` tags so catalog writes work without external
+credentials. There is no worker or external provider call. Initially there are no
+sessions, and the example account has no limit observation. All fixture keys and
+passwords are public test values, not deployment credentials.
 
 ```sh
 npm run stack:stop
@@ -72,7 +80,8 @@ run them together, set `ORPHEUS_WEB_HTTP_PORT`, `ORPHEUS_WEB_HTTPS_PORT` and
 `ORPHEUS_WEB_IDP_PORT` to free ports for the second stack.
 
 With an existing core, run only `npm run dev`, setting `ORPHEUS_UPSTREAM` to its URL.
-For local HTTP development, configure that core with `ORPHEUS_BROWSER_AUTH=anonymous`.
+For local HTTP development, configure that core with `ORPHEUS_BROWSER_AUTH=anonymous`
+and `ORPHEUS_PUBLIC_URL` matching the browser origin.
 To test SAML, use the HTTPS integration stack below.
 
 For an interactive local SAML preview, run `npm run stack:start:saml` and open
@@ -111,7 +120,7 @@ first. For normal work, prefer an explicit tag/SHA; builds never follow `main`.
 | `make generate-check` | Check checksum and exact generated output; write nothing | No |
 | `make api-verify` | Compare the snapshot with the pinned upstream GitHub commit | Yes |
 
-The typed GET client derives paths, parameters and responses from OpenAPI.
+The typed HTTP client derives paths, parameters, write bodies and responses from OpenAPI.
 Enums are generated at runtime; DTOs are not redeclared in UI code. Aggregate
 counters and event sequences remain decimal strings; formatting/comparison uses
 `BigInt`, without conversion to a potentially lossy `Number`.
@@ -129,7 +138,7 @@ src/composables/  authentication, requests, polling and page state
 src/events/       bounded normalized message/tool history and event application
 src/render/       lazy Markdown/highlight.js rendering with DOMPurify
 src/components/   shared and domain components
-src/views/        analytics, sessions/details, limits, not-found page
+src/views/        analytics, sessions/details, settings, not-found page
 src/router/       navigation tree with section menus, deep links, remembered filters and page titles
 src/format/       locale-aware numbers, dates and durations
 src/i18n/         English/Russian translations and completeness tests
@@ -191,11 +200,12 @@ Configure browser access **in the core**, not in this image:
 
 | Core mode | UI behavior |
 | --- | --- |
-| `anonymous` | Open read-only data immediately; suitable for an isolated local stack |
+| `anonymous` | Open data and template management immediately; suitable for an isolated local stack |
 | `saml` | Navigate to `/auth/login`, complete SSO and return to the original local path |
 | `api_only` | Explain that browser access has not been configured |
 
-For SAML, `ORPHEUS_PUBLIC_URL` is the external HTTPS **UI origin**, and the core
+Browser writes require `ORPHEUS_PUBLIC_URL` to match the exact **UI origin** in
+both anonymous and SAML modes. For SAML it must be HTTPS, and the core
 receives its SP certificate/key, IdP metadata and entity ID. Use the core's
 [browser-auth documentation](https://github.com/orpheus-agents/orpheus/blob/main/docs/browser-auth.md)
 for the IdP configuration. The browser holds an HttpOnly cookie; JavaScript neither
@@ -236,8 +246,9 @@ npm run test:integration            # real pinned core + Postgres + nginx + Keyc
 ```
 
 The integration script builds both images, creates a session using a fixture
-Bearer key, tests anonymous read-only access, deep links, history/SSE and caching,
-then checks SAML login, secure cookies, logout and SSO re-entry over HTTPS. It uses
+Bearer key, tests template CRUD and Origin/CSRF enforcement, deep links, history/SSE
+and caching, then repeats with SAML login, secure cookies, logout and SSO re-entry
+over HTTPS. Template registration uses the local AgentBox fixture. The suite uses
 a disposable realm, a local self-signed certificate and an `operator` test user.
 No production accounts, Agentbox sandboxes or provider live checks are involved.
 It removes the test containers in `finally`; generated fixture credentials are

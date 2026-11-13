@@ -20,7 +20,7 @@ it('builds the header and section menus from the routes', () => {
   expect(navigation).toEqual([
     { name: 'analytics', children: [] },
     { name: 'sessions', children: [] },
-    { name: 'settings', children: ['limits'] },
+    { name: 'settings', children: ['limits', 'templates'] },
   ])
 })
 
@@ -41,7 +41,29 @@ it('remembers the last address of a menu item and of its section, not of a detai
   expect(sectionLinks.settings).toBe('/settings/limits?view=all')
 })
 
+it('keeps template cards and the new template form under the templates menu item', async () => {
+  await router.push('/settings/templates?active=all')
+  expect(sectionLinks.templates).toBe('/settings/templates?active=all')
+  expect(sectionLinks.settings).toBe('/settings/templates?active=all')
+  await router.push('/settings/templates/new')
+  expect(router.currentRoute.value.name).toBe('newTemplate')
+  expect(router.currentRoute.value.meta).toMatchObject({ section: 'settings', subsection: 'templates' })
+  await router.push(`/settings/templates/${sid}`)
+  expect(router.currentRoute.value).toMatchObject({ name: 'template', params: { id: sid } })
+  expect(sectionLinks.templates).toBe('/settings/templates?active=all')
+})
+
+it('scrolls to the top when another template card opens', () => {
+  const card = (id: string) => ({ name: 'template', params: { id }, query: {}, fullPath: '' }) as unknown as RouteLocationNormalized
+  expect(behaviour(card('b'), card('a'), null)).toEqual({ top: 0 })
+  expect(behaviour(card('a'), card('a'), null)).toBe(false)
+})
+
 it('titles a page with reverse breadcrumbs through its section', async () => {
+  await router.push('/settings/templates/new')
+  expect(document.title).toBe('New template / Templates / Settings / Orpheus')
+  await router.push(`/settings/templates/${sid}`)
+  expect(document.title).toBe('11111111 / Templates / Settings / Orpheus')
   await router.push('/settings/limits')
   expect(document.title).toBe('Limits / Settings / Orpheus')
   await router.push(`/sessions/${sid}`)

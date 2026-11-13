@@ -23,10 +23,19 @@ it('selects the section of the current screen and shows its menu', async () => {
   expect(items[2].classes()).toContain('selected')
   expect(items[2].attributes('href')).toBe('/settings/limits?view=all')
   const sub = menu('Settings').findAll('a')
-  expect(sub.map((item) => item.text())).toEqual(['Limits'])
+  expect(sub.map((item) => item.text())).toEqual(['Limits', 'Templates'])
+  expect(sub[1].classes()).not.toContain('selected')
+  expect(sub[1].attributes('aria-current')).toBeUndefined()
   expect(sub[0].classes()).toContain('selected')
   expect(sub[0].attributes('aria-current')).toBe('page')
   expect(sub[0].attributes('href')).toBe('/settings/limits?view=all')
+})
+
+it('keeps the menu item selected on a template card', async () => {
+  await header('/settings/templates/11111111-1111-4111-8111-111111111111')
+  const sub = menu('Settings').findAll('a')
+  expect(sub.filter((item) => item.classes('selected')).map((item) => item.text())).toEqual(['Templates'])
+  expect(sub[1].attributes('aria-current')).toBe('page')
 })
 
 it('keeps the section selected on a detail screen and hides the menu of a section without items', async () => {

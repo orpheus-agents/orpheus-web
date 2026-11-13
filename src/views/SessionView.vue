@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, toRef, watch } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowLeft } from 'lucide-vue-next'
 import { useCatalogs } from '../composables/useCatalogs'
 import { useSession } from '../composables/useSession'
+import { useTemplateReference } from '../composables/useTemplate'
 import { sectionLinks } from '../router'
 import { formatCompactNumber, formatNumber, shortenKey } from '../format'
 import CopyButton from '../components/CopyButton.vue'
@@ -25,13 +26,20 @@ const journal = ref(false)
 const rid = toRef(props, 'rid')
 watch([sid, rid], () => { journal.value = false })
 const { data, run, runError, runPending, runStale, sessionPending, selected, error, pending, updatedAt, disconnected, refresh } = useSession(sid, rid)
+const template = useTemplateReference(() => data.value?.configuration.sandbox.template)
+const catalogsDisconnected = computed(() => catalogs.disconnected.value || template.disconnected.value)
+function refreshAll() {
+  void refresh()
+  catalogs.refresh()
+  void template.refresh()
+}
 </script>
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between gap-4">
       <RouterLink :to="sectionLinks.sessions" class="caps flex items-center gap-2 text-muted hover:text-ink">
         <ArrowLeft class="h-4 w-4" aria-hidden="true" />{{ t('session.back') }}
-      </RouterLink><RefreshStatus :updated-at="updatedAt" :disconnected="disconnected || catalogs.disconnected.value" :pending="pending" @refresh="refresh(); catalogs.refresh()" />
+      </RouterLink><RefreshStatus :updated-at="updatedAt" :disconnected="disconnected || catalogsDisconnected" :pending="pending" @refresh="refreshAll" />
     </div>
     <template v-if="data">
       <div>
@@ -76,7 +84,7 @@ const { data, run, runError, runPending, runStale, sessionPending, selected, err
         </div>
         <aside class="space-y-5">
           <RunDetails v-if="run" :run="run" class="transition-opacity" :class="{ 'opacity-50': runStale }" :aria-busy="runStale || undefined" /><RunsPanel :sid="sid" :selected="selected ?? ''" /><SessionInfo
-            :session="data" :profiles="catalogs.profiles.value" :templates="catalogs.templates.value"
+            :session="data" :profiles="catalogs.profiles.value" :template="template.template.value"
           />
         </aside>
       </div>
