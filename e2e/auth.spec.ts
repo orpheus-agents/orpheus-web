@@ -28,14 +28,14 @@ test('logout revokes the local session and waits for explicit sign-in', async ({
 })
 test('API 401 closes the current page and prompts for sign-in', async ({ page }) => {
   await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ status: 401, json: { error: { code: 'unauthorized', message: 'Sign in', details: [], phase: null } } }))
-  await page.goto('/limits')
+  await page.goto('/settings/limits')
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Provider limits' })).toHaveCount(0)
 })
 
 test('API 403 stops the protected screen and shows access denied', async ({ page }) => {
   await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ status: 403, json: { error: { code: 'forbidden', message: 'Forbidden', details: [], phase: null } } }))
-  await page.goto('/limits')
+  await page.goto('/settings/limits')
   await expect(page.getByText('Access denied', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Provider limits' })).toHaveCount(0)
 })
@@ -49,6 +49,6 @@ test('a rejected logout keeps the readable dashboard open and only reports the f
   await expect(page.getByText('Could not sign out. Try again.')).toBeVisible()
   await expect(page.getByText('14.8M', { exact: true })).toBeVisible()
   await expect(page.getByText('Access denied', { exact: true })).toHaveCount(0)
-  await page.getByRole('link', { name: 'Limits', exact: true }).click()
+  await page.getByRole('link', { name: 'Settings', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Provider limits' })).toBeVisible()
 })

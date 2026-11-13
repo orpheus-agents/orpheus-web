@@ -18,7 +18,11 @@ export async function mockAPI(page: Page) {
       { name: 'fast', description: 'Quick requests', harness: 'codex', model: null, codex: {}, instructions: '' },
       { name: 'deep', description: 'Detailed research', harness: 'codex', model: null, codex: {}, instructions: '' },
     ] }
-    else if (url.pathname.endsWith('/templates')) data = { items: [{ name: 'codex', description: 'Sandbox with development tools' }] }
+    else if (url.pathname.endsWith('/templates')) {
+      const catalog = [{ id: '33333333-3333-4333-8333-333333333333', name: 'codex', template_name: 'codex', tag: null, description: 'Sandbox with development tools', active: true }]
+      const name = url.searchParams.get('name')
+      data = { items: name ? catalog.filter((item) => item.name === name) : catalog, next_cursor: null, prev_cursor: null }
+    }
     else if (url.pathname.endsWith('/accounts/limits')) data = limits()
     else if (url.pathname.endsWith('/events/stream')) {
       const event = { type: MessageEventType.message_updated, id: '11', session_id: sid, created_at: timestamp, data: message({ text: 'The pagination fix is ready. **All tests pass.**' }) }

@@ -168,7 +168,7 @@ test('quota states and values above 100% remain explicit', async ({ page }) => {
   data.items[0].buckets[0].primary!.remaining_percent = 0
   data.items.push({ account_id: 'new-account', profiles: ['new'], state: AccountLimitItemState.unknown, observed_at: null, last_attempt_at: null, error_code: null, reset_credits_available: null, buckets: [] })
   await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ json: data }))
-  await page.goto('/limits')
+  await page.goto('/settings/limits')
   await expect(page.getByText('120% used', { exact: true })).toBeVisible()
   await expect(page.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '0')
   await expect(page.getByText('No observation yet', { exact: true })).toBeVisible()
@@ -237,7 +237,7 @@ for (const locale of ['en', 'ru'] as const) {
     await page.clock.install()
     const data = limits()
     await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ json: data }))
-    await page.goto('/limits')
+    await page.goto('/settings/limits')
     const twoResets = locale === 'ru' ? 'Доступно 2 сброса' : '2 resets available'
     await expect(page.getByText(twoResets, { exact: true })).toBeVisible()
     for (const theme of ['light', 'dark'] as const) {
@@ -289,9 +289,33 @@ test('desktop, dark theme and narrow screens remain usable', async ({ page }) =>
   await page.getByRole('link', { name: 'Sessions', exact: true }).click()
   await expect(page.getByRole('table')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  await page.getByRole('link', { name: 'Limits', exact: true }).click()
+  await page.getByRole('link', { name: 'Settings', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Provider limits' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Settings' })).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: 'test-results/limits-mobile.png', fullPage: true, animations: 'disabled' })
 })
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`the settings menu marks its item in ink and returns to the last subsection in ${theme}`, async ({ page }) => {
+    const ink = theme === 'dark' ? 'rgb(237, 237, 235)' : 'rgb(14, 14, 16)'
+    await page.emulateMedia({ colorScheme: theme })
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    await page.goto('/settings')
+    await expect(page).toHaveURL(/\/settings\/limits$/)
+    await expect(page).toHaveTitle('Limits / Settings / Orpheus')
+    const menu = page.getByRole('navigation', { name: 'Settings' })
+    await expect(menu.getByRole('link', { name: 'Limits', exact: true })).toHaveAttribute('aria-current', 'page')
+    await expect(page.locator('.subnav-link.selected')).toHaveCSS('border-bottom-color', ink)
+    await expect(page.locator('.nav-link.selected')).toHaveText('Settings')
+    await page.screenshot({ path: `test-results/settings-${theme}.png`, animations: 'disabled' })
+    await page.goto('/settings/limits?view=all')
+    await page.getByRole('link', { name: 'Sessions', exact: true }).click()
+    await expect(menu).toHaveCount(0)
+    await page.getByRole('link', { name: 'Settings', exact: true }).click()
+    await expect(page).toHaveURL(/\/settings\/limits\?view=all$/)
+  })
+}
 
 test('archive date range uses timestamp filters and is not applied to current sessions', async ({ page }) => {
   await page.goto('/sessions?activity=inactive')
@@ -323,8 +347,10 @@ test('Russian navigation, dates and page titles survive reload', async ({ page }
   await page.getByRole('link', { name: '11111111', exact: true }).click()
   await expect(page.getByText('All tests pass.', { exact: false })).toBeVisible()
   await page.screenshot({ path: 'test-results/session-ru.png', fullPage: true, animations: 'disabled' })
-  await page.getByRole('link', { name: 'Лимиты', exact: true }).click()
+  await page.getByRole('link', { name: 'Настройки', exact: true }).click()
+  await expect(page.getByRole('navigation', { name: 'Настройки' }).getByRole('link', { name: 'Лимиты', exact: true })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '66')
+  await expect(page).toHaveTitle('Лимиты / Настройки / Orpheus')
   await page.screenshot({ path: 'test-results/limits-ru.png', fullPage: true, animations: 'disabled' })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Лимиты провайдера' })).toBeVisible()
@@ -394,8 +420,11 @@ test('profile and template descriptions support hover and keyboard without openi
   await page.keyboard.press('Escape')
   await expect(page.getByRole('tooltip')).toHaveCount(0)
   expect(requests.filter((path) => path.endsWith('/profiles'))).toHaveLength(1)
-  expect(requests.filter((path) => path.endsWith('/templates'))).toHaveLength(1)
+  // The list loads profiles only; template descriptions are read per session by exact name.
+  expect(requests.filter((path) => path.endsWith('/templates'))).toHaveLength(0)
   await page.getByRole('link', { name: sid.slice(0, 8), exact: true }).click()
+  await expect(page.getByRole('button', { name: 'codex', exact: true })).toBeVisible()
+  expect(requests.filter((path) => path.endsWith('/templates'))).toHaveLength(1)
   await page.getByRole('button', { name: 'codex', exact: true }).focus()
   await expect(page.getByRole('tooltip')).toHaveText('Sandbox with development tools')
   for (const colorScheme of ['light', 'dark'] as const) {
@@ -411,7 +440,7 @@ test('profile and template descriptions support hover and keyboard without openi
     await page.screenshot({ path: 'test-results/catalog-' + colorScheme + '.png' })
   }
   await page.keyboard.press('Escape')
-  await page.getByRole('link', { name: 'Limits', exact: true }).click()
+  await page.getByRole('link', { name: 'Settings', exact: true }).click()
   await page.getByRole('button', { name: 'deep', exact: true }).focus()
   await expect(page.getByRole('tooltip')).toHaveText('Detailed research')
 })

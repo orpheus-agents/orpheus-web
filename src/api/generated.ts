@@ -28,16 +28,47 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * List configured templates
-         * @description Returns the complete catalog sorted by name from local configuration. No provider or credential lookups are performed.
+         * List registered templates
+         * @description Database catalog ordered by (name, id). Filters are bound to opaque forward/backward cursors; no provider calls. This catalog does not yet replace TOML validation of new sessions.
          */
         get: operations["get_templates"];
         put?: never;
-        post?: never;
+        /**
+         * Register an own-project AgentBox template
+         * @description Requires successful alias and tag lookups. Browser writes require the configured Origin and X-Orpheus-CSRF header set to 1. Session admission remains governed by TOML.
+         */
+        post: operations["create_template"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** Read a registered template */
+        get: operations["get_template"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete an Orpheus catalog record
+         * @description Does not modify AgentBox or accepted sessions. Browser writes require Origin and X-Orpheus-CSRF.
+         */
+        delete: operations["delete_template"];
+        options?: never;
+        head?: never;
+        /**
+         * Update template activity or description
+         * @description Name and tag are immutable. Empty or whitespace-only descriptions become null. No AgentBox lookup. Browser writes require Origin and X-Orpheus-CSRF.
+         */
+        patch: operations["update_template"];
         trace?: never;
     };
     "/api/v1/services": {
@@ -336,7 +367,7 @@ export type paths = {
         put?: never;
         /**
          * Create Run
-         * @description Create a subsequent run. Sessions created with allow_multiple_runs=false reject this operation with 409 multiple_runs_not_allowed, regardless of the first run or sandbox state. Idempotent replay of an accepted request returns the original acceptance.
+         * @description Create a subsequent run. Sessions created with allow_multiple_runs=false reject this operation with 409 multiple_runs_not_allowed. Deleting, deleted or unavailable environments reject new input with 409 session_unavailable; create a new session with the required context. If external sandbox loss is discovered after acceptance, the run fails asynchronously with sandbox_lost. Idempotent replay of an accepted request returns the original acceptance, regardless of sandbox state.
          */
         post: operations["create_run"];
         delete?: never;
@@ -431,11 +462,32 @@ export type components = {
             items: components["schemas"]["Profile"][];
         };
         Template: {
+            /** Format: uuid */
+            id: string;
+            /** @description Exact normalized reference including the optional tag. */
             name: string;
+            template_name: string;
+            tag: string | null;
             description: string | null;
+            active: boolean;
         };
         Templates: {
             items: components["schemas"]["Template"][];
+            next_cursor: string | null;
+            prev_cursor: string | null;
+        };
+        CreateTemplate: {
+            /** @description Own-project alias, optionally prefixed by its team slug. Normalized to lowercase. */
+            template_name: string;
+            /** @description Normalized to lowercase; UUID build references are rejected. Omission or null checks default but stores an untagged reference. */
+            tag?: string | null;
+            description?: string | null;
+            /** @default true */
+            active: boolean;
+        };
+        UpdateTemplate: {
+            description?: string | null;
+            active?: boolean;
         };
         /** @description Unique configured service codes. Order is insignificant; an unknown code rejects the entire request. */
         ServiceCodes: string[];
@@ -638,7 +690,7 @@ export type components = {
         /** CreateSession */
         CreateSession: {
             /**
-             * @description Immutable session policy. If false, only the run created with the session is allowed and its sandbox is deleted after completion, failure or cancellation. If true, the sandbox is paused for subsequent runs. Recovery and messages within the current run are allowed in either mode.
+             * @description Immutable session policy. If false, only the run created with the session is allowed and its sandbox is deleted after completion, failure or cancellation. If true, the sandbox is paused for subsequent runs until its retention period expires. Recovery and messages within the current run are allowed in either mode.
              * @default false
              */
             allow_multiple_runs: boolean;
@@ -1223,6 +1275,8 @@ export type CodexProfile = components['schemas']['CodexProfile'];
 export type Profiles = components['schemas']['Profiles'];
 export type Template = components['schemas']['Template'];
 export type Templates = components['schemas']['Templates'];
+export type CreateTemplate = components['schemas']['CreateTemplate'];
+export type UpdateTemplate = components['schemas']['UpdateTemplate'];
 export type ServiceCodes = components['schemas']['ServiceCodes'];
 export type Service = components['schemas']['Service'];
 export type Services = components['schemas']['Services'];
@@ -1320,14 +1374,22 @@ export interface operations {
     };
     get_templates: {
         parameters: {
-            query?: never;
+            query?: {
+                active?: boolean;
+                /** @description Exact case-sensitive reference. Incompatible with name_contains. */
+                name?: string;
+                /** @description Literal case-insensitive substring of the reference. Incompatible with name. */
+                name_contains?: string;
+                limit?: number;
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Configured templates */
+            /** @description One page; cursor fields are null at the respective boundaries. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1336,8 +1398,8 @@ export interface operations {
                     "application/json": components["schemas"]["Templates"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
+            /** @description Invalid input (422), unauthorized (401), forbidden browser origin (403), missing record (404), duplicate (409), or unavailable provider/storage (503). */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1345,8 +1407,127 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Authentication temporarily unavailable */
-            503: {
+        };
+    };
+    create_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplate"];
+            };
+        };
+        responses: {
+            /** @description Registered template */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Template"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden browser origin (403), missing record (404), duplicate (409), or unavailable provider/storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registered template, including inactive records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Template"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden browser origin (403), missing record (404), duplicate (409), or unavailable provider/storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden browser origin (403), missing record (404), duplicate (409), or unavailable provider/storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplate"];
+            };
+        };
+        responses: {
+            /** @description Updated template */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Template"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden browser origin (403), missing record (404), duplicate (409), or unavailable provider/storage (503). */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2969,7 +3150,10 @@ export enum ErrorDetailCode {
     required = "required",
     invalid_type = "invalid_type",
     invalid_value = "invalid_value",
-    unknown_field = "unknown_field"
+    unknown_field = "unknown_field",
+    template_not_found = "template_not_found",
+    template_forbidden = "template_forbidden",
+    tag_not_found = "tag_not_found"
 }
 export enum HookResultName {
     after_create = "after_create",
