@@ -121,6 +121,8 @@ body {
   .field-label { @apply caps mb-1.5 block text-[11px] leading-4 text-muted; }
   .nav-link { @apply caps inline-flex h-14 items-center border-b-2 border-transparent text-muted transition hover:text-ink; }
   .nav-link.selected { @apply border-accent font-semibold text-ink; }
+  .subnav-link { @apply caps inline-flex h-11 shrink-0 items-center border-b-2 border-transparent text-muted transition hover:text-ink; }
+  .subnav-link.selected { @apply border-ink font-semibold text-ink; }
   .marker { @apply inline-block h-2 w-2 shrink-0; }
   .data-table { @apply w-full border-collapse text-left text-sm; }
   .data-table th { @apply caps h-9 whitespace-nowrap border-b border-line px-4 text-[11px] leading-4 font-normal text-muted; }

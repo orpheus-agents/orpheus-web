@@ -5,15 +5,16 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { BrowserAuthSession } from '../api/generated'
 import { BrowserAuthSessionMode } from '../api/generated'
-import { sectionLinks } from '../router'
+import { navigation, sectionLinks } from '../router'
 import { formatOffset, THEMES, timeZones, useSettings } from '../composables/useSettings'
 import HeaderMenu from './HeaderMenu.vue'
+import SectionNav from './SectionNav.vue'
 defineProps<{ session: BrowserAuthSession | null; ready: boolean; pending: boolean }>()
 defineEmits<{ logout: [] }>()
 const { t, locale } = useI18n()
 const route = useRoute()
 const { timeZone, setTimeZone, theme, resolvedTheme, setTheme } = useSettings()
-const nav = ['analytics', 'sessions', 'limits'] as const
+const nav = navigation.map(({ name }) => name)
 const locales = ['en', 'ru'] as const
 const currentLocale = computed(() => (locale.value === 'ru' ? 'ru' : 'en'))
 const languageOptions = computed(() => locales.map((value) => ({ value, label: t(`settings.languages.${value}`) })))
@@ -39,7 +40,7 @@ function changeLocale(value: 'en' | 'ru') {
           :key="item"
           :to="sectionLinks[item]"
           class="nav-link"
-          :class="{ selected: item === 'sessions' ? route.path.startsWith('/sessions') : route.name === item }"
+          :class="{ selected: route.meta.section === item }"
         >
           {{ t(`nav.${item}`) }}
         </RouterLink>
@@ -66,5 +67,6 @@ function changeLocale(value: 'en' | 'ru') {
         </template>
       </div>
     </div>
+    <SectionNav v-if="ready" />
   </header>
 </template>

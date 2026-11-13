@@ -42,6 +42,12 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   item has a 2 px accent underline. On the right: settings as icon menus
   (language, time zone, theme), then a 1 px divider, the account name in mono
   and the sign-out icon.
+- Section menu: a section with subsections (Settings → Limits) adds a second
+  header row, 44 px, left-aligned with the content and separated by a 1 px
+  rule. Same mono navigation type; the active item is SemiBold `ink` with a
+  2 px `ink` underline, so the accent stays on the top level. The row stays on
+  detail screens of a subsection and scrolls sideways on narrow screens. No
+  dropdowns from header items and no side columns.
 - Page order: title → content, with a one-line description under the title
   only where the screen needs one. No captions or eyebrows above titles.
 - Tables: header row, 44 px rows, 1 px rules, selected row on `bg-subtle`,

@@ -130,7 +130,7 @@ src/events/       bounded normalized message/tool history and event application
 src/render/       lazy Markdown/highlight.js rendering with DOMPurify
 src/components/   shared and domain components
 src/views/        analytics, sessions/details, limits, not-found page
-src/router/       deep links, independent section filters and page titles
+src/router/       navigation tree with section menus, deep links, remembered filters and page titles
 src/format/       locale-aware numbers, dates and durations
 src/i18n/         English/Russian translations and completeness tests
 ```
