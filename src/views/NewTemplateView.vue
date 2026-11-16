@@ -26,7 +26,9 @@ const { form, fieldErrors, pending, submit } = useTemplateForm()
           :aria-invalid="!!fieldErrors.template_name"
           aria-describedby="template-name-hint template-name-error"
         >
-        <span id="template-name-hint" class="mt-1.5 block text-xs text-muted">{{ t('templates.nameHint') }}</span>
+        <i18n-t id="template-name-hint" keypath="templates.nameHint" tag="span" scope="global" class="mt-1.5 block text-xs text-muted">
+          <template #example><code class="font-mono">{{ t('templates.nameExample') }}</code></template>
+        </i18n-t>
         <span v-if="fieldErrors.template_name" id="template-name-error" class="field-error block">{{ fieldErrors.template_name }}</span>
       </label>
       <label class="block">
@@ -40,7 +42,9 @@ const { form, fieldErrors, pending, submit } = useTemplateForm()
           :aria-invalid="!!fieldErrors.tag"
           aria-describedby="template-tag-hint template-tag-error"
         >
-        <span id="template-tag-hint" class="mt-1.5 block text-xs text-muted">{{ t('templates.tagHint') }}</span>
+        <i18n-t id="template-tag-hint" keypath="templates.tagHint" tag="span" scope="global" class="mt-1.5 block text-xs text-muted">
+          <template #tag><code class="font-mono">{{ t('templates.defaultTag') }}</code></template>
+        </i18n-t>
         <span v-if="fieldErrors.tag" id="template-tag-error" class="field-error block">{{ fieldErrors.tag }}</span>
       </label>
       <label class="block">

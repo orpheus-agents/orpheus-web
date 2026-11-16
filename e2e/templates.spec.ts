@@ -39,6 +39,28 @@ test.beforeEach(async ({ page }) => {
 /** The list links records by template name; the row link is addressed by the record it opens. */
 const record = (page: Page, id: string) => page.locator(`a[href="/settings/templates/${id}"]`)
 
+for (const locale of ['en', 'ru'] as const) {
+  test(`the list shows full template names and read-only statuses in ${locale}`, async ({ page }) => {
+    await page.addInitScript((value) => localStorage.setItem('orpheus_locale', value), locale)
+    await page.goto('/settings/templates?active=all')
+    const table = page.getByRole('table')
+    await expect(table.getByRole('columnheader')).toHaveText(locale === 'ru' ? ['Имя', 'Описание', 'Состояние'] : ['Name', 'Description', 'State'])
+    for (const item of catalog) await expect(record(page, item.id)).toHaveText(item.name)
+    await expect(table.getByRole('checkbox')).toHaveCount(0)
+    await expect(table.getByRole('button')).toHaveCount(0)
+    await expect(table.getByRole('cell', { name: locale === 'ru' ? 'Активен' : 'Active', exact: true })).toHaveCount(2)
+    await expect(table.getByRole('cell', { name: locale === 'ru' ? 'Неактивен' : 'Inactive', exact: true })).toHaveCount(1)
+    const agentbox = page.getByRole('link', { name: 'AgentBox', exact: true })
+    await expect(agentbox).toHaveAttribute('href', 'https://agentbox.ru/')
+    await expect(agentbox.locator('..')).toHaveText(locale === 'ru' ? 'Шаблоны AgentBox, используемые в сессиях.' : 'AgentBox templates used in sessions.')
+    for (const theme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme: theme })
+      await page.setViewportSize(theme === 'light' ? { width: 1440, height: 1000 } : { width: 390, height: 844 })
+      await page.screenshot({ path: `test-results/templates-${locale}-${theme}.png`, fullPage: true, animations: 'disabled' })
+    }
+  })
+}
+
 async function listRequests(page: Page) {
   const queries: string[] = []
   page.on('request', (request) => {
@@ -90,6 +112,11 @@ test('the pager walks cursors and normalises the counter where the catalog begin
   await page.goto(`/settings/templates?cursor=${page2}&page=4`)
   await expect(page).not.toHaveURL(/page=/)
   expect(queries).toHaveLength(before + 1)
+  // Page size remains available when the list fits on one page.
+  await expect(group).toHaveCount(0)
+  await page.getByRole('combobox', { name: 'Per page', exact: true }).selectOption('100')
+  await expect(page).toHaveURL(/\/settings\/templates\?limit=100$/)
+  expect(queries.at(-1)).toBe('active=true&limit=100')
 })
 
 test('an outdated cursor offers the first page but keeps the filters', async ({ page }) => {
@@ -138,7 +165,7 @@ test('a deleted record and a malformed address explain themselves and lead back'
   await expect(page.getByRole('alert').getByText('Invalid template address')).toBeVisible()
 })
 
-test('toggling activity sends the write and the active filter drops the record', async ({ page }) => {
+test('clicking a status opens the card; disabling requires confirmation', async ({ page }) => {
   const writes: string[] = []
   page.on('request', (request) => {
     if (request.method() === 'PATCH') writes.push(request.url())
@@ -152,10 +179,61 @@ test('toggling activity sends the write and the active filter drops the record',
     return route.fallback()
   })
   await page.goto('/settings/templates')
-  // The box shows the stored state until the server confirms, so the row leaving the filter is the signal.
-  await page.getByRole('checkbox', { name: 'Active: orpheus-codex' }).click()
+  const row = page.getByRole('row').filter({ has: record(page, '33333333-3333-4333-8333-333333333333') })
+  await row.getByRole('cell', { name: 'Active', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'orpheus-codex', exact: true })).toBeVisible()
+  expect(writes).toHaveLength(0)
+  await page.getByRole('button', { name: 'Disable', exact: true }).click()
+  const confirmation = page.getByRole('alertdialog', { name: 'Disable this template?' })
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused()
+  expect(writes).toHaveLength(0)
+  await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
+  expect(writes).toHaveLength(0)
+  await page.getByRole('button', { name: 'Disable', exact: true }).click()
+  await confirmation.getByRole('button', { name: 'Disable', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Enable', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Back to templates', exact: true }).click()
+  await expect(record(page, '55555555-5555-4555-8555-555555555555')).toBeVisible()
   await expect(record(page, '33333333-3333-4333-8333-333333333333')).toHaveCount(0)
+  expect(writes).toHaveLength(1)
   expect(writes.at(-1)).toContain('/api/v1/templates/33333333-3333-4333-8333-333333333333')
+})
+
+test('a failed disable can be retried; enabling resets the confirmation', async ({ page }) => {
+  let attempts = 0
+  let release!: () => void
+  const held = new Promise<void>((resolve) => { release = resolve })
+  await page.route(cardUrl, async (route) => {
+    if (route.request().method() !== 'PATCH') return route.fallback()
+    attempts++
+    if (attempts === 1) {
+      await held
+      return route.fulfill({ status: 503, json: { error: { code: 'unavailable', message: 'Temporarily unavailable', details: [], phase: null } } })
+    }
+    const saved = Object.assign(catalog[0]!, route.request().postDataJSON() as object)
+    return route.fulfill({ json: { ...saved } })
+  })
+  await page.goto(`/settings/templates/${catalog[0]!.id}`)
+  await page.getByRole('button', { name: 'Disable', exact: true }).click()
+  const confirmation = page.getByRole('alertdialog', { name: 'Disable this template?' })
+  await confirmation.getByRole('button', { name: 'Disable', exact: true }).click()
+  await expect(confirmation.getByRole('button', { name: 'Disable', exact: true })).toBeDisabled()
+  await expect(confirmation.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled()
+  release()
+  await expect(confirmation.getByRole('button', { name: 'Disable', exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Enable', exact: true })).toHaveCount(0)
+  expect(attempts).toBe(1)
+  await confirmation.getByRole('button', { name: 'Disable', exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
+  await page.getByRole('button', { name: 'Enable', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Disable', exact: true })).toBeVisible()
+  expect(attempts).toBe(3)
+  await expect(confirmation).toHaveCount(0)
+  await page.getByRole('button', { name: 'Disable', exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  expect(attempts).toBe(3)
 })
 
 test('adding a template checks AgentBox and opens the created record', async ({ page }) => {
