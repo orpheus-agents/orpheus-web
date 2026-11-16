@@ -15,6 +15,7 @@ import PageState from '../components/PageState.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
 import TemplateDelete from '../components/TemplateDelete.vue'
 import TemplateDescription from '../components/TemplateDescription.vue'
+import TemplateDisable from '../components/TemplateDisable.vue'
 const props = defineProps<{ id: string }>()
 const { t } = useI18n()
 const router = useRouter()
@@ -74,12 +75,19 @@ async function remove() {
               <span class="marker" :class="data.active ? 'bg-accent' : 'border border-muted'" aria-hidden="true" />{{ data.active ? t('templates.active') : t('templates.inactive') }}
             </p>
             <p class="text-sm text-muted">{{ t('templates.activeHint') }}</p>
+            <TemplateDisable
+              v-if="data.active"
+              :key="data.id"
+              :pending="busy"
+              @confirm="update({ active: false }, t('templates.disabled', { name: data.name }))"
+            />
             <button
+              v-else
               class="button"
               :disabled="busy"
-              @click="update({ active: !data.active }, t(data.active ? 'templates.disabled' : 'templates.enabled', { name: data.name }))"
+              @click="update({ active: true }, t('templates.enabled', { name: data.name }))"
             >
-              {{ data.active ? t('templates.disable') : t('templates.enable') }}
+              {{ t('templates.enable') }}
             </button>
           </section>
           <section class="panel p-5"><TemplateDelete :pending="busy" @confirm="remove" /></section>

@@ -6,12 +6,15 @@ by default. Registration checks that the alias and tag exist in the configured
 AgentBox project; a blank tag requires its `default` tag without pinning a build.
 Names accept both a short alias and `team/alias`. The API normalizes their case.
 
-The list defaults to active records. Activity and name-substring filters run on
-the server. Back/Next navigate cursor pages; the URL stores the filters, page size,
+The list defaults to active records and shows each name with its optional `:tag`,
+description and read-only activity status. Activity and name-substring filters run
+on the server. Page size and Back/Next sit below the list. Back/Next navigate cursor
+pages; the URL stores the filters, page size,
 cursor and page counter. The counter counts navigation steps rather than a fixed
 page offset. An invalid cursor offers an explicit return to the first page.
 
-Open a row to edit its description or activity, or delete it with confirmation.
+Open a row to edit its description or activity, or delete it. Disabling and deleting
+a record require confirmation; enabling it takes effect immediately.
 Deletion removes only the Orpheus catalog record. Back to templates returns to
 the last list address in the current application session, just as session cards
 do. Reloading a card resets that remembered address to the default list.

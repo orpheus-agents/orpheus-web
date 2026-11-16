@@ -33,6 +33,9 @@ it('keeps a confirmed write when an earlier poll completes late', async () => {
   const oldSignal = vi.mocked(get).mock.calls[1]![1].signal
   await wrapper.findAll('button').find((button) => button.text() === 'Disable')!.trigger('click')
   await flushPromises()
+  expect(send).not.toHaveBeenCalled()
+  await wrapper.get('[role="alertdialog"]').findAll('button').find((button) => button.text() === 'Disable')!.trigger('click')
+  await flushPromises()
   expect(oldSignal.aborted).toBe(true)
   expect(get).toHaveBeenCalledTimes(3)
   // Even a transport that delivers an aborted response must not restore active=true.
