@@ -20,25 +20,25 @@ it('builds the header and section menus from the routes', () => {
   expect(navigation).toEqual([
     { name: 'analytics', children: [] },
     { name: 'sessions', children: [] },
-    { name: 'settings', children: ['limits', 'templates'] },
+    { name: 'settings', children: ['accounts', 'profiles', 'templates'] },
   ])
 })
 
-it('opens limits under settings and drops the old address', async () => {
+it('opens accounts under settings and drops the old address', async () => {
   await router.push('/settings')
-  expect(router.currentRoute.value.fullPath).toBe('/settings/limits')
-  expect(router.currentRoute.value.meta).toMatchObject({ section: 'settings', subsection: 'limits' })
+  expect(router.currentRoute.value.fullPath).toBe('/settings/llm-accounts')
+  expect(router.currentRoute.value.meta).toMatchObject({ section: 'settings', subsection: 'accounts' })
   expect(router.resolve('/limits').name).toBe('missing')
 })
 
 it('remembers the last address of a menu item and of its section, not of a detail screen', async () => {
-  await router.push('/settings/limits?view=all')
-  expect(sectionLinks.limits).toBe('/settings/limits?view=all')
-  expect(sectionLinks.settings).toBe('/settings/limits?view=all')
+  await router.push('/settings/llm-accounts?view=all')
+  expect(sectionLinks.accounts).toBe('/settings/llm-accounts?view=all')
+  expect(sectionLinks.settings).toBe('/settings/llm-accounts?view=all')
   await router.push('/sessions?activity=inactive')
   await router.push(`/sessions/${sid}`)
   expect(sectionLinks.sessions).toBe('/sessions?activity=inactive')
-  expect(sectionLinks.settings).toBe('/settings/limits?view=all')
+  expect(sectionLinks.settings).toBe('/settings/llm-accounts?view=all')
 })
 
 it('keeps template cards and the new template form under the templates menu item', async () => {
@@ -64,8 +64,8 @@ it('titles a page with reverse breadcrumbs through its section', async () => {
   expect(document.title).toBe('New template / Templates / Settings / Orpheus')
   await router.push(`/settings/templates/${sid}`)
   expect(document.title).toBe('11111111 / Templates / Settings / Orpheus')
-  await router.push('/settings/limits')
-  expect(document.title).toBe('Limits / Settings / Orpheus')
+  await router.push('/settings/llm-accounts')
+  expect(document.title).toBe('LLM accounts / Settings / Orpheus')
   await router.push(`/sessions/${sid}`)
   expect(document.title).toBe('11111111 / Sessions / Orpheus')
   await router.push('/limits')

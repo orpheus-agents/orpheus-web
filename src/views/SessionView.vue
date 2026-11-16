@@ -18,7 +18,6 @@ import PageState from '../components/PageState.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
 import ErrorDetails from '../components/ErrorDetails.vue'
 import TokenUsageBreakdown from '../components/TokenUsageBreakdown.vue'
-const catalogs = useCatalogs()
 const { t, locale } = useI18n()
 const props = defineProps<{ sid: string; rid?: string }>()
 const sid = toRef(props, 'sid')
@@ -26,6 +25,7 @@ const journal = ref(false)
 const rid = toRef(props, 'rid')
 watch([sid, rid], () => { journal.value = false })
 const { data, run, runError, runPending, runStale, sessionPending, selected, error, pending, updatedAt, disconnected, refresh } = useSession(sid, rid)
+const catalogs = useCatalogs(() => data.value ? [data.value.configuration.agent.profile] : [])
 const template = useTemplateReference(() => data.value?.configuration.sandbox.template)
 const catalogsDisconnected = computed(() => catalogs.disconnected.value || template.disconnected.value)
 function refreshAll() {

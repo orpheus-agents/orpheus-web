@@ -2,16 +2,17 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { get, ApiError } from '../api/client'
-import { ProfileHarness, type Profiles } from '../api/generated'
+import { type Profiles } from '../api/generated'
+import { modelProfile } from '../test/fixtures'
 import { useCatalogs } from './useCatalogs'
 
 vi.mock('../api/client', async (original) => ({ ...await original<typeof import('../api/client')>(), get: vi.fn() }))
 
 let wrapper: ReturnType<typeof mount>
 let state: ReturnType<typeof useCatalogs>
-const profiles: Profiles = { items: [{ name: 'default', description: 'Research', harness: ProfileHarness.codex, model: null, instructions: '', codex: {} }] }
+const profiles: Profiles = { items: [modelProfile()], next_cursor: null, prev_cursor: null }
 function setup() {
-  wrapper = mount(defineComponent({ setup() { state = useCatalogs(); return () => null } }))
+  wrapper = mount(defineComponent({ setup() { state = useCatalogs(() => ['default', 'default']); return () => null } }))
 }
 afterEach(() => { wrapper?.unmount(); vi.resetAllMocks(); vi.useRealTimers() })
 
@@ -20,7 +21,7 @@ it('loads the profile catalog once for a page, refreshes descriptions and aborts
   setup()
   await flushPromises()
   expect(get).toHaveBeenCalledTimes(1)
-  expect(get).toHaveBeenCalledWith('/api/v1/profiles', expect.anything())
+  expect(get).toHaveBeenCalledWith('/api/v1/profiles', expect.objectContaining({ query: { name: 'default' } }))
   expect(state.profiles.value.get('default')).toBe('Research')
   expect(state.profiles.value.get('removed')).toBeUndefined()
   vi.mocked(get).mockResolvedValue({ items: [] })

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { checkLLMCatalog } from './catalogFlow'
 import { ErrorDetailCode } from '../src/api/generated'
 const saml = !!process.env.INTEGRATION_SAML
 
@@ -64,7 +65,7 @@ async function checkTemplates(page: Page, origin: string) {
   expect(missing.status()).toBe(422)
   expect((await missing.json()).error).toMatchObject({ code: 'unknown_template', details: [{ code: ErrorDetailCode.template_not_found }] })
   expect(await (await createSession(sessionKey)).json()).toEqual(acceptance)
-  await page.getByRole('link', { name: 'Limits', exact: true }).click()
+  await page.getByRole('link', { name: 'LLM accounts', exact: true }).click()
 }
 
 test('production nginx, pinned core and browser auth work together', async ({ page, request, baseURL }) => {
@@ -133,6 +134,7 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   expect(accountLimits.status()).toBe(200)
   expect((await accountLimits.json()).items[0].reset_credits_available).toBeNull()
   await checkTemplates(page, baseURL!)
+  await checkLLMCatalog(page)
   const noBearer = await page.request.post('/api/v1/sessions', { data: {} })
   expect([401, 403]).toContain(noBearer.status())
   const missing = await request.get('/api/v1/not-a-route', { headers: { Authorization: 'Bearer integration-only-key' } })
@@ -156,7 +158,7 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
     await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible()
     expect((await page.request.get('/api/v1/accounts/limits')).status()).toBe(401)
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Provider limits' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'LLM accounts' })).toBeVisible()
     await page.getByRole('button', { name: 'Sign out' }).click()
   }
 })

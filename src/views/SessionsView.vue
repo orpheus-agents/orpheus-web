@@ -6,7 +6,6 @@ import { useSessions } from '../composables/useSessions'
 import SessionsTable from '../components/SessionsTable.vue'
 import PageState from '../components/PageState.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
-const catalogs = useCatalogs()
 const { t } = useI18n()
 const {
   data,
@@ -26,6 +25,7 @@ const {
   page,
   hasCursor,
 } = useSessions()
+const catalogs = useCatalogs(() => data.value?.items.map((session) => session.configuration.agent.profile) ?? [])
 </script>
 <template>
   <div class="space-y-6">

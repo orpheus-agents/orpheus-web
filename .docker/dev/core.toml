@@ -1,26 +1,8 @@
-[profiles.default]
-description = "Default integration profile"
-harness = "codex"
-model = "fixture-model"
-[profiles.default.auth]
-mode = "api_key"
-api_key_env = "OPENAI_API_KEY"
-
-# No worker runs in this disposable stack; no credentials are read.
+# Disposable catalog records are seeded in PostgreSQL; no worker runs here.
 [credential_stores.fixture]
 type = "s3"
 bucket = "fixture-credentials"
 region = "us-east-1"
-[profiles.account]
-description = "Account integration profile"
-harness = "codex"
-model = "fixture-model"
-[profiles.account.auth]
-mode = "account"
-account_id = "fixture-account"
-store = "fixture"
-key = "fixture/auth.json"
-
 [services.development]
 name = "Development tools"
 description = "Session integration service"

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { overview, session, run, history, limits, rid, message, sid, timestamp } from '../src/test/fixtures'
+import { overview, session, run, history, limits, llmAccount, modelProfile, rid, message, sid, timestamp } from '../src/test/fixtures'
 import { BrowserAuthSessionMode, MessageEventType, RunStatus } from '../src/api/generated'
 
 export async function mockAPI(page: Page) {
@@ -13,11 +13,12 @@ export async function mockAPI(page: Page) {
       const snapshot = overview()
       data = { ...snapshot, timezone: url.searchParams.get('timezone') ?? 'UTC', namespace, namespaces: namespace ? snapshot.namespaces.filter((group) => group.namespace === namespace) : snapshot.namespaces }
     }
-    else if (url.pathname.endsWith('/profiles')) data = { items: [
-      { name: 'default', description: 'General research profile', harness: 'codex', model: 'example-model', codex: {}, instructions: '' },
-      { name: 'fast', description: 'Quick requests', harness: 'codex', model: null, codex: {}, instructions: '' },
-      { name: 'deep', description: 'Detailed research', harness: 'codex', model: null, codex: {}, instructions: '' },
-    ] }
+    else if (url.pathname.endsWith('/profiles')) {
+      const catalog = [modelProfile({ description: 'General research profile' }), modelProfile({ name: 'fast', description: 'Quick requests' }), modelProfile({ name: 'deep', description: 'Detailed research' })]
+      const name = url.searchParams.get('name')
+      data = { items: name ? catalog.filter((item) => item.name === name) : catalog, next_cursor: null, prev_cursor: null }
+    }
+    else if (url.pathname.endsWith('/llm-accounts')) data = { items: limits().items.map((item) => llmAccount({ id: item.account_id, name: item.account_id, profiles: item.profiles })), next_cursor: null, prev_cursor: null }
     else if (url.pathname.endsWith('/templates')) {
       const catalog = [{ id: '33333333-3333-4333-8333-333333333333', name: 'codex', template_name: 'codex', tag: null, description: 'Sandbox with development tools', active: true }]
       const name = url.searchParams.get('name')

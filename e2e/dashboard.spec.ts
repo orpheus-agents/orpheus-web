@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { mockAPI } from './fixtures'
-import { sid, rid, limits, run, session, timestamp } from '../src/test/fixtures'
+import { sid, rid, limits, llmAccount, run, session, timestamp } from '../src/test/fixtures'
 import { AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
@@ -167,15 +167,16 @@ test('quota states and values above 100% remain explicit', async ({ page }) => {
   data.items[0].buckets[0].primary!.used_percent = 120
   data.items[0].buckets[0].primary!.remaining_percent = 0
   data.items.push({ account_id: 'new-account', profiles: ['new'], state: AccountLimitItemState.unknown, observed_at: null, last_attempt_at: null, error_code: null, reset_credits_available: null, buckets: [] })
-  await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ json: data }))
-  await page.goto('/settings/limits')
+  await page.route('**/api/v1/llm-accounts?**', (route) => route.fulfill({ json: { items: data.items.map((item) => llmAccount({ id: item.account_id, name: item.account_id, profiles: item.profiles })), next_cursor: null, prev_cursor: null } }))
+  await page.route('**/api/v1/accounts/limits*', (route) => route.fulfill({ json: data }))
+  await page.goto('/settings/llm-accounts')
   await expect(page.getByText('120% used', { exact: true })).toBeVisible()
   await expect(page.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '0')
   await expect(page.getByText('No observation yet', { exact: true })).toBeVisible()
   await expect(page.getByText('No observation yet', { exact: true })).toHaveAttribute('title', 'No observation yet. This does not mean the quota is unused.')
   await expect(page.getByText('Stale', { exact: false })).toBeVisible()
   await expect(page.getByText('2 resets available', { exact: true })).toBeVisible()
-  await expect(page.locator('article p:has(.marker) + p')).toHaveText('2 resets available')
+  await expect(page.locator('article p[title]:has(.marker) + p')).toHaveText('2 resets available')
   await expect(page.locator('article').filter({ has: page.getByRole('heading', { name: 'new-account', exact: true }) }).getByText(/resets? available/)).toHaveCount(0)
 })
 
@@ -236,15 +237,15 @@ for (const locale of ['en', 'ru'] as const) {
     await page.addInitScript((value) => localStorage.setItem('orpheus_locale', value), locale)
     await page.clock.install()
     const data = limits()
-    await page.route('**/api/v1/accounts/limits', (route) => route.fulfill({ json: data }))
-    await page.goto('/settings/limits')
+    await page.route('**/api/v1/accounts/limits*', (route) => route.fulfill({ json: data }))
+    await page.goto('/settings/llm-accounts')
     const twoResets = locale === 'ru' ? 'Доступно 2 сброса' : '2 resets available'
     await expect(page.getByText(twoResets, { exact: true })).toBeVisible()
     for (const theme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: theme })
       await page.setViewportSize(theme === 'light' ? { width: 1440, height: 1000 } : { width: 390, height: 844 })
       await expect(page.getByText(twoResets, { exact: true })).toBeVisible()
-      await expect(page.locator('article p:has(.marker) + p')).toHaveText(twoResets)
+      await expect(page.locator('article p[title]:has(.marker) + p')).toHaveText(twoResets)
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
       await page.screenshot({ path: `test-results/resets-${locale}-${theme}.png`, fullPage: true, animations: 'disabled' })
     }
@@ -254,7 +255,7 @@ for (const locale of ['en', 'ru'] as const) {
     data.items[0].reset_credits_available = null
     await page.clock.fastForward(30_000)
     await expect(page.getByText(locale === 'ru' ? /Доступ(?:ен|но) \d+ сброс/ : /\d+ resets? available/)).toHaveCount(0)
-    await expect(page.locator('article p:has(.marker) + p')).toHaveCount(0)
+    await expect(page.locator('article p[title]:has(.marker) + p')).toHaveCount(0)
   })
 }
 
@@ -290,7 +291,7 @@ test('desktop, dark theme and narrow screens remain usable', async ({ page }) =>
   await expect(page.getByRole('table')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.getByRole('link', { name: 'Settings', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Provider limits' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'LLM accounts' })).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Settings' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: 'test-results/limits-mobile.png', fullPage: true, animations: 'disabled' })
@@ -302,18 +303,18 @@ for (const theme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: theme })
     await page.setViewportSize({ width: 1440, height: 1000 })
     await page.goto('/settings')
-    await expect(page).toHaveURL(/\/settings\/limits$/)
-    await expect(page).toHaveTitle('Limits / Settings / Orpheus')
+    await expect(page).toHaveURL(/\/settings\/llm-accounts$/)
+    await expect(page).toHaveTitle('LLM accounts / Settings / Orpheus')
     const menu = page.getByRole('navigation', { name: 'Settings' })
-    await expect(menu.getByRole('link', { name: 'Limits', exact: true })).toHaveAttribute('aria-current', 'page')
+    await expect(menu.getByRole('link', { name: 'LLM accounts', exact: true })).toHaveAttribute('aria-current', 'page')
     await expect(page.locator('.subnav-link.selected')).toHaveCSS('border-bottom-color', ink)
     await expect(page.locator('.nav-link.selected')).toHaveText('Settings')
     await page.screenshot({ path: `test-results/settings-${theme}.png`, animations: 'disabled' })
-    await page.goto('/settings/limits?view=all')
+    await page.goto('/settings/llm-accounts?view=all')
     await page.getByRole('link', { name: 'Sessions', exact: true }).click()
     await expect(menu).toHaveCount(0)
     await page.getByRole('link', { name: 'Settings', exact: true }).click()
-    await expect(page).toHaveURL(/\/settings\/limits\?view=all$/)
+    await expect(page).toHaveURL(/\/settings\/llm-accounts\?view=all$/)
   })
 }
 
@@ -348,12 +349,12 @@ test('Russian navigation, dates and page titles survive reload', async ({ page }
   await expect(page.getByText('All tests pass.', { exact: false })).toBeVisible()
   await page.screenshot({ path: 'test-results/session-ru.png', fullPage: true, animations: 'disabled' })
   await page.getByRole('link', { name: 'Настройки', exact: true }).click()
-  await expect(page.getByRole('navigation', { name: 'Настройки' }).getByRole('link', { name: 'Лимиты', exact: true })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('navigation', { name: 'Настройки' }).getByRole('link', { name: 'LLM-аккаунты', exact: true })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '66')
-  await expect(page).toHaveTitle('Лимиты / Настройки / Orpheus')
+  await expect(page).toHaveTitle('LLM-аккаунты / Настройки / Orpheus')
   await page.screenshot({ path: 'test-results/limits-ru.png', fullPage: true, animations: 'disabled' })
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Лимиты провайдера' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'LLM-аккаунты' })).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru')
 })
 
@@ -446,7 +447,7 @@ test('profile and template descriptions support hover and keyboard without openi
 })
 
 test('missing or unavailable catalog entries never hide stored names', async ({ page }) => {
-  await page.route('**/api/v1/profiles', (route) => route.fulfill({ status: 503, json: { error: { code: 'storage_unavailable', message: 'Unavailable', details: [], phase: null } } }))
+  await page.route('**/api/v1/profiles*', (route) => route.fulfill({ status: 503, json: { error: { code: 'storage_unavailable', message: 'Unavailable', details: [], phase: null } } }))
   await page.route('**/api/v1/templates', (route) => route.fulfill({ json: { items: [] } }))
   await page.goto('/sessions/' + sid)
   await expect(page.getByText('default', { exact: true })).toBeVisible()

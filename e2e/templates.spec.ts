@@ -94,7 +94,7 @@ test('activity filters drive the API and survive a reload in the URL', async ({ 
 test('the pager walks cursors and normalises the counter where the catalog begins', async ({ page }) => {
   const queries = await listRequests(page)
   await page.goto('/settings/templates')
-  const group = page.getByRole('navigation', { name: 'Template pages' })
+  const group = page.getByRole('navigation', { name: 'Catalog pages' })
   await expect(group.getByRole('button', { name: 'Back' })).toBeDisabled()
   await expect(group.getByText('Page 1')).toBeVisible()
   await group.getByRole('button', { name: 'Next' }).click()
