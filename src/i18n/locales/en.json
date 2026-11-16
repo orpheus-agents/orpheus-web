@@ -45,7 +45,8 @@
     "dismiss": "Dismiss",
     "copy": "Copy",
     "copied": "Copied to clipboard",
-    "copyFailed": "Could not copy to clipboard"
+    "copyFailed": "Could not copy to clipboard",
+    "diagnosticId": "Diagnostic ID"
   },
   "auth": {
     "login": "Sign in",

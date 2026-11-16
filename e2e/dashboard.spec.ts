@@ -1,9 +1,38 @@
 import { expect, test } from '@playwright/test'
 import { mockAPI } from './fixtures'
-import { sid, rid, limits, run, session, timestamp } from '../src/test/fixtures'
-import { AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
+import { sid, rid, limits, message, run, session, timestamp } from '../src/test/fixtures'
+import { AccountLimitItemState, ErrorPhaseAnyOf0, MessageEventType, RunEventType, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
+
+for (const source of ['snapshot', 'stream', 'message stream'] as const) {
+  test(`diagnostic ID from ${source} is copyable without links on mobile`, async ({ page, context }) => {
+    const id = '10000000-0000-4000-8000-000000000001'
+    const failed = run({ status: RunStatus.failed, error: { code: 'harness_failed', message: 'Harness rejected initialization.', phase: ErrorPhaseAnyOf0.preparation, details: [], diagnostic_id: id } })
+    let current = source === 'snapshot' ? failed : run()
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.route(`**/api/v1/sessions/${sid}/runs/${rid}`, (route) => route.fulfill({ json: current }))
+    await page.route('**/events/stream*', (route) => {
+      let event: Event
+      if (source === 'message stream') {
+        event = { type: MessageEventType.message_updated, id: '11', session_id: sid, created_at: timestamp, data: message({ error: failed.error }) }
+      } else {
+        current = failed
+        event = { type: RunEventType.run_updated, id: '11', session_id: sid, created_at: timestamp, data: failed }
+      }
+      return route.fulfill({ contentType: 'text/event-stream', body: `id: 11\nevent: ${event.type}\ndata: ${JSON.stringify(event)}\n\n` })
+    })
+    await page.goto(`/sessions/${sid}/runs/${rid}`)
+    const error = page.getByRole('alert').filter({ hasText: id })
+    await expect(error).toHaveCount(1)
+    await expect(error.getByText(id, { exact: true })).toBeVisible()
+    await expect(error.locator('a')).toHaveCount(0)
+    await error.getByRole('button', { name: 'Copy', exact: true }).click()
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(id)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  })
+}
 
 for (const locale of ['en', 'ru'] as const) {
   for (const theme of ['light', 'dark'] as const) {

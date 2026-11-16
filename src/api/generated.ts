@@ -716,6 +716,8 @@ export type components = {
         Error: {
             /** Code */
             code: string;
+            /** @description Identifier of the internal diagnostic log for this error, when available. It does not grant access to logs. */
+            diagnostic_id?: string | null;
             /** Details */
             details: components["schemas"]["ErrorDetail"][];
             /**

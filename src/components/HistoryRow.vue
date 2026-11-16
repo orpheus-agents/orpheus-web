@@ -6,6 +6,7 @@ import { commandLine, entity, type HistoryItem } from '../events/history'
 import RelativeTime from './RelativeTime.vue'
 import StatusBadge from './StatusBadge.vue'
 import ResultOutput from './ResultOutput.vue'
+import ErrorDetails from './ErrorDetails.vue'
 const RichText = defineAsyncComponent(() => import('./RichText.vue'))
 const CodeBlock = defineAsyncComponent(() => import('./CodeBlock.vue'))
 const props = defineProps<{ item: HistoryItem }>()
@@ -39,9 +40,7 @@ const exitCode = computed(() => {
       <p v-if="item.message.delivery_status" class="mt-2 font-mono text-xs text-muted">
         {{ t(`delivery.${item.message.delivery_status}`) }}
       </p>
-      <p v-if="item.message.error" class="mt-2 text-xs text-danger-ink">
-        {{ item.message.error.code }}: {{ item.message.error.message }}
-      </p>
+      <ErrorDetails v-if="item.message.error" class="mt-2" :error="item.message.error" />
     </template>
     <template v-else>
       <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
