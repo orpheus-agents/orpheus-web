@@ -17,25 +17,25 @@ async function header(path: string, ready = true) {
 const menu = (label: string) => wrapper.find(`nav[aria-label="${label}"]`)
 
 it('selects the section of the current screen and shows its menu', async () => {
-  await header('/settings/limits?view=all')
+  await header('/settings/llm-accounts?view=all')
   const items = menu('Main navigation').findAll('a')
   expect(items.map((item) => item.text())).toEqual(['Analytics', 'Sessions', 'Settings'])
   expect(items[2].classes()).toContain('selected')
-  expect(items[2].attributes('href')).toBe('/settings/limits?view=all')
+  expect(items[2].attributes('href')).toBe('/settings/llm-accounts?view=all')
   const sub = menu('Settings').findAll('a')
-  expect(sub.map((item) => item.text())).toEqual(['Limits', 'Templates'])
+  expect(sub.map((item) => item.text())).toEqual(['LLM accounts', 'Profiles', 'Templates'])
   expect(sub[1].classes()).not.toContain('selected')
   expect(sub[1].attributes('aria-current')).toBeUndefined()
   expect(sub[0].classes()).toContain('selected')
   expect(sub[0].attributes('aria-current')).toBe('page')
-  expect(sub[0].attributes('href')).toBe('/settings/limits?view=all')
+  expect(sub[0].attributes('href')).toBe('/settings/llm-accounts?view=all')
 })
 
 it('keeps the menu item selected on a template card', async () => {
   await header('/settings/templates/11111111-1111-4111-8111-111111111111')
   const sub = menu('Settings').findAll('a')
   expect(sub.filter((item) => item.classes('selected')).map((item) => item.text())).toEqual(['Templates'])
-  expect(sub[1].attributes('aria-current')).toBe('page')
+  expect(sub[2].attributes('aria-current')).toBe('page')
 })
 
 it('keeps the section selected on a detail screen and hides the menu of a section without items', async () => {
@@ -46,6 +46,6 @@ it('keeps the section selected on a detail screen and hides the menu of a sectio
 })
 
 it('shows no navigation until the session is ready', async () => {
-  await header('/settings/limits', false)
+  await header('/settings/llm-accounts', false)
   expect(wrapper.find('nav').exists()).toBe(false)
 })

@@ -1,19 +1,27 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { AccountLimitItemState, type AccountLimitItem } from '../api/generated'
+import { AccountLimitItemState, LLMAccountAuth_mode, type AccountLimitItem, type LlmAccount } from '../api/generated'
 import type { CatalogDescriptions } from '../composables/useCatalogs'
 import { formatNumber } from '../format'
 import DescribedName from './DescribedName.vue'
 import LimitWindow from './LimitWindow.vue'
 import RelativeTime from './RelativeTime.vue'
 
-const props = defineProps<{ account: AccountLimitItem; profiles?: CatalogDescriptions }>()
+const props = defineProps<{ account?: AccountLimitItem; limitsPending?: boolean; limitsFailed?: boolean; record: LlmAccount; profiles?: CatalogDescriptions }>()
+const router = useRouter()
+function open(event: MouseEvent) {
+  if ((event.target as HTMLElement).closest('a, button, input, label') || window.getSelection()?.toString()) return
+  const to = router.resolve({ name: 'account', params: { id: props.record.id } })
+  if (event.metaKey || event.ctrlKey) window.open(to.href, '_blank', 'noopener')
+  else void router.push(to)
+}
 const { t, locale } = useI18n()
 // One indicator in the corner: the marker carries freshness, the text the observation time or why there is none.
 // The reset count sits right under it, so a stale count is read together with its staleness.
 const indicator = computed(() => {
-  switch (props.account.state) {
+  switch (props.account?.state) {
     case AccountLimitItemState.fresh:
       return { marker: 'bg-accent', text: 'text-accent-ink', label: null }
     case AccountLimitItemState.stale:
@@ -26,13 +34,14 @@ const indicator = computed(() => {
 })
 </script>
 <template>
-  <article class="panel p-6">
+  <article class="panel cursor-pointer p-6 transition hover:border-ink" @click="open">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h2 class="font-mono text-base font-semibold">{{ account.account_id }}</h2>
-        <p class="mt-1 font-mono text-xs text-muted">{{ t('limits.profiles') }}: <template v-for="(profile, index) in account.profiles" :key="profile">{{ index ? ', ' : '' }}<DescribedName :name="profile" :description="profiles?.get(profile)" /></template></p>
+        <h2 class="font-mono text-base font-semibold"><RouterLink :to="{ name: 'account', params: { id: record.id } }" class="text-accent-ink hover:underline">{{ record.name }}</RouterLink></h2>
+        <p class="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted"><span class="marker" :class="record.active ? 'bg-accent' : 'border border-muted'" aria-hidden="true" />{{ record.active ? t('templates.active') : t('templates.inactive') }} · {{ record.harness }} · {{ t(`accounts.mode.${record.auth_mode}`) }}</p>
+        <p class="mt-1 font-mono text-xs text-muted">{{ t('limits.profiles') }}: <template v-for="(profile, index) in record.profiles" :key="profile">{{ index ? ', ' : '' }}<DescribedName :name="profile" :description="profiles?.get(profile)" /></template></p>
       </div>
-      <div class="font-mono text-xs sm:text-right">
+      <div v-if="account" class="font-mono text-xs sm:text-right">
         <p class="flex items-center gap-2 whitespace-nowrap leading-6 sm:justify-end" :class="indicator.text" :title="t(`limits.state.${account.state}`)">
           <span class="marker" :class="indicator.marker" aria-hidden="true" />{{ indicator.label
           }}<template v-if="account.observed_at"><template v-if="indicator.label"> · </template><RelativeTime :timestamp="account.observed_at" /></template>
@@ -42,11 +51,11 @@ const indicator = computed(() => {
         </p>
       </div>
     </div>
-    <p v-if="account.error_code" class="mt-4 text-sm text-danger-ink">
+    <p v-if="account?.error_code" class="mt-4 text-sm text-danger-ink">
       {{ t(`limits.errors.${account.error_code}`) }}
       <span v-if="account.last_attempt_at">{{ t('limits.attempt') }} <RelativeTime :timestamp="account.last_attempt_at" /></span>
     </p>
-    <div v-if="account.buckets.length" class="mt-5 space-y-5">
+    <div v-if="account?.buckets.length" class="mt-5 space-y-5">
       <section v-for="bucket in account.buckets" :key="bucket.limit_id">
         <div class="mb-3 flex flex-wrap items-baseline gap-3">
           <h3 class="text-sm font-medium">{{ bucket.limit_name ?? bucket.limit_id }}</h3>
@@ -71,5 +80,6 @@ const indicator = computed(() => {
         </div>
       </section>
     </div>
+    <p v-if="!account" class="mt-4 text-sm text-muted">{{ t(record.auth_mode === LLMAccountAuth_mode.api_key ? 'accounts.noLimits' : limitsPending ? 'accounts.loadingLimits' : limitsFailed ? 'accounts.limitsFailed' : 'limits.noObservation') }}</p>
   </article>
 </template>

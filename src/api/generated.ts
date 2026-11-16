@@ -8,11 +8,131 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * List configured profiles
-         * @description Returns the complete catalog sorted by name from local configuration. No provider or credential lookups are performed.
+         * List profiles
+         * @description Database catalog ordered by (name, id), with filters bound to forward/backward cursors. Changes apply to new sessions; accepted sessions retain their account and execution snapshot.
          */
         get: operations["get_profiles"];
         put?: never;
+        /** Create profile */
+        post: operations["create_profile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** Read profile */
+        get: operations["get_profile"];
+        put?: never;
+        post?: never;
+        /** Delete profile */
+        delete: operations["delete_profile"];
+        options?: never;
+        head?: never;
+        /** Update profile */
+        patch: operations["update_profile"];
+        trace?: never;
+    };
+    "/api/v1/llm-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List llm-accounts
+         * @description Database catalog ordered by (name, id), with filters bound to forward/backward cursors. Changes apply to new sessions; accepted sessions retain their account and execution snapshot.
+         */
+        get: operations["get_llm_accounts"];
+        put?: never;
+        /** Create llm account */
+        post: operations["create_llm_account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/llm-accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** Read llm account */
+        get: operations["get_llm_account"];
+        put?: never;
+        post?: never;
+        /** Delete llm account */
+        delete: operations["delete_llm_account"];
+        options?: never;
+        head?: never;
+        /** Update llm account */
+        patch: operations["update_llm_account"];
+        trace?: never;
+    };
+    "/api/v1/credential-stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List configured credential store names */
+        get: operations["get_credential_stores"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/llm-accounts/{id}/api-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace an account API key */
+        put: operations["replace_api_key"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/llm-accounts/{id}/auth-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** Read the account authorization file */
+        get: operations["get_auth_file"];
+        /** Conditionally replace the account authorization file */
+        put: operations["replace_auth_file"];
         post?: never;
         delete?: never;
         options?: never;
@@ -99,7 +219,7 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Current provider limits by configured account
+         * Current provider limits by account
          * @description Read-only snapshot from worker observations. Does not contact the provider or refresh credentials. Responses use Cache-Control no-store.
          */
         get: operations["get_account_limits"];
@@ -440,15 +560,6 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
     schemas: {
-        Profile: {
-            name: string;
-            description: string | null;
-            /** @enum {string} */
-            harness: ProfileHarness;
-            model: string | null;
-            codex: components["schemas"]["CodexProfile"];
-            instructions: string;
-        };
         CodexProfile: {
             /** @enum {string} */
             effort?: CodexProfileEffort;
@@ -458,8 +569,110 @@ export type components = {
             personality?: CodexProfilePersonality;
             service_tier?: string;
         };
+        Profile: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string | null;
+            /** @enum {string} */
+            harness: ProfileHarness;
+            /** Format: uuid */
+            account_id: string;
+            account_name: string;
+            account_active: boolean;
+            active: boolean;
+            available: boolean;
+            model: string;
+            codex: components["schemas"]["CodexProfile"];
+            instructions: string;
+        };
         Profiles: {
             items: components["schemas"]["Profile"][];
+            next_cursor: string | null;
+            prev_cursor: string | null;
+        };
+        CreateProfile: {
+            name: string;
+            /** Format: uuid */
+            account_id: string;
+            description?: string | null;
+            model: string;
+            instructions?: string;
+            codex?: components["schemas"]["CodexProfile"];
+            /** @default true */
+            active: boolean;
+        };
+        UpdateProfile: {
+            /** Format: uuid */
+            account_id?: string;
+            description?: string | null;
+            model?: string;
+            instructions?: string;
+            codex?: {
+                /** @enum {string|null} */
+                effort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max" | "ultra" | null;
+                /** @enum {string|null} */
+                summary?: "auto" | "concise" | "detailed" | "none" | null;
+                /** @enum {string|null} */
+                personality?: "none" | "friendly" | "pragmatic" | null;
+                service_tier?: string | null;
+            } | null;
+            active?: boolean;
+        };
+        LLMAccount: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            harness: LLMAccountHarness;
+            /** @enum {string} */
+            auth_mode: LLMAccountAuth_mode;
+            active: boolean;
+            credential_store: string | null;
+            profiles: string[];
+        };
+        LLMAccountDetails: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            harness: LLMAccountDetailsHarness;
+            /** @enum {string} */
+            auth_mode: LLMAccountDetailsAuth_mode;
+            active: boolean;
+            credential_store: string | null;
+            profiles: string[];
+            api_key_mask: string | null;
+        };
+        LLMAccounts: {
+            items: components["schemas"]["LLMAccount"][];
+            next_cursor: string | null;
+            prev_cursor: string | null;
+        };
+        AuthFile: {
+            [key: string]: unknown;
+        };
+        CreateLLMAccount: {
+            name: string;
+            /** @enum {string} */
+            harness: CreateLLMAccountHarness;
+            /** @enum {string} */
+            auth_mode: CreateLLMAccountAuth_mode;
+            /** @default true */
+            active: boolean;
+            credential_store?: string;
+            auth_file?: components["schemas"]["AuthFile"];
+            api_key?: string;
+        };
+        UpdateLLMAccount: {
+            name?: string;
+            active?: boolean;
+        };
+        ReplaceAPIKey: {
+            api_key: string;
+        };
+        CredentialStores: {
+            items: string[];
         };
         Template: {
             /** Format: uuid */
@@ -1275,9 +1488,19 @@ export type components = {
     headers: never;
     pathItems: never;
 };
-export type Profile = components['schemas']['Profile'];
 export type CodexProfile = components['schemas']['CodexProfile'];
+export type Profile = components['schemas']['Profile'];
 export type Profiles = components['schemas']['Profiles'];
+export type CreateProfile = components['schemas']['CreateProfile'];
+export type UpdateProfile = components['schemas']['UpdateProfile'];
+export type LlmAccount = components['schemas']['LLMAccount'];
+export type LlmAccountDetails = components['schemas']['LLMAccountDetails'];
+export type LlmAccounts = components['schemas']['LLMAccounts'];
+export type AuthFile = components['schemas']['AuthFile'];
+export type CreateLlmAccount = components['schemas']['CreateLLMAccount'];
+export type UpdateLlmAccount = components['schemas']['UpdateLLMAccount'];
+export type ReplaceApiKey = components['schemas']['ReplaceAPIKey'];
+export type CredentialStores = components['schemas']['CredentialStores'];
 export type Template = components['schemas']['Template'];
 export type Templates = components['schemas']['Templates'];
 export type CreateTemplate = components['schemas']['CreateTemplate'];
@@ -1341,14 +1564,24 @@ export type $defs = Record<string, never>;
 export interface operations {
     get_profiles: {
         parameters: {
-            query?: never;
+            query?: {
+                active?: boolean;
+                /** @description Exact case-sensitive name. Incompatible with name_contains. */
+                name?: string;
+                /** @description Literal case-insensitive substring. Incompatible with name. */
+                name_contains?: string;
+                limit?: number;
+                cursor?: string;
+                /** @description Profile and account activity combined. */
+                available?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Configured profiles */
+            /** @description List profiles */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1357,8 +1590,8 @@ export interface operations {
                     "application/json": components["schemas"]["Profiles"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1366,8 +1599,423 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Authentication temporarily unavailable */
-            503: {
+        };
+    };
+    create_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProfile"];
+            };
+        };
+        responses: {
+            /** @description Create profile */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delete profile */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfile"];
+            };
+        };
+        responses: {
+            /** @description Update profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_llm_accounts: {
+        parameters: {
+            query?: {
+                active?: boolean;
+                /** @description Exact case-sensitive name. Incompatible with name_contains. */
+                name?: string;
+                /** @description Literal case-insensitive substring. Incompatible with name. */
+                name_contains?: string;
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List llm-accounts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMAccounts"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_llm_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLLMAccount"];
+            };
+        };
+        responses: {
+            /** @description Create llm account */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMAccountDetails"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_llm_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read llm account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMAccountDetails"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_llm_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delete llm account */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_llm_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLLMAccount"];
+            };
+        };
+        responses: {
+            /** @description Update llm account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMAccountDetails"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_credential_stores: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List configured credential store names */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CredentialStores"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    replace_api_key: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceAPIKey"];
+            };
+        };
+        responses: {
+            /** @description Replace an account API key */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_auth_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read the account authorization file */
+            200: {
+                headers: {
+                    ETag: string;
+                    "Cache-Control": "no-store";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthFile"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    replace_auth_file: {
+        parameters: {
+            query?: never;
+            header: {
+                "If-Match": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthFile"];
+            };
+        };
+        responses: {
+            /** @description Conditionally replace the account authorization file */
+            204: {
+                headers: {
+                    ETag: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1582,7 +2230,10 @@ export interface operations {
     };
     get_account_limits: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Comma-separated account UUIDs. Omit to read all account-file identities. */
+                account_ids?: string[];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1609,6 +2260,15 @@ export interface operations {
             };
             /** @description Account limits unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Invalid input (422), unauthorized (401), forbidden origin (403), missing record (404), conflict (409), or unavailable storage (503). */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3089,9 +3749,6 @@ export enum PathsApiV1SessionsSidRunsGetParametersQueryOrder {
     asc = "asc",
     desc = "desc"
 }
-export enum ProfileHarness {
-    codex = "codex"
-}
 export enum CodexProfileEffort {
     none = "none",
     minimal = "minimal",
@@ -3112,6 +3769,30 @@ export enum CodexProfilePersonality {
     none = "none",
     friendly = "friendly",
     pragmatic = "pragmatic"
+}
+export enum ProfileHarness {
+    codex = "codex"
+}
+export enum LLMAccountHarness {
+    codex = "codex"
+}
+export enum LLMAccountAuth_mode {
+    account = "account",
+    api_key = "api_key"
+}
+export enum LLMAccountDetailsHarness {
+    codex = "codex"
+}
+export enum LLMAccountDetailsAuth_mode {
+    account = "account",
+    api_key = "api_key"
+}
+export enum CreateLLMAccountHarness {
+    codex = "codex"
+}
+export enum CreateLLMAccountAuth_mode {
+    account = "account",
+    api_key = "api_key"
 }
 export enum AccountLimitItemState {
     unknown = "unknown",
@@ -3159,7 +3840,10 @@ export enum ErrorDetailCode {
     template_not_found = "template_not_found",
     template_inactive = "template_inactive",
     template_forbidden = "template_forbidden",
-    tag_not_found = "tag_not_found"
+    tag_not_found = "tag_not_found",
+    profile_not_found = "profile_not_found",
+    profile_inactive = "profile_inactive",
+    account_inactive = "account_inactive"
 }
 export enum HookResultName {
     after_create = "after_create",

@@ -1,4 +1,4 @@
-import { AccountLimitItemState, AnalyticsOverviewBucket, RunStatus, SandboxStateState, MessageRole, MessageItemType, ToolItemType, ToolCallStatus, ToolCallOutput_completeness, TextResultType, type Session, type Run, type AnalyticsOverview, type StatusCounts, type HistoryPage, type Message, type AccountLimits, type Template } from '../api/generated'
+import { LLMAccountHarness, LLMAccountAuth_mode, ProfileHarness, type LlmAccount, type Profile, AccountLimitItemState, AnalyticsOverviewBucket, RunStatus, SandboxStateState, MessageRole, MessageItemType, ToolItemType, ToolCallStatus, ToolCallOutput_completeness, TextResultType, type Session, type Run, type AnalyticsOverview, type StatusCounts, type HistoryPage, type Message, type AccountLimits, type Template } from '../api/generated'
 
 export const sid = '11111111-1111-4111-8111-111111111111'
 export const rid = '22222222-2222-4222-8222-222222222222'
@@ -49,4 +49,11 @@ export const templateId = '33333333-3333-4333-8333-333333333333'
 export function template(overrides: Partial<Template> = {}): Template {
   const base = { id: templateId, template_name: 'orpheus-codex', tag: null, description: 'Corporate Codex environment', active: true, ...overrides }
   return { ...base, name: base.tag ? `${base.template_name}:${base.tag}` : base.template_name, ...overrides }
+}
+
+export function llmAccount(overrides: Partial<LlmAccount> = {}): LlmAccount {
+  return { id: sid, name: 'Team account', harness: LLMAccountHarness.codex, auth_mode: LLMAccountAuth_mode.account, active: true, credential_store: 'main', profiles: ['default', 'deep'], ...overrides }
+}
+export function modelProfile(overrides: Partial<Profile> = {}): Profile {
+  return { id: rid, name: 'default', description: 'Research', harness: ProfileHarness.codex, model: 'gpt-test', instructions: '', codex: {}, account_id: sid, account_name: 'Team account', account_active: true, active: true, available: true, ...overrides }
 }

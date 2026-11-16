@@ -44,7 +44,7 @@ export async function get<P extends GetPath>(path: P, options: {
   return response.json() as Promise<Response<P>>
 }
 
-type WriteMethod = 'post' | 'patch' | 'delete'
+type WriteMethod = 'post' | 'patch' | 'put' | 'delete'
 type WriteOperation<P extends keyof paths, M extends WriteMethod> = NonNullable<paths[P][M]>
 type WritePath<M extends WriteMethod> = { [P in keyof paths]: [paths[P][M]] extends [never | undefined] ? never : P }[keyof paths]
 type Body<O> = O extends { requestBody: { content: { 'application/json': infer B } } } ? B : never

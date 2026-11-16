@@ -1,19 +1,19 @@
 import { afterEach, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { AccountLimitItemError_codeAnyOf0, AccountLimitItemState, type AccountLimitItem } from '../api/generated'
+import { AccountLimitItemError_codeAnyOf0, AccountLimitItemState, LLMAccountAuth_mode, type AccountLimitItem } from '../api/generated'
 import { createTestI18n } from '../test/i18n'
-import { limits } from '../test/fixtures'
+import { limits, llmAccount } from '../test/fixtures'
 import AccountLimitsCard from './AccountLimitsCard.vue'
 
 const wrappers: ReturnType<typeof mount>[] = []
 function render(account: AccountLimitItem, locale: 'en' | 'ru' = 'en') {
-  const wrapper = mount(AccountLimitsCard, { props: { account }, global: { plugins: [createTestI18n(locale)] } })
+  const wrapper = mount(AccountLimitsCard, { props: { account, record: llmAccount() }, global: { plugins: [createTestI18n(locale)], stubs: { RouterLink: { template: '<a><slot /></a>' } } } })
   wrappers.push(wrapper)
   return wrapper
 }
 // The freshness line carries the marker; a known reset count is the next line in the same corner.
 function freshness(wrapper: ReturnType<typeof mount>) {
-  return wrapper.findAll('p').find((p) => p.find('.marker').exists())!
+  return wrapper.findAll('p').find((p) => p.find('.marker').exists() && p.attributes('title'))!
 }
 function indicator(wrapper: ReturnType<typeof mount>) {
   const element = freshness(wrapper)
@@ -62,7 +62,7 @@ it('puts a known reset count right under the freshness marker', () => {
 
   expect(indicator(wrapper).marker).toBe('bg-accent')
   expect(resets(wrapper)).toEqual({ text: 'Доступно 2 сброса', tone: 'text-ink' })
-  expect(wrapper.find('h2 + p').text()).toBe('Профили: default, deep')
+  expect(wrapper.find('h2 + p + p').text()).toBe('Профили: default, deep')
 })
 
 it.each([
@@ -107,4 +107,18 @@ it.each(['en', 'ru'] as const)('hides null reset counts and restores a confirmed
   expect(resets(wrapper)).toBeNull()
   await wrapper.setProps({ account: { ...fresh(), reset_credits_available: 0 } })
   expect(resets(wrapper)?.text).toBe(locale === 'ru' ? 'Доступно 0 сбросов' : '0 resets available')
+})
+
+it('distinguishes a pending or failed quota request from an API-key account', async () => {
+  const wrapper = render(fresh())
+  await wrapper.setProps({ account: undefined, limitsPending: true })
+  expect(wrapper.text()).toContain('Loading limits…')
+  expect(wrapper.text()).not.toContain('No observation yet')
+  await wrapper.setProps({ limitsPending: false, limitsFailed: true })
+  expect(wrapper.text()).toContain('Could not load limits.')
+  expect(wrapper.text()).not.toContain('No observation yet')
+  await wrapper.setProps({ limitsFailed: false })
+  expect(wrapper.text()).toContain('No observation yet')
+  await wrapper.setProps({ limitsFailed: true, record: llmAccount({ auth_mode: LLMAccountAuth_mode.api_key }) })
+  expect(wrapper.text()).not.toContain('Could not load limits.')
 })

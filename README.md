@@ -14,7 +14,7 @@ Vue 3, TypeScript, Vite and Tailwind CSS 4 through `@tailwindcss/vite`.
 
 - **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime, an hourly/daily activity chart and ranked runs, tokens and run time per namespace, where a namespace click filters the page.
 - **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state. Session details show whether only one run is allowed or the session can continue. Sandbox cleanup state and errors remain separate from the run result.
-- **Settings:** provider limits and the [sandbox template catalog](docs/templates.md).
+- **Settings:** [LLM accounts, provider limits and model profiles](docs/llm-catalog.md), plus the [sandbox template catalog](docs/templates.md).
 
 Profile and template names show current descriptions on hover or keyboard focus.
 Catalog failures do not block session data; stored names remain visible when an
@@ -145,7 +145,7 @@ src/i18n/         English/Russian translations and completeness tests
 ```
 
 Polling runs every 5 seconds on visible analytics/session pages and every 30 seconds
-on limits. Requests run serially, back off after failures and abort on filter/route
+on account limits and catalogs. Requests run serially, back off after failures and abort on filter/route
 changes, hidden tabs or unmount. A failed refresh retains the previous data and
 shows a reconnecting indicator. The first failed load offers a retry.
 Changing filters, pages or the selected run keeps the previous result on screen, dimmed,

@@ -6,7 +6,7 @@ defineEmits<{ previous: [cursor: string]; next: [cursor: string] }>()
 const { t } = useI18n()
 </script>
 <template>
-  <nav class="flex items-center gap-3" :aria-label="t('templates.pages')">
+  <nav class="flex items-center gap-3" :aria-label="t('catalog.pages')">
     <button class="button" :disabled="!previousCursor || pending" @click="previousCursor && $emit('previous', previousCursor)">
       {{ t('templates.previous') }}
     </button>
