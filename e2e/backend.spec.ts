@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { ErrorDetailCode } from '../src/api/generated'
 const saml = !!process.env.INTEGRATION_SAML
 
 async function checkTemplates(page: Page, origin: string) {
@@ -23,6 +24,14 @@ async function checkTemplates(page: Page, origin: string) {
   expect(record).toMatchObject({ template_name: 'team/codex', tag: 'v1', active: true })
   const path = `/api/v1/templates/${record.id}`
   await expect(page.getByRole('heading', { name: 'team/codex:v1', exact: true })).toBeVisible()
+  const createSession = (key = crypto.randomUUID()) => page.request.post('/api/v1/sessions', {
+    headers: { Authorization: 'Bearer integration-only-key', 'Idempotency-Key': key },
+    data: { configuration: { agent: { profile: 'default' }, sandbox: { template: 'team/codex:v1' } }, messages: [{ text: 'New catalog template' }] },
+  })
+  const sessionKey = crypto.randomUUID()
+  const accepted = await createSession(sessionKey)
+  expect(accepted.status()).toBe(202)
+  const acceptance = await accepted.json()
 
   // Browser mutations use the real cookie/anonymous boundary, with no injected bearer key.
   const wrongOrigin = await page.request.patch(path, { headers: { Origin: 'https://wrong.example.test', 'X-Orpheus-CSRF': '1' }, data: { active: false } })
@@ -37,6 +46,10 @@ async function checkTemplates(page: Page, origin: string) {
   await page.getByRole('alertdialog', { name: 'Disable this template?' }).getByRole('button', { name: 'Disable', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Enable', exact: true })).toBeVisible()
   expect((await (await page.request.get(path)).json()).active).toBe(false)
+  const inactive = await createSession()
+  expect(inactive.status()).toBe(422)
+  expect((await inactive.json()).error).toMatchObject({ code: 'unknown_template', details: [{ code: ErrorDetailCode.template_inactive }] })
+  expect(await (await createSession(sessionKey)).json()).toEqual(acceptance)
   await page.getByRole('link', { name: 'Back to templates', exact: true }).click()
   const link = page.getByRole('link', { name: 'team/codex:v1', exact: true })
   await expect(page.getByRole('link', { name: 'codex', exact: true })).toBeVisible()
@@ -47,6 +60,10 @@ async function checkTemplates(page: Page, origin: string) {
   await page.getByRole('button', { name: 'Delete record', exact: true }).click()
   await expect(page).toHaveURL(/\/settings\/templates\?active=false$/)
   expect((await page.request.get(path)).status()).toBe(404)
+  const missing = await createSession()
+  expect(missing.status()).toBe(422)
+  expect((await missing.json()).error).toMatchObject({ code: 'unknown_template', details: [{ code: ErrorDetailCode.template_not_found }] })
+  expect(await (await createSession(sessionKey)).json()).toEqual(acceptance)
   await page.getByRole('link', { name: 'Limits', exact: true }).click()
 }
 

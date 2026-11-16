@@ -29,13 +29,13 @@ export type paths = {
         };
         /**
          * List registered templates
-         * @description Database catalog ordered by (name, id). Filters are bound to opaque forward/backward cursors; no provider calls. This catalog does not yet replace TOML validation of new sessions.
+         * @description Database catalog ordered by (name, id). Filters are bound to opaque forward/backward cursors; no provider calls. New sessions require an exact active name from this catalog. Changes do not affect accepted sessions or idempotent replays.
          */
         get: operations["get_templates"];
         put?: never;
         /**
          * Register an own-project AgentBox template
-         * @description Requires successful alias and tag lookups. Browser writes require the configured Origin and X-Orpheus-CSRF header set to 1. Session admission remains governed by TOML.
+         * @description Requires successful alias and tag lookups. Browser writes require the configured Origin and X-Orpheus-CSRF header set to 1. Active records become available to new sessions immediately, without restarting API or worker.
          */
         post: operations["create_template"];
         delete?: never;
@@ -716,6 +716,8 @@ export type components = {
         Error: {
             /** Code */
             code: string;
+            /** @description Identifier of the internal diagnostic log for this error, when available. It does not grant access to logs. */
+            diagnostic_id?: string | null;
             /** Details */
             details: components["schemas"]["ErrorDetail"][];
             /**
@@ -1066,7 +1068,10 @@ export type components = {
             services?: components["schemas"]["ServiceCodes"];
             /** Env From */
             env_from?: string[];
-            /** Template */
+            /**
+             * Template
+             * @description Exact active catalog name, including any team slug and tag. Missing or inactive records return 422 unknown_template with detail code template_not_found or template_inactive. Accepted sessions and idempotent replays keep their stored name regardless of subsequent catalog changes.
+             */
             template: string;
         };
         /** SandboxState */
@@ -3152,6 +3157,7 @@ export enum ErrorDetailCode {
     invalid_value = "invalid_value",
     unknown_field = "unknown_field",
     template_not_found = "template_not_found",
+    template_inactive = "template_inactive",
     template_forbidden = "template_forbidden",
     tag_not_found = "tag_not_found"
 }
