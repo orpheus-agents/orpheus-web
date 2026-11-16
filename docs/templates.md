@@ -23,6 +23,8 @@ SAML users and local anonymous users can manage records. Browser writes use the
 same-origin cookie session and CSRF header; configure `ORPHEUS_PUBLIC_URL` to the
 exact browser origin. No API key is stored in the browser.
 
-Space requires an active catalog record for creation, editing and resume of a
-schedule. During the current rollout, Orpheus session admission and workers still
-use TOML: keep the runtime template entries until the separate runtime migration.
+New sessions require an exact active name from the database catalog. Disabling or
+deleting a record blocks new sessions with that name. Already accepted sessions,
+including queued work and continuation, keep their stored configuration.
+Catalog changes take effect without restarting API or worker. Templates are no
+longer registered in TOML.

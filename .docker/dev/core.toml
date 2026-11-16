@@ -1,6 +1,3 @@
-[templates.codex]
-description = "Integration sandbox"
-
 [profiles.default]
 description = "Default integration profile"
 harness = "codex"
