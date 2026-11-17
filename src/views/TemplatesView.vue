@@ -25,11 +25,11 @@ const { data, error, pending, stale, updatedAt, disconnected, refresh, filters, 
       </template>
     </i18n-t>
     <div class="flex flex-wrap items-end gap-3">
-      <div class="inline-flex border border-ink" role="group" :aria-label="t('templates.activity.label')">
+      <div class="segmented-control" role="group" :aria-label="t('templates.activity.label')">
         <button
           v-for="activity in TEMPLATE_ACTIVITY"
           :key="activity"
-          class="caps h-10 px-5 font-semibold transition"
+          class="caps px-5 font-semibold transition"
           :class="state.activity === activity ? 'bg-ink text-surface' : 'text-muted hover:text-ink'"
           :aria-pressed="state.activity === activity"
           @click="list.changeActivity(activity)"
