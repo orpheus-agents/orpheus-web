@@ -19,6 +19,8 @@ export async function mockAPI(page: Page) {
       data = { items: name ? catalog.filter((item) => item.name === name) : catalog, next_cursor: null, prev_cursor: null }
     }
     else if (url.pathname.endsWith('/llm-accounts')) data = { items: limits().items.map((item) => llmAccount({ id: item.account_id, name: item.account_id, profiles: item.profiles })), next_cursor: null, prev_cursor: null }
+    else if (/\/llm-accounts\/[^/]+$/.test(url.pathname)) data = { ...llmAccount(), credential_store: 'local', api_key_mask: null }
+    else if (/\/profiles\/[^/]+$/.test(url.pathname)) data = modelProfile()
     else if (url.pathname.endsWith('/templates')) {
       const catalog = [{ id: '33333333-3333-4333-8333-333333333333', name: 'codex', template_name: 'codex', tag: null, description: 'Sandbox with development tools', active: true }]
       const name = url.searchParams.get('name')

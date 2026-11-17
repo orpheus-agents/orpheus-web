@@ -6,6 +6,7 @@ import { LLMAccountDetailsAuth_mode, LLMAccountDetailsHarness, type LlmAccountDe
 import { createTestI18n } from '../test/i18n'
 import AccountAuthEditor from './AccountAuthEditor.vue'
 
+vi.mock('./JsonField.vue', () => ({ __esModule: true, default: { props: ['modelValue'], emits: ['update:modelValue'], template: '<textarea :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />' } }))
 vi.mock('../composables/useToasts', () => ({ useToasts: () => ({ push: vi.fn() }) }))
 vi.mock('../api/accountAuth', () => ({ readAuthFile: vi.fn(), writeAuthFile: vi.fn() }))
 vi.mock('../api/client', async (original) => ({ ...await original<typeof import('../api/client')>(), send: vi.fn() }))

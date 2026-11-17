@@ -1,19 +1,48 @@
 <script setup lang="ts">
+import { computed, useId } from 'vue'
+import { UserRound } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useAccountOptions } from '../composables/useAccountOptions'
-import RefreshStatus from './RefreshStatus.vue'
-const id = defineModel<string>({ required: true })
+import HeaderMenu from './HeaderMenu.vue'
+const accountId = defineModel<string>({ required: true })
 defineProps<{ error?: string }>()
 const { t } = useI18n()
-const { search, page, selected, options, apply, move } = useAccountOptions(() => id.value)
+const id = useId()
+const { options, selected, current } = useAccountOptions(() => accountId.value)
+const choices = computed(() => options.items.value.map((item) => ({
+  value: item.id, label: item.name, note: item.id.slice(0, 8) + (item.active ? '' : ` · ${t('templates.inactive')}`),
+})))
+const text = computed(() => current.value ? `${current.value.name} · ${current.value.id.slice(0, 8)}` : accountId.value ? t(selected.error.value ? 'profiles.accountUnavailable' : 'common.loading', { id: accountId.value }) : t('catalog.choose'))
+function end() { if (!options.moreError.value) void options.more() }
 </script>
 <template>
-  <div class="space-y-3">
-    <div class="flex items-center justify-between gap-3"><span class="field-label">{{ t('profiles.account') }}</span><RefreshStatus :pending="page.pending.value" :updated-at="page.updatedAt.value" :disconnected="page.disconnected.value || selected.disconnected.value" @refresh="page.refresh(); selected.refresh()" /></div>
-    <div class="flex gap-2"><input v-model="search" type="search" class="field" :aria-label="t('catalog.search')" :placeholder="t('catalog.searchPlaceholder')" @keydown.enter.prevent="apply"><button type="button" class="button" @click="apply">{{ t('filters.apply') }}</button></div>
-    <select v-model="id" class="field" :aria-label="t('profiles.account')" :aria-invalid="!!error"><option value="" disabled>{{ t('catalog.choose') }}</option><option v-if="id && !options.some((item) => item.id === id)" :value="id" disabled>{{ t('profiles.accountUnavailable', { id }) }}</option><option v-for="item in options" :key="item.id" :value="item.id">{{ item.name }} · {{ item.id.slice(0, 8) }}{{ item.active ? '' : ` · ${t('templates.inactive')}` }}</option></select>
-    <p v-if="error" class="field-error">{{ error }}</p>
-    <p v-if="selected.data.value && !selected.data.value.active" class="text-xs text-muted">{{ t('profiles.inactiveAccountHint') }}</p>
-    <div v-if="page.data.value" class="flex gap-2"><button v-if="page.data.value.prev_cursor" type="button" class="button" :disabled="page.pending.value" @click="move(page.data.value.prev_cursor)">{{ t('templates.previous') }}</button><button v-if="page.data.value.next_cursor" type="button" class="button" :disabled="page.pending.value" @click="move(page.data.value.next_cursor)">{{ t('templates.next') }}</button></div>
+  <div class="min-w-0">
+    <label :for="id" class="field-label">{{ t('profiles.account') }}</label>
+    <HeaderMenu
+      v-model="accountId" :field-id="id" :label="t('profiles.account')" :icon="UserRound"
+      :text="text" :options="choices" searchable remote :invalid="!!error" :described-by="`${id}-hint`"
+      @search="options.search" @end="end"
+    >
+      <template #footer>
+        <div class="px-3 py-2 text-sm text-muted" aria-live="polite">
+          <p v-if="options.error.value" class="flex items-center justify-between gap-2">
+            {{ t('catalog.loadFailed') }}<button type="button" class="button h-8 px-3" @click="options.reload">{{ t('common.retry') }}</button>
+          </p>
+          <p v-else-if="options.pending.value">{{ t('common.loading') }}</p>
+          <p v-else-if="options.loaded.value && !options.items.value.length">{{ t('settings.nothingFound') }}</p>
+          <p v-if="options.moreError.value">{{ t('catalog.loadFailed') }}</p>
+          <button v-if="options.next.value" type="button" class="button mt-1 h-8 w-full" :aria-busy="options.loadingMore.value" @click="options.more">
+            {{ options.loadingMore.value ? t('common.loading') : t('catalog.more') }}
+          </button>
+        </div>
+      </template>
+    </HeaderMenu>
+    <div :id="`${id}-hint`" class="mt-1 text-xs text-muted">
+      <p v-if="error" class="field-error">{{ error }}</p>
+      <p v-if="current && !current.active">{{ t('profiles.inactiveAccountHint') }}</p>
+      <p v-if="accountId && selected.error.value" class="flex items-center gap-2">
+        {{ t('catalog.loadFailed') }}<button type="button" class="text-accent-ink underline" @click="selected.refresh">{{ t('common.retry') }}</button>
+      </p>
+    </div>
   </div>
 </template>

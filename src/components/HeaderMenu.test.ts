@@ -51,3 +51,16 @@ describe('HeaderMenu', () => {
     wrapper.unmount()
   })
 })
+
+it('allows ordinary blur to leave the search instead of stealing focus back', async () => {
+  const wrapper = factory(true)
+  await wrapper.find('button[aria-haspopup]').trigger('click')
+  const search = wrapper.get('input').element as HTMLInputElement
+  expect(document.activeElement).toBe(search)
+  search.blur()
+  await wrapper.vm.$nextTick()
+  await wrapper.vm.$nextTick()
+  expect(document.activeElement).not.toBe(search)
+  expect(wrapper.get('button[aria-haspopup]').attributes('aria-expanded')).toBe('false')
+  wrapper.unmount()
+})

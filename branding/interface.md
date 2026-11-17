@@ -31,7 +31,7 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
 | Navigation, buttons | Martian Mono Condensed | 12 px | uppercase, tracking 0.08 em; active item SemiBold |
 | Table header | Martian Mono Condensed | 11 px | uppercase, `muted` |
 | Data: ids, versions, times | Martian Mono Condensed | 13 px | |
-| Code, commands, tool output, front matter | JetBrains Mono | 12 px | content, not UI; loaded from npm (`@fontsource/jetbrains-mono`) |
+| Code, commands, technical form inputs, tool output, front matter | JetBrains Mono | 12 px | content, not UI; loaded from npm (`@fontsource/jetbrains-mono`) |
 | Names, descriptions | system sans | 13–14 px | |
 | Body copy | system sans | 16 px | line height 1.6 |
 

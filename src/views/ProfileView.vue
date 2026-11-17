@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ArrowLeft } from 'lucide-vue-next'
 import { ApiError } from '../api/client'
 import { useProfile } from '../composables/useLLMCatalog'
 import { sectionLinks } from '../router'
@@ -17,7 +18,7 @@ const missing = computed(() => error.value instanceof ApiError && [404, 422].inc
 </script>
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between gap-4"><RouterLink :to="sectionLinks.profiles" class="caps text-muted hover:text-ink">{{ t('profiles.back') }}</RouterLink><RefreshStatus v-if="!missing" :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" /></div>
+    <div class="flex items-center justify-between gap-4"><RouterLink :to="sectionLinks.profiles" class="caps flex items-center gap-2 text-muted hover:text-ink"><ArrowLeft class="h-4 w-4" aria-hidden="true" />{{ t('profiles.back') }}</RouterLink><RefreshStatus v-if="!missing" :updated-at="updatedAt" :disconnected="disconnected" :pending="pending" @refresh="refresh" /></div>
     <EmptyState v-if="missing" :title="t('catalog.notFound')" :hint="t('profiles.notFoundHint')" />
     <template v-else-if="data">
       <h1 class="break-all font-display text-2xl font-bold tracking-title sm:text-3xl">{{ data.name }}</h1>

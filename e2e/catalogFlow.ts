@@ -25,7 +25,8 @@ export async function checkLLMCatalog(page: Page) {
   await page.getByRole('link', { name: 'Add profile', exact: true }).click()
   const profileName = `browser-profile-${crypto.randomUUID().slice(0, 8)}`
   await page.getByLabel('Name', { exact: true }).fill(profileName)
-  await page.getByLabel('LLM account', { exact: true }).selectOption(account.id)
+  await page.getByRole('button', { name: 'LLM account', exact: true }).click()
+  await page.getByRole('option', { name: `${name} ${account.id.slice(0, 8)}`, exact: true }).click()
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(page.getByText('Required field.', { exact: true })).toBeVisible()
   await page.getByLabel('Model', { exact: true }).fill('test-model')
@@ -39,7 +40,8 @@ export async function checkLLMCatalog(page: Page) {
   await page.getByRole('alertdialog').getByRole('button', { name: 'Disable', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Enable', exact: true })).toBeVisible()
   // Rebind API-key -> file account under the same harness. Saving does not reactivate the profile.
-  await page.getByLabel('LLM account', { exact: true }).selectOption('00000000-0000-4000-8000-000000000001')
+  await page.getByRole('button', { name: 'LLM account', exact: true }).click()
+  await page.getByRole('option', { name: 'fixture-account 00000000', exact: true }).click()
   await page.getByLabel('Model', { exact: true }).fill('different-model')
   const updated = page.waitForResponse((r) => r.url().includes('/api/v1/profiles/') && r.request().method() === 'PATCH')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
