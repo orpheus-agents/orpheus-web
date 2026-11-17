@@ -122,3 +122,13 @@ it('distinguishes a pending or failed quota request from an API-key account', as
   await wrapper.setProps({ limitsFailed: true, record: llmAccount({ auth_mode: LLMAccountAuth_mode.api_key }) })
   expect(wrapper.text()).not.toContain('Could not load limits.')
 })
+
+it.each(['en', 'ru'] as const)('keeps API-key cards free of quota notices in %s', async (locale) => {
+  const wrapper = render(fresh(), locale)
+  await wrapper.setProps({ account: undefined, record: llmAccount({ auth_mode: LLMAccountAuth_mode.api_key }) })
+  for (const state of [{ limitsPending: true }, { limitsPending: false, limitsFailed: true }, { limitsFailed: false }]) {
+    await wrapper.setProps(state)
+    expect(wrapper.findAll('article > *')).toHaveLength(1)
+    expect(wrapper.findAll('[role="meter"]')).toHaveLength(0)
+  }
+})

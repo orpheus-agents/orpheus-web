@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CreateLLMAccountAuth_mode, CreateLLMAccountHarness, type LlmAccountDetails } from '../api/generated'
 import { useAccountForm } from '../composables/useAccountForm'
 import PageState from './PageState.vue'
+const JsonField = defineAsyncComponent(() => import('./JsonField.vue'))
 const props = defineProps<{ record?: LlmAccountDetails }>()
 const emit = defineEmits<{ saved: [] }>()
 const { t } = useI18n()
@@ -18,9 +20,9 @@ const { form, fieldErrors, pending, stores, submit } = useAccountForm(props.reco
         <label v-if="stores.data.value" class="block"><span class="field-label">{{ t('accounts.store') }}</span><select v-model="form.credential_store" class="field" :aria-invalid="!!fieldErrors.credential_store"><option value="" disabled>{{ t('accounts.chooseStore') }}</option><option v-for="name in stores.data.value.items" :key="name" :value="name">{{ name }}</option></select><span v-if="fieldErrors.credential_store" class="field-error">{{ fieldErrors.credential_store }}</span></label>
         <PageState v-else :loading="stores.pending.value" :error="stores.error.value" @retry="stores.refresh" />
         <p v-if="stores.data.value && !stores.data.value.items.length" class="text-sm text-muted">{{ t('accounts.noStores') }}</p>
-        <label class="block"><span class="field-label">{{ t('accounts.authFile') }}</span><textarea v-model="form.auth_file" class="field field-area font-mono text-xs" rows="12" spellcheck="false" autocomplete="off" :aria-invalid="!!fieldErrors.auth_file" /><span v-if="fieldErrors.auth_file" class="field-error">{{ fieldErrors.auth_file }}</span></label>
+        <JsonField v-model="form.auth_file" :label="t('accounts.authFile')" :error="fieldErrors.auth_file" />
       </template>
-      <label v-else class="block"><span class="field-label">{{ t('accounts.apiKey') }}</span><input v-model="form.api_key" type="password" class="field font-mono" autocomplete="new-password" :aria-invalid="!!fieldErrors.api_key"><span v-if="fieldErrors.api_key" class="field-error">{{ fieldErrors.api_key }}</span></label>
+      <label v-else class="block"><span class="field-label">{{ t('accounts.apiKey') }}</span><input v-model="form.api_key" type="password" class="field font-code" autocomplete="new-password" :aria-invalid="!!fieldErrors.api_key"><span v-if="fieldErrors.api_key" class="field-error">{{ fieldErrors.api_key }}</span></label>
       <label class="flex items-center gap-3"><input v-model="form.active" type="checkbox" class="h-4 w-4 accent-ink"><span class="text-sm">{{ t('templates.active') }}</span></label>
     </template>
     <button class="button-primary" type="submit" :disabled="pending">{{ pending ? t('catalog.saving') : t('catalog.save') }}</button>

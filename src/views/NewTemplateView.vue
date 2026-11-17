@@ -18,7 +18,7 @@ const { form, fieldErrors, pending, submit } = useTemplateForm()
         <span class="field-label">{{ t('templates.templateName') }}</span>
         <input
           v-model="form.template_name"
-          class="field font-mono"
+          class="field font-code"
           required
           maxlength="255"
           autocomplete="off"
@@ -35,7 +35,7 @@ const { form, fieldErrors, pending, submit } = useTemplateForm()
         <span class="field-label">{{ t('templates.tag') }}</span>
         <input
           v-model="form.tag"
-          class="field font-mono"
+          class="field font-code"
           maxlength="128"
           autocomplete="off"
           spellcheck="false"

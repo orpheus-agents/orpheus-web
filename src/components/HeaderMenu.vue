@@ -1,15 +1,25 @@
 <script setup lang="ts" generic="T extends string">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, type Component } from 'vue'
-import { Check } from 'lucide-vue-next'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch, type Component } from 'vue'
+import { Check, ChevronDown } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+/**
+ * An icon menu in the header, or a form field showing `text` when it is given.
+ * A `remote` menu leaves filtering to its owner: it emits `search` and `end` (scrolled to the bottom)
+ * and shows the owner's `footer` (loading, errors, more) under the options.
+ */
 const props = defineProps<{
   label: string
   icon: Component
   modelValue: T
-  options: { value: T; label: string }[]
+  options: { value: T; label: string; note?: string }[]
+  describedBy?: string
+  invalid?: boolean
   searchable?: boolean
+  text?: string
+  fieldId?: string
+  remote?: boolean
 }>()
-const emit = defineEmits<{ 'update:modelValue': [value: T] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: T]; search: [query: string]; end: [] }>()
 const { t } = useI18n()
 const id = useId()
 const root = ref<HTMLElement>()
@@ -21,8 +31,13 @@ const query = ref('')
 const normalize = (value: string) => value.toLowerCase().replace(/[\s/_]+/g, ' ')
 const shown = computed(() => {
   const needle = normalize(query.value.trim())
-  return needle ? props.options.filter((option) => normalize(option.label).includes(needle)) : props.options
+  return needle && !props.remote ? props.options.filter((option) => normalize(option.label).includes(needle)) : props.options
 })
+watch(query, (value) => { if (props.remote) emit('search', value) })
+function onScroll(event: Event) {
+  const element = event.target as HTMLElement
+  if (element.scrollHeight - element.scrollTop - element.clientHeight < 32) emit('end')
+}
 const items = () => [...(list.value?.querySelectorAll<HTMLElement>('[role=option]') ?? [])]
 async function show() {
   open.value = true
@@ -54,7 +69,18 @@ function onKeydown(event: KeyboardEvent) {
   event.preventDefault()
 }
 function onFocusout(event: FocusEvent) {
-  if (!root.value?.contains(event.relatedTarget as Node | null)) open.value = false
+  if (root.value?.contains(event.relatedTarget as Node | null)) return
+  if (event.relatedTarget === null) {
+    const previous = event.target as Node
+    void nextTick(() => {
+      if (!open.value) return
+      // Only recover from removal during a render, not an ordinary blur or leaving the window.
+      if (!previous.isConnected) (search.value ?? items().at(-1) ?? trigger.value)?.focus()
+      else hide()
+    })
+    return
+  }
+  open.value = false
 }
 function onDocumentClick(event: MouseEvent) {
   if (!root.value?.contains(event.target as Node)) open.value = false
@@ -65,20 +91,23 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
 <template>
   <div ref="root" class="relative" @keydown="onKeydown" @focusout="onFocusout">
     <button
+      :id="fieldId"
       ref="trigger"
       type="button"
-      class="icon-button"
-      :class="{ 'bg-surface-subtle text-ink': open }"
-      :title="label"
+      :class="text === undefined ? ['icon-button', { 'bg-surface-subtle text-ink': open }] : 'field flex items-center justify-between gap-3 text-left'"
+      :title="text === undefined ? label : undefined"
       :aria-label="label"
+      :aria-describedby="describedBy"
+      :aria-invalid="invalid || undefined"
       aria-haspopup="listbox"
       :aria-expanded="open"
       :aria-controls="`${id}-list`"
       @click="open ? hide() : show()"
     >
-      <component :is="icon" class="h-4 w-4" aria-hidden="true" />
+      <template v-if="text === undefined"><component :is="icon" class="h-4 w-4" aria-hidden="true" /></template>
+      <template v-else><span class="truncate">{{ text }}</span><ChevronDown class="h-4 w-4 shrink-0 text-muted" aria-hidden="true" /></template>
     </button>
-    <div v-if="open" class="panel absolute right-0 top-10 z-40 min-w-44 p-1">
+    <div v-if="open" class="panel absolute top-10 z-40 min-w-44 p-1" :class="text === undefined ? 'right-0' : 'left-0 w-full'">
       <input
         v-if="searchable"
         ref="search"
@@ -89,20 +118,25 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
         :aria-label="t('settings.search')"
         :aria-controls="`${id}-list`"
       >
-      <div :id="`${id}-list`" ref="list" role="listbox" :aria-label="label" class="max-h-72 overflow-y-auto">
-        <button
-          v-for="option in shown"
-          :key="option.value"
-          type="button"
-          role="option"
-          tabindex="-1"
-          :aria-selected="option.value === modelValue"
-          class="flex w-full items-center justify-between gap-4 px-3 py-2 text-left text-sm hover:bg-surface-subtle focus-visible:bg-surface-subtle"
-          @click="choose(option.value)"
-        >
-          <span class="min-w-0 truncate">{{ option.label }}</span><Check v-if="option.value === modelValue" class="h-4 w-4 shrink-0" aria-hidden="true" />
-        </button>
-        <p v-if="!shown.length" class="px-3 py-3 text-sm text-muted">{{ t('settings.nothingFound') }}</p>
+      <div class="max-h-72 overflow-y-auto" @scroll="onScroll">
+        <div :id="`${id}-list`" ref="list" role="listbox" :aria-label="label">
+          <button
+            v-for="option in shown"
+            :key="option.value"
+            type="button"
+            role="option"
+            tabindex="-1"
+            :aria-selected="option.value === modelValue"
+            class="flex w-full items-center justify-between gap-4 px-3 py-2 text-left text-sm hover:bg-surface-subtle focus-visible:bg-surface-subtle"
+            @click="choose(option.value)"
+          >
+            <span class="min-w-0">
+              <span class="block break-words">{{ option.label }} <span v-if="option.note" class="ml-2 text-xs text-muted">{{ option.note }}</span></span>
+            </span><Check v-if="option.value === modelValue" class="h-4 w-4 shrink-0" aria-hidden="true" />
+          </button>
+        </div>
+        <p v-if="!shown.length && !remote" class="px-3 py-3 text-sm text-muted">{{ t('settings.nothingFound') }}</p>
+        <slot name="footer" />
       </div>
     </div>
   </div>

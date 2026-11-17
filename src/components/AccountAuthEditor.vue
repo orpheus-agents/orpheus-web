@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { LLMAccountDetailsAuth_mode, type LlmAccountDetails } from '../api/generated'
 import { useAccountAuth } from '../composables/useAccountAuth'
+const JsonField = defineAsyncComponent(() => import('./JsonField.vue'))
 const props = defineProps<{ record: LlmAccountDetails }>()
 const emit = defineEmits<{ saved: [] }>()
 const { t } = useI18n()
@@ -14,13 +16,13 @@ const { opened, text, key, pending, fieldErrors, load, saveFile, saveKey } = use
       <p class="text-sm text-muted">{{ t('accounts.authHint') }}</p>
       <button v-if="!opened" class="button" :disabled="pending" @click="load">{{ t('accounts.editAuth') }}</button>
       <form v-else class="space-y-4" @submit.prevent="saveFile">
-        <label class="block"><span class="field-label">{{ t('accounts.authFile') }}</span><textarea v-model="text" class="field field-area font-mono text-xs" rows="14" spellcheck="false" autocomplete="off" :aria-invalid="!!fieldErrors.auth_file" /><span v-if="fieldErrors.auth_file" class="field-error">{{ fieldErrors.auth_file }}</span></label>
+        <JsonField v-model="text" :label="t('accounts.authFile')" :error="fieldErrors.auth_file" />
         <div class="flex flex-wrap gap-3"><button type="submit" class="button-primary" :disabled="pending">{{ t('catalog.save') }}</button><button type="button" class="button" :disabled="pending" @click="load">{{ t('accounts.reloadAuth') }}</button><button type="button" class="button" :disabled="pending" @click="opened = false; text = ''">{{ t('templates.cancel') }}</button></div>
       </form>
     </template>
     <form v-else class="space-y-4" @submit.prevent="saveKey">
       <p class="font-mono text-sm">{{ record.api_key_mask }}</p>
-      <label class="block"><span class="field-label">{{ t('accounts.replaceKey') }}</span><input v-model="key" class="field font-mono" type="password" autocomplete="new-password" :aria-invalid="!!fieldErrors.api_key"><span v-if="fieldErrors.api_key" class="field-error">{{ fieldErrors.api_key }}</span></label>
+      <label class="block"><span class="field-label">{{ t('accounts.replaceKey') }}</span><input v-model="key" class="field font-code" type="password" autocomplete="new-password" :aria-invalid="!!fieldErrors.api_key"><span v-if="fieldErrors.api_key" class="field-error">{{ fieldErrors.api_key }}</span></label>
       <button type="submit" class="button-primary" :disabled="pending">{{ t('catalog.save') }}</button>
     </form>
   </section>

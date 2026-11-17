@@ -80,6 +80,6 @@ const indicator = computed(() => {
         </div>
       </section>
     </div>
-    <p v-if="!account" class="mt-4 text-sm text-muted">{{ t(record.auth_mode === LLMAccountAuth_mode.api_key ? 'accounts.noLimits' : limitsPending ? 'accounts.loadingLimits' : limitsFailed ? 'accounts.limitsFailed' : 'limits.noObservation') }}</p>
+    <p v-if="record.auth_mode === LLMAccountAuth_mode.account && !account" class="mt-4 text-sm text-muted">{{ t(limitsPending ? 'accounts.loadingLimits' : limitsFailed ? 'accounts.limitsFailed' : 'limits.noObservation') }}</p>
   </article>
 </template>

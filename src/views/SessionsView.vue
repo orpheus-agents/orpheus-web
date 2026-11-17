@@ -33,11 +33,11 @@ const catalogs = useCatalogs(() => data.value?.items.map((session) => session.co
       <h1 class="section-title">{{ t('sessions.title') }}</h1>
       <RefreshStatus :updated-at="updatedAt" :disconnected="disconnected || catalogs.disconnected.value" :pending="pending" @refresh="refresh(); catalogs.refresh()" />
     </div>
-    <div class="inline-flex border border-ink" role="group" :aria-label="t('sessions.activity')">
+    <div class="segmented-control" role="group" :aria-label="t('sessions.activity')">
       <button
         v-for="activity in [Activity.active, Activity.inactive]"
         :key="activity"
-        class="caps h-10 px-5 font-semibold transition"
+        class="caps px-5 font-semibold transition"
         :class="filters.activity === activity ? 'bg-ink text-surface' : 'text-muted hover:text-ink'"
         :aria-pressed="filters.activity === activity"
         @click="changeActivity(activity)"

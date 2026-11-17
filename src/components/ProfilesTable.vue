@@ -32,7 +32,7 @@ function open(id: string, event: MouseEvent) {
               {{ profile.name }}
             </RouterLink>
           </td>
-          <td><RouterLink :to="{ name: 'account', params: { id: profile.account_id } }" class="text-accent-ink hover:underline">{{ profile.account_name }}</RouterLink><p v-if="!profile.account_active" class="text-xs text-muted">{{ t('profiles.accountInactive') }}</p></td>
+          <td><RouterLink :to="{ name: 'account', params: { id: profile.account_id } }" class="font-mono text-accent-ink hover:underline">{{ profile.account_name }}</RouterLink><p v-if="!profile.account_active" class="text-xs text-muted">{{ t('profiles.accountInactive') }}</p></td>
           <td class="font-mono text-xs">{{ profile.model }}</td>
           <td class="max-w-md">
             <p class="line-clamp-2" :class="{ 'text-muted': !profile.description }">{{ profile.description ?? t('common.notSet') }}</p>

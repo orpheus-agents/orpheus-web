@@ -118,8 +118,10 @@ body {
   .button-primary { @apply button bg-ink text-surface hover:bg-ink/85 hover:text-surface; }
   .icon-button { @apply inline-flex h-8 w-8 shrink-0 items-center justify-center text-muted transition hover:bg-surface-subtle hover:text-ink; }
   .field { @apply h-10 w-full border border-line bg-surface-raised px-3 text-sm text-ink placeholder:text-muted; }
+  .segmented-control { @apply inline-flex h-10 border border-ink; }
   .field-label { @apply caps mb-1.5 block text-[11px] leading-4 text-muted; }
   .field-area { @apply h-auto min-h-24 py-2 leading-6; }
+  .json-field { @apply min-w-0 border border-line bg-surface-raised text-ink; }
   .field-error { @apply mt-1.5 text-xs text-danger-ink; }
   .button-danger { @apply button border-danger text-danger-ink; }
   .nav-link { @apply caps inline-flex h-14 items-center border-b-2 border-transparent text-muted transition hover:text-ink; }

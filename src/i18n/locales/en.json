@@ -377,7 +377,9 @@
     "notFound": "Record not found",
     "disableConfirm": "Disable this record?",
     "deleteConfirm": "Delete this record?",
-    "pages": "Catalog pages"
+    "pages": "Catalog pages",
+    "loadFailed": "Could not load accounts.",
+    "more": "Load more"
   },
   "accounts": {
     "title": "LLM accounts",
@@ -401,7 +403,6 @@
     "authConflict": "The authorization file has changed. Your edits are kept. Reload the current file before saving again.",
     "inUse": "This account is used by a profile or session. Disable it or move the profiles first; session references cannot be removed here.",
     "noStores": "Configure a credential store in TOML to create an account with an authorization file.",
-    "noLimits": "Limit data is available for account authorization after a session connects.",
     "emptyTitle": "No LLM accounts",
     "emptyHint": "Add an account to create model profiles.",
     "activeHint": "Disabling blocks new sessions through this account. Existing sessions keep running.",
