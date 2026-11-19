@@ -2,13 +2,13 @@
 import { computed, useId } from 'vue'
 import { UserRound } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import { useAccountOptions } from '../composables/useAccountOptions'
+import type { useAccountOptions } from '../composables/useAccountOptions'
 import HeaderMenu from './HeaderMenu.vue'
 const accountId = defineModel<string>({ required: true })
-defineProps<{ error?: string }>()
+const props = defineProps<{ accounts: ReturnType<typeof useAccountOptions>; error?: string }>()
 const { t } = useI18n()
 const id = useId()
-const { options, selected, current } = useAccountOptions(() => accountId.value)
+const { options, selected, current } = props.accounts
 const choices = computed(() => options.items.value.map((item) => ({
   value: item.id, label: item.name, note: item.id.slice(0, 8) + (item.active ? '' : ` · ${t('templates.inactive')}`),
 })))

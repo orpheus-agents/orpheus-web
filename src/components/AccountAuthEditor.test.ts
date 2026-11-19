@@ -11,7 +11,7 @@ vi.mock('../composables/useToasts', () => ({ useToasts: () => ({ push: vi.fn() }
 vi.mock('../api/accountAuth', () => ({ readAuthFile: vi.fn(), writeAuthFile: vi.fn() }))
 vi.mock('../api/client', async (original) => ({ ...await original<typeof import('../api/client')>(), send: vi.fn() }))
 let wrapper: ReturnType<typeof mount>
-const record: LlmAccountDetails = { id: 'id', name: 'Account', harness: LLMAccountDetailsHarness.codex, auth_mode: LLMAccountDetailsAuth_mode.account, credential_store: 'main', profiles: [], active: true, api_key_mask: null }
+const record: LlmAccountDetails = { id: 'id', name: 'Account', harness: LLMAccountDetailsHarness.codex, provider: 'openai', auth_mode: LLMAccountDetailsAuth_mode.account, credential_store: 'main', profiles: [], active: true, api_key_mask: null }
 afterEach(() => { wrapper?.unmount(); vi.resetAllMocks() })
 it('loads secrets only on request and retains the draft and original ETag after a conflict', async () => {
   vi.mocked(readAuthFile).mockResolvedValue({ text: '{"access_token":"old","unknown":9007199254740993123}', etag: '"old"' })

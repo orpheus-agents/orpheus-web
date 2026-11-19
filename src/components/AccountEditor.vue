@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CreateLLMAccountAuth_mode, CreateLLMAccountHarness, type LlmAccountDetails } from '../api/generated'
+import { kimiCodingPlan } from '../api/providers'
 import { useAccountForm } from '../composables/useAccountForm'
 import PageState from './PageState.vue'
 const JsonField = defineAsyncComponent(() => import('./JsonField.vue'))
 const props = defineProps<{ record?: LlmAccountDetails }>()
 const emit = defineEmits<{ saved: [] }>()
 const { t } = useI18n()
-const { form, fieldErrors, pending, stores, submit } = useAccountForm(props.record, () => emit('saved'))
+const providerList = useId()
+const { form, needsProvider, fieldErrors, pending, stores, submit } = useAccountForm(props.record, () => emit('saved'))
 </script>
 <template>
   <form class="panel space-y-5 p-5" novalidate @submit.prevent="submit">
@@ -16,6 +18,12 @@ const { form, fieldErrors, pending, stores, submit } = useAccountForm(props.reco
     <template v-if="!record">
       <label class="block"><span class="field-label">{{ t('accounts.harness') }}</span><select v-model="form.harness" class="field"><option v-for="value in CreateLLMAccountHarness" :key="value" :value="value">{{ value }}</option></select></label>
       <label class="block"><span class="field-label">{{ t('accounts.authMode') }}</span><select v-model="form.auth_mode" class="field"><option v-for="value in CreateLLMAccountAuth_mode" :key="value" :value="value">{{ t(`accounts.mode.${value}`) }}</option></select></label>
+      <label v-if="needsProvider" class="block">
+        <span class="field-label">{{ t('accounts.provider') }}</span>
+        <input v-model="form.provider" :list="providerList" class="field font-code" required maxlength="128" :aria-label="t('accounts.provider')" :aria-invalid="!!fieldErrors.provider">
+        <datalist :id="providerList"><option :value="kimiCodingPlan" :label="t('accounts.kimiGlobalPlan')" /><option value="selectel" /><option value="yandex-cloud" /></datalist>
+        <span v-if="fieldErrors.provider" class="field-error">{{ fieldErrors.provider }}</span>
+      </label>
       <template v-if="form.auth_mode === CreateLLMAccountAuth_mode.account">
         <label v-if="stores.data.value" class="block"><span class="field-label">{{ t('accounts.store') }}</span><select v-model="form.credential_store" class="field" :aria-invalid="!!fieldErrors.credential_store"><option value="" disabled>{{ t('accounts.chooseStore') }}</option><option v-for="name in stores.data.value.items" :key="name" :value="name">{{ name }}</option></select><span v-if="fieldErrors.credential_store" class="field-error">{{ fieldErrors.credential_store }}</span></label>
         <PageState v-else :loading="stores.pending.value" :error="stores.error.value" @retry="stores.refresh" />

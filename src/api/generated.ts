@@ -625,6 +625,8 @@ export type components = {
             name: string;
             /** @enum {string} */
             harness: LLMAccountHarness;
+            /** @description Native model integration ID. Required for OpenCode API keys and inferred from the OpenCode Console account file for OAuth. */
+            provider: string;
             /** @enum {string} */
             auth_mode: LLMAccountAuth_mode;
             active: boolean;
@@ -637,6 +639,8 @@ export type components = {
             name: string;
             /** @enum {string} */
             harness: LLMAccountDetailsHarness;
+            /** @description Native model integration ID. Required for OpenCode API keys and inferred from the OpenCode Console account file for OAuth. */
+            provider: string;
             /** @enum {string} */
             auth_mode: LLMAccountDetailsAuth_mode;
             active: boolean;
@@ -656,6 +660,8 @@ export type components = {
             name: string;
             /** @enum {string} */
             harness: CreateLLMAccountHarness;
+            /** @description Native model integration ID. Required for OpenCode API keys and inferred from the OpenCode Console account file for OAuth. */
+            provider?: string;
             /** @enum {string} */
             auth_mode: CreateLLMAccountAuth_mode;
             /** @default true */
@@ -2231,7 +2237,7 @@ export interface operations {
     get_account_limits: {
         parameters: {
             query?: {
-                /** @description Comma-separated account UUIDs. Omit to read all account-file identities. */
+                /** @description Comma-separated account UUIDs. Omit to read all accounts with supported quota sources. */
                 account_ids?: string[];
             };
             header?: never;
@@ -3771,24 +3777,28 @@ export enum CodexProfilePersonality {
     pragmatic = "pragmatic"
 }
 export enum ProfileHarness {
-    codex = "codex"
+    codex = "codex",
+    opencode = "opencode"
 }
 export enum LLMAccountHarness {
-    codex = "codex"
+    codex = "codex",
+    opencode = "opencode"
 }
 export enum LLMAccountAuth_mode {
     account = "account",
     api_key = "api_key"
 }
 export enum LLMAccountDetailsHarness {
-    codex = "codex"
+    codex = "codex",
+    opencode = "opencode"
 }
 export enum LLMAccountDetailsAuth_mode {
     account = "account",
     api_key = "api_key"
 }
 export enum CreateLLMAccountHarness {
-    codex = "codex"
+    codex = "codex",
+    opencode = "opencode"
 }
 export enum CreateLLMAccountAuth_mode {
     account = "account",

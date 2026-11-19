@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { AccountLimitItemError_codeAnyOf0, AccountLimitItemState, LLMAccountAuth_mode, type AccountLimitItem } from '../api/generated'
+import { AccountLimitItemError_codeAnyOf0, AccountLimitItemState, LLMAccountAuth_mode, LLMAccountHarness, type AccountLimitItem } from '../api/generated'
 import { createTestI18n } from '../test/i18n'
 import { limits, llmAccount } from '../test/fixtures'
 import AccountLimitsCard from './AccountLimitsCard.vue'
@@ -131,4 +131,25 @@ it.each(['en', 'ru'] as const)('keeps API-key cards free of quota notices in %s'
     expect(wrapper.findAll('article > *')).toHaveLength(1)
     expect(wrapper.findAll('[role="meter"]')).toHaveLength(0)
   }
+})
+
+it('shows every reported Kimi window on a subscription-key account', async () => {
+  const base = fresh()
+  const ids = ['five_hour', 'weekly', 'monthly']
+  const wrapper = render({
+    ...base, reset_credits_available: null,
+    buckets: ids.map((id) => ({ ...base.buckets[0], limit_id: id, limit_name: id, secondary: null })),
+  })
+  await wrapper.setProps({ record: llmAccount({ harness: LLMAccountHarness.opencode, provider: 'kimi-code-plan-global', auth_mode: LLMAccountAuth_mode.api_key }) })
+  expect(wrapper.findAll('h3').map((title) => title.text())).toEqual(ids)
+  expect(wrapper.findAll('[role="meter"]')).toHaveLength(3)
+  await wrapper.setProps({ account: undefined, limitsFailed: true })
+  expect(wrapper.text()).toContain('Could not load limits.')
+})
+
+it('distinguishes an observed account with no reported windows from a pending observation', () => {
+  const wrapper = render({ ...fresh(), reset_credits_available: null, buckets: [] })
+  expect(indicator(wrapper).marker).toBe('bg-accent')
+  expect(wrapper.text()).toContain('The provider did not report usage windows.')
+  expect(wrapper.findAll('[role="meter"]')).toHaveLength(0)
 })

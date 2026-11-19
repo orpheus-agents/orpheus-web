@@ -139,7 +139,7 @@
       "unavailable": "Quota information is currently unavailable."
     },
     "errors": {
-      "unsupported": "This Codex version does not support quota reads.",
+      "unsupported": "This integration does not support quota reads.",
       "temporarily_unavailable": "The provider or connection is temporarily unavailable.",
       "invalid_response": "The response could not be read.",
       "no_data": "The provider returned no quota data.",
@@ -385,6 +385,8 @@
     "title": "LLM accounts",
     "add": "Add account",
     "back": "Back to accounts",
+    "kimiGlobalPlan": "Kimi Code · global subscription",
+    "provider": "Provider",
     "harness": "Harness",
     "authMode": "Authorization mode",
     "mode": {

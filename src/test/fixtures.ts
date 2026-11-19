@@ -52,7 +52,7 @@ export function template(overrides: Partial<Template> = {}): Template {
 }
 
 export function llmAccount(overrides: Partial<LlmAccount> = {}): LlmAccount {
-  return { id: sid, name: 'Team account', harness: LLMAccountHarness.codex, auth_mode: LLMAccountAuth_mode.account, active: true, credential_store: 'main', profiles: ['default', 'deep'], ...overrides }
+  return { id: sid, name: 'Team account', harness: LLMAccountHarness.codex, provider: 'openai', auth_mode: LLMAccountAuth_mode.account, active: true, credential_store: 'main', profiles: ['default', 'deep'], ...overrides }
 }
 export function modelProfile(overrides: Partial<Profile> = {}): Profile {
   return { id: rid, name: 'default', description: 'Research', harness: ProfileHarness.codex, model: 'gpt-test', instructions: '', codex: {}, account_id: sid, account_name: 'Team account', account_active: true, active: true, available: true, ...overrides }

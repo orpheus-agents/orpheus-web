@@ -30,6 +30,7 @@ const missing = computed(() => error.value instanceof ApiError && [404, 422].inc
             <dl class="space-y-4 text-sm">
               <div><dt class="field-label">{{ t('catalog.id') }}</dt><dd class="flex items-center gap-2 break-all font-mono text-xs">{{ data.id }}<CopyButton :value="data.id" /></dd></div>
               <div><dt class="field-label">{{ t('accounts.harness') }}</dt><dd class="font-mono">{{ data.harness }}</dd></div>
+              <div><dt class="field-label">{{ t('accounts.provider') }}</dt><dd class="break-all font-mono">{{ data.provider }}</dd></div>
               <div><dt class="field-label">{{ t('accounts.authMode') }}</dt><dd>{{ t(`accounts.mode.${data.auth_mode}`) }}</dd></div>
               <div v-if="data.credential_store"><dt class="field-label">{{ t('accounts.store') }}</dt><dd class="font-mono">{{ data.credential_store }}</dd></div>
               <div><dt class="field-label">{{ t('limits.profiles') }}</dt><dd>{{ data.profiles.join(', ') || t('common.notSet') }}</dd></div>
