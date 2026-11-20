@@ -424,6 +424,7 @@
     "account": "LLM account",
     "model": "Model",
     "instructions": "Instructions",
+    "variantHint": "Enter a variant ID supported by this model, such as high or max. Leave it empty to use the model default.",
     "effort": "Reasoning effort",
     "summary": "Reasoning summary",
     "personality": "Personality",
