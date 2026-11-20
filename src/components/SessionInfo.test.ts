@@ -27,14 +27,9 @@ it('lists accepted services as one configuration row', async () => {
   wrapper = mount(SessionInfo, { props: { session: data }, global: { plugins: [createTestI18n('en')], stubs: { CopyButton: true } } })
   const row = () => wrapper.findAll('dt').find((term) => term.text() === 'Services')?.element.nextElementSibling
   expect(row()?.textContent).toBe('Not selected')
-  data.configuration.sandbox.services = [
-    { code: 'gitlab', name: 'GitLab', description: 'Repositories', env_from: ['GITLAB_TOKEN'] },
-    { code: 'redmine', name: 'Redmine', description: 'Issues', env_from: ['REDMINE_API_KEY'] },
-  ]
+  data.configuration.sandbox.services = ['gitlab-registry', 'removed-service']
   await wrapper.setProps({ session: { ...data } })
-  expect([...row()!.querySelectorAll('button')].map((name) => name.textContent?.trim())).toEqual(['GitLab', 'Redmine'])
-  // The row holds names only; descriptions and ENV names open in a tooltip.
-  expect(row()!.textContent).toBe('GitLab,Redmine')
+  expect(row()?.textContent).toBe('gitlab-registry,removed-service')
 })
 
 it('retains the single-run mode while sandbox deletion fails and then completes', async () => {

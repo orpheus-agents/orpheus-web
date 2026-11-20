@@ -717,14 +717,14 @@ export type components = {
             description?: string | null;
             active?: boolean;
         };
-        /** @description Unique configured service codes. Order is insignificant; an unknown code rejects the entire request. */
+        /** @description Unique service codes. Order is insignificant on input. Admission rejects unknown codes. Responses return sorted selections. */
         ServiceCodes: string[];
         Service: {
             code: string;
             name: string;
             description: string;
-            /** @description Sorted environment variable names; never their values. */
-            env_from: string[];
+            /** @description Sorted destination variable names supplied by this service to the client. */
+            env_names: string[];
         };
         Services: {
             items: components["schemas"]["Service"][];
@@ -1007,6 +1007,8 @@ export type components = {
             timeout_seconds: number;
         };
         HookResult: {
+            /** @description Sorted names passed by Orpheus for the confirmed start of this hook script. Null if unknown. */
+            env_names: string[] | null;
             /** Format: uuid */
             id: string;
             /** @enum {string} */
@@ -1187,11 +1189,12 @@ export type components = {
             agent_status: RunAgent_statusAnyOf0 | null;
             agent_error: components["schemas"]["Error"] | null;
             hooks: components["schemas"]["HookResult"][];
+            /** @description Sorted names passed by Orpheus at launch of the harness used by this run. Null if unknown, including before attachment. */
+            harness_env_names: string[] | null;
             /** @description Sorted names of explicit variables supplied for this run; values are never returned. */
             env_names: string[];
-            /** @description Immutable service descriptions and environment names resolved when accepted. */
-            services: components["schemas"]["Service"][];
-            /** @description Sorted orchestrator environment variable names for this run, including expanded services. */
+            services: components["schemas"]["ServiceCodes"];
+            /** @description Sorted worker variable names explicitly requested for this run. */
             env_from: string[];
             /** @description Input snapshot version supplied when the run was accepted. Opaque identifier, 1–256 UTF-8 bytes; no NUL or whitespace-only value. Compared exactly, without normalization. */
             input_fingerprint: string | null;
@@ -1255,14 +1258,16 @@ export type components = {
         };
         /** SandboxConfiguration */
         SandboxConfiguration: {
-            /** @description Immutable service descriptions and environment names resolved when accepted. */
-            services: components["schemas"]["Service"][];
+            services: components["schemas"]["ServiceCodes"];
             /**
              * Env From
-             * @description Sorted orchestrator environment variable names, including expanded services.
+             * @description Sorted worker variable names explicitly requested for the session.
              */
             env_from: string[];
-            /** Env Names */
+            /**
+             * Env Names
+             * @description Sorted names of explicit session env values.
+             */
             env_names: string[];
             /** Template */
             template: string;
@@ -1293,7 +1298,7 @@ export type components = {
             env?: {
                 [key: string]: string;
             };
-            /** @description Services available to the agent and session hooks, expanded together with env_from. */
+            /** @description Session service codes. The worker resolves them using its current service configuration when preparing the harness or a hook. */
             services?: components["schemas"]["ServiceCodes"];
             /** Env From */
             env_from?: string[];

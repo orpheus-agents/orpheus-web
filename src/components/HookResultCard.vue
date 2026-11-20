@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { HookResultOutput_completeness, type HookResult } from '../api/generated'
 import StatusBadge from './StatusBadge.vue'
 import ResultOutput from './ResultOutput.vue'
+import EnvironmentNames from './EnvironmentNames.vue'
 import ErrorDetails from './ErrorDetails.vue'
 defineProps<{ hook: HookResult }>()
 const { t } = useI18n()
@@ -16,6 +17,10 @@ const expanded = ref(false)
     </summary>
     <div v-if="expanded" class="mt-3 space-y-3">
       <p class="font-mono text-xs text-muted">{{ t('run.exitCode') }}: {{ hook.exit_code ?? t('common.notSet') }}</p>
+      <dl class="flex justify-between gap-3 text-xs">
+        <dt class="shrink-0 font-mono text-muted">{{ t('services.environment') }}</dt>
+        <dd class="text-right"><EnvironmentNames :names="hook.env_names" /></dd>
+      </dl>
       <ResultOutput v-if="hook.output" :result="hook.output" />
       <p v-if="hook.output_completeness !== HookResultOutput_completeness.complete" class="text-xs text-muted">{{ t(`completeness.${hook.output_completeness}`) }}</p>
       <ErrorDetails v-if="hook.error" :error="hook.error" />

@@ -358,6 +358,9 @@
     "hooks": "Сервисы хуков",
     "empty": "Не выбраны",
     "environment": "Переменные окружения",
+    "harnessEnvironment": "ENV харнеса",
+    "unknownEnvironment": "Нет данных",
+    "emptyEnvironment": "Не переданы",
     "runScope": "Эти сервисы доступны только хукам before_run и after_run."
   },
   "catalog": {
