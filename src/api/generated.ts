@@ -560,6 +560,10 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
     schemas: {
+        OpenCodeProfile: {
+            /** @description Native variant ID supported by the selected OpenCode model. */
+            variant?: string;
+        };
         CodexProfile: {
             /** @enum {string} */
             effort?: CodexProfileEffort;
@@ -584,6 +588,7 @@ export type components = {
             available: boolean;
             model: string;
             codex: components["schemas"]["CodexProfile"];
+            opencode?: components["schemas"]["OpenCodeProfile"];
             instructions: string;
         };
         Profiles: {
@@ -599,6 +604,7 @@ export type components = {
             model: string;
             instructions?: string;
             codex?: components["schemas"]["CodexProfile"];
+            opencode?: components["schemas"]["OpenCodeProfile"];
             /** @default true */
             active: boolean;
         };
@@ -608,6 +614,9 @@ export type components = {
             description?: string | null;
             model?: string;
             instructions?: string;
+            opencode?: {
+                variant?: string | null;
+            } | null;
             codex?: {
                 /** @enum {string|null} */
                 effort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max" | "ultra" | null;
@@ -864,6 +873,7 @@ export type components = {
         };
         /** AgentConfiguration */
         AgentConfiguration: {
+            opencode?: components["schemas"]["OpenCodeProfile"];
             /** Instructions */
             instructions: string;
             /** Model */
@@ -1494,6 +1504,7 @@ export type components = {
     headers: never;
     pathItems: never;
 };
+export type OpenCodeProfile = components['schemas']['OpenCodeProfile'];
 export type CodexProfile = components['schemas']['CodexProfile'];
 export type Profile = components['schemas']['Profile'];
 export type Profiles = components['schemas']['Profiles'];

@@ -26,6 +26,8 @@ account, required model, description and instructions. Codex accounts also have
 Codex-specific settings. For OpenCode, enter the model ID for the chosen provider.
 For an OpenCode Console account, use `opencode-go/<model>` to select the Go
 subscription. A bare model ID or `opencode/<model>` selects the Console route.
+For OpenCode, **Reasoning effort** accepts a variant ID supported by that model,
+such as `high` or `max`. Leave it empty to use the model default.
 A session can override the model. Moving a profile to another account of the same
 harness affects new sessions. Existing sessions retain their account and execution
 settings; resetting a reusable Space session applies the new selection.
