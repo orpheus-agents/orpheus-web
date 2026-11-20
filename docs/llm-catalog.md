@@ -8,8 +8,9 @@ provider reports. An OpenCode Console workspace with credits only can report
 an observation with no usage windows.
 
 An account's harness, provider and authorization mode are fixed at creation.
-For an OpenCode API key, choose a suggested provider or enter the exact integration
-ID configured in the sandbox template. For a global Kimi Coding Plan key choose
+For an OpenCode API key, select a built-in provider by its name and integration ID.
+For a template-defined provider such as Selectel or Yandex Cloud, select **Other
+provider…** and enter the exact integration ID configured in the sandbox template. For a global Kimi Coding Plan key choose
 `kimi-code-plan-global`. For OpenCode Console, export credentials with
 `opencode auth export opencode` and paste the single active Console record as a
 JSON object in the authorization editor. Orpheus reads the provider from that record.
@@ -38,3 +39,9 @@ file remains in the credential store.
 Catalogs are paginated. Session descriptions are resolved by exact visible profile
 names independently of the catalog's first page; catalog failures do not block
 reading session history.
+
+The [provider list](../src/api/opencode-key-providers.json) comes from OpenCode 2.3.2.
+To refresh it, select integrations from `/api/integration` with a key method that
+requires no additional form fields. In an isolated instance with dummy keys,
+keep providers from `/api/provider` with an enabled chat model in `/api/model`
+that can run against a hosted endpoint with the key alone.
