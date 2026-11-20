@@ -1,53 +1,41 @@
 import { expect, test } from '@playwright/test'
 import { mockAPI } from './fixtures'
 import { sid, rid, limits, llmAccount, run, session, timestamp } from '../src/test/fixtures'
-import { AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
+import { HookResultName, HookResultStatus, HookResultOutput_completeness, AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
 
 for (const locale of ['en', 'ru'] as const) {
   for (const theme of ['light', 'dark'] as const) {
-    test(`service snapshots show details on keyboard focus in ${locale}, ${theme}`, async ({ page }) => {
+    test(`service codes and delivered ENV names in ${locale}, ${theme}`, async ({ page }) => {
       await page.addInitScript((value) => localStorage.setItem('orpheus_locale', value), locale)
       await page.emulateMedia({ colorScheme: theme })
       const saved = session()
-      saved.configuration.sandbox.services = [{ code: 'old', name: 'Saved service', description: 'Saved description', env_from: ['SAVED_TOKEN', 'SAVED_HOST'] }]
+      saved.configuration.sandbox.services = ['removed-service']
       await page.route(`**/api/v1/sessions/${sid}`, (route) => route.fulfill({ json: saved }))
-      await page.route(`**/api/v1/sessions/${sid}/runs/${rid}`, (route) => route.fulfill({ json: run({ services: [
-        { code: 'hooks', name: 'Hook service', description: 'Hook description', env_from: ['HOOK_TOKEN'] },
-      ] }) }))
-      await page.route('**/api/v1/services', () => { throw new Error('Snapshot display must not request the catalog') })
+      await page.route(`**/api/v1/sessions/${sid}/runs/${rid}`, (route) => route.fulfill({ json: run({
+        services: ['registry'], harness_env_names: ['AGENT_HOST'], hooks: [{
+          id: rid, name: HookResultName.before_run, status: HookResultStatus.completed, env_names: ['HOOK_TOKEN'],
+          started_at: timestamp, deadline_at: null, finished_at: timestamp, exit_code: 0, signal: null,
+          output: null, output_completeness: HookResultOutput_completeness.complete, truncation_reason: null, error: null,
+        }],
+      }) }))
+      await page.route('**/api/v1/services', () => { throw new Error('History requested the current catalog') })
       await page.goto(`/sessions/${sid}/runs/${rid}`)
       const sessionCard = page.locator('section').filter({ has: page.getByRole('heading', { name: locale === 'en' ? 'Configuration' : 'Конфигурация', exact: true }) })
       const runCard = page.locator('aside section').filter({ has: page.getByRole('heading', { name: locale === 'en' ? 'Run #3' : 'Запуск №3', exact: true }) })
       const hint = locale === 'en' ? 'These services are available to before_run and after_run hooks only.' : 'Эти сервисы доступны только хукам before_run и after_run.'
       const hooks = locale === 'en' ? 'Hook services' : 'Сервисы хуков'
-      const environment = locale === 'en' ? 'Environment variables' : 'Переменные окружения'
-      const tooltip = page.getByRole('tooltip')
-      // Each card names only its own snapshot; descriptions and ENV names take no room until asked for.
-      await expect(sessionCard.getByRole('button', { name: 'Saved service', exact: true })).toBeVisible()
-      await expect(sessionCard.getByText('Hook service', { exact: true })).toHaveCount(0)
-      await expect(sessionCard.getByText(hooks, { exact: true })).toHaveCount(0)
-      await expect(runCard.getByRole('button', { name: 'Hook service', exact: true })).toBeVisible()
-      await expect(runCard.getByText('Saved service', { exact: true })).toHaveCount(0)
-      for (const detail of ['Saved description', 'SAVED_TOKEN', 'Hook description', 'HOOK_TOKEN', hint]) await expect(page.getByText(detail, { exact: true })).toHaveCount(0)
-      for (const { card, name, description, variables } of [
-        { card: sessionCard, name: 'Saved service', description: 'Saved description', variables: ['SAVED_TOKEN', 'SAVED_HOST'] },
-        { card: runCard, name: 'Hook service', description: 'Hook description', variables: ['HOOK_TOKEN'] },
-      ]) {
-        await card.getByRole('button', { name, exact: true }).focus()
-        await expect(tooltip.getByText(description, { exact: true })).toBeVisible()
-        await expect(tooltip.getByRole('list', { name: environment, exact: true }).getByRole('listitem')).toHaveText(variables)
-        await page.keyboard.press('Escape')
-        await expect(tooltip).toHaveCount(0)
-      }
-      // The run row explains on its label that these services reach hooks only.
+      await expect(sessionCard.getByText('removed-service', { exact: true })).toBeVisible()
+      await expect(sessionCard.getByText('registry', { exact: true })).toHaveCount(0)
+      await expect(runCard.getByText('registry', { exact: true })).toBeVisible()
+      await expect(runCard.getByText('AGENT_HOST', { exact: true })).toBeVisible()
+      await runCard.locator('summary').filter({ hasText: 'before_run' }).click()
+      await expect(runCard.getByText('HOOK_TOKEN', { exact: true })).toBeVisible()
       await runCard.getByRole('button', { name: hooks, exact: true }).focus()
-      await expect(tooltip).toHaveText(hint)
+      await expect(page.getByRole('tooltip')).toHaveText(hint)
       await page.keyboard.press('Escape')
       await page.setViewportSize({ width: 390, height: 844 })
-      await sessionCard.getByRole('button', { name: 'Saved service', exact: true }).click()
-      await expect(tooltip.getByText('SAVED_HOST', { exact: true })).toBeInViewport({ ratio: 1 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     })
   }

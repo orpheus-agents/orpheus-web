@@ -9,6 +9,7 @@ import StatusBadge from './StatusBadge.vue'
 import DescribedName from './DescribedName.vue'
 import HookResultCard from './HookResultCard.vue'
 import ErrorDetails from './ErrorDetails.vue'
+import EnvironmentNames from './EnvironmentNames.vue'
 import ServiceList from './ServiceList.vue'
 import TokenUsageBreakdown from './TokenUsageBreakdown.vue'
 defineProps<{ run: Run }>()
@@ -81,6 +82,10 @@ usePolling(async () => {
       <div class="flex justify-between gap-3 border-t border-line pt-3">
         <dt class="font-mono text-muted">{{ t('run.tokens') }}</dt>
         <dd class="font-mono">{{ formatNumber(run.usage.total_tokens, locale) }}</dd>
+      </div>
+      <div class="flex justify-between gap-3">
+        <dt class="shrink-0 font-mono text-muted">{{ t('services.harnessEnvironment') }}</dt>
+        <dd class="text-right"><EnvironmentNames :names="run.harness_env_names" /></dd>
       </div>
     </dl>
     <TokenUsageBreakdown :usage="run.usage" class="mt-3" />

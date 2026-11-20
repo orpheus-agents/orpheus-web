@@ -358,6 +358,9 @@
     "hooks": "Hook services",
     "empty": "Not selected",
     "environment": "Environment variables",
+    "harnessEnvironment": "Harness environment",
+    "unknownEnvironment": "No data",
+    "emptyEnvironment": "None supplied",
     "runScope": "These services are available to before_run and after_run hooks only."
   },
   "catalog": {
