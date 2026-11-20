@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { AccountLimitItemState, LLMAccountAuth_mode, type AccountLimitItem, type LlmAccount } from '../api/generated'
+import { kimiCodingPlan } from '../api/providers'
 import type { CatalogDescriptions } from '../composables/useCatalogs'
 import { formatNumber } from '../format'
 import DescribedName from './DescribedName.vue'
@@ -10,6 +11,7 @@ import LimitWindow from './LimitWindow.vue'
 import RelativeTime from './RelativeTime.vue'
 
 const props = defineProps<{ account?: AccountLimitItem; limitsPending?: boolean; limitsFailed?: boolean; record: LlmAccount; profiles?: CatalogDescriptions }>()
+const expectsLimits = computed(() => props.record.auth_mode === LLMAccountAuth_mode.account || props.record.provider === kimiCodingPlan)
 const router = useRouter()
 function open(event: MouseEvent) {
   if ((event.target as HTMLElement).closest('a, button, input, label') || window.getSelection()?.toString()) return
@@ -80,6 +82,7 @@ const indicator = computed(() => {
         </div>
       </section>
     </div>
-    <p v-if="record.auth_mode === LLMAccountAuth_mode.account && !account" class="mt-4 text-sm text-muted">{{ t(limitsPending ? 'accounts.loadingLimits' : limitsFailed ? 'accounts.limitsFailed' : 'limits.noObservation') }}</p>
+    <p v-else-if="account?.state === AccountLimitItemState.fresh && account.reset_credits_available === null" class="mt-4 text-sm text-muted">{{ t('limits.noWindows') }}</p>
+    <p v-if="expectsLimits && !account" class="mt-4 text-sm text-muted">{{ t(limitsPending ? 'accounts.loadingLimits' : limitsFailed ? 'accounts.limitsFailed' : 'limits.noObservation') }}</p>
   </article>
 </template>

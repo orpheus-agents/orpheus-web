@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { checkLLMCatalog } from './catalogFlow'
+import { checkLLMCatalog, checkOpenCodeAccount } from './catalogFlow'
 import { ErrorDetailCode } from '../src/api/generated'
 const saml = !!process.env.INTEGRATION_SAML
 
@@ -135,6 +135,7 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   expect((await accountLimits.json()).items[0].reset_credits_available).toBeNull()
   await checkTemplates(page, baseURL!)
   await checkLLMCatalog(page)
+  await checkOpenCodeAccount(page)
   const noBearer = await page.request.post('/api/v1/sessions', { data: {} })
   expect([401, 403]).toContain(noBearer.status())
   const missing = await request.get('/api/v1/not-a-route', { headers: { Authorization: 'Bearer integration-only-key' } })
