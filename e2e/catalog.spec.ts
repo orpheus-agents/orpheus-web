@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { llmAccount, modelProfile, sid, rid } from '../src/test/fixtures'
 import { LLMAccountHarness, ProfileHarness } from '../src/api/generated'
+import keyProviders from '../src/api/opencode-key-providers.json' with { type: 'json' }
 import { mockAPI } from './fixtures'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
@@ -168,12 +169,42 @@ test('OpenCode keys require a provider and accept template-defined IDs', async (
   await page.getByLabel('API key', { exact: true }).fill('test-key')
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(provider).toHaveAttribute('aria-invalid', 'true')
-  expect(await page.locator('datalist option').evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value))).toEqual(['kimi-code-plan-global', 'selectel', 'yandex-cloud'])
-  await provider.fill(' template-integration ')
+  const customId = page.getByRole('textbox', { name: 'Provider ID', exact: true })
+  await expect(customId).toHaveCount(0)
+  await provider.selectOption({ label: 'Other provider…' })
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(customId).toHaveAttribute('aria-invalid', 'true')
+  await customId.fill(' template-integration ')
   await page.route('**/api/v1/llm-accounts', (route) => route.fulfill({ status: 201, json: { ...llmAccount(), provider: 'template-integration' } }))
   const sent = page.waitForRequest((request) => request.method() === 'POST')
   await page.getByRole('button', { name: 'Save' }).click()
   expect((await sent).postDataJSON()).toEqual({ active: true, name: 'Custom provider', harness: 'opencode', auth_mode: 'api_key', provider: 'template-integration', api_key: 'test-key' })
+})
+
+for (const [locale, harnessLabel, modeLabel, providerLabel, kimiLabel, otherLabel] of [
+  ['en', 'Harness', 'Authorization mode', 'Provider', 'Kimi Code · global subscription', 'Other provider…'],
+  ['ru', 'Харнес', 'Режим авторизации', 'Провайдер', 'Kimi Code · глобальная подписка', 'Другой провайдер…'],
+] as const) test(`native API-key providers have sorted, identifiable options in ${locale}`, async ({ page }) => {
+  await page.addInitScript((locale) => localStorage.setItem('orpheus_locale', locale), locale)
+  await page.goto('/settings/llm-accounts/new')
+  await page.getByLabel(harnessLabel).selectOption('opencode')
+  await page.getByLabel(modeLabel).selectOption('api_key')
+  const provider = page.getByRole('combobox', { name: providerLabel, exact: true })
+  const options = await provider.evaluate((field) => Array.from((field as HTMLSelectElement).options, ({ value, text }) => ({ id: value, text })))
+  expect(options[0].id).toBe('')
+  expect(options[1].text).toBe(otherLabel)
+  const native = options.slice(2)
+  expect(native.map(({ id }) => id).sort()).toEqual(keyProviders.map(({ id }) => id).sort())
+  expect(native.map(({ id }) => id)).not.toContain('databricks')
+  expect(native.some(({ id }) => id === 'selectel' || id === 'yandex-cloud')).toBe(false)
+  expect(native).toContainEqual({ id: 'kimi-code-plan-global', text: `${kimiLabel} (kimi-code-plan-global)` })
+  const { compare } = new Intl.Collator(locale, { sensitivity: 'base', numeric: true })
+  const names = native.map(({ text, id }) => {
+    const suffix = ` (${id})`
+    expect(text.endsWith(suffix)).toBe(true)
+    return text.slice(0, -suffix.length)
+  })
+  expect(names).toEqual([...names].sort(compare))
 })
 
 test('OpenCode Console keeps the provider in the raw authorization record', async ({ page }) => {
@@ -184,9 +215,12 @@ test('OpenCode Console keeps the provider in the raw authorization record', asyn
   const mode = page.getByLabel('Authorization mode')
   await mode.selectOption('api_key')
   const provider = page.getByLabel('Provider', { exact: true })
-  await provider.fill('temporary-provider')
+  await provider.selectOption({ label: 'Other provider…' })
+  const customId = page.getByRole('textbox', { name: 'Provider ID' })
+  await customId.fill('temporary-provider')
   await mode.selectOption('account')
   await expect(provider).toHaveCount(0)
+  await expect(customId).toHaveCount(0)
   await page.getByLabel('Credential store').selectOption('local')
   const file = '{"integrationID":"opencode","active":true,"value":{"futureField":9007199254740993123}}'
   await page.getByRole('textbox', { name: 'Authorization file (JSON)' }).fill(file)

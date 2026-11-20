@@ -17,7 +17,8 @@ export function useAccountForm(record: LlmAccountDetails | undefined, saved: () 
   const { push } = useToasts()
   const router = useRouter()
   const mutation = useCatalogMutation()
-  const form = reactive({ name: record?.name ?? '', harness: CreateLLMAccountHarness.codex, auth_mode: CreateLLMAccountAuth_mode.account, active: true, provider: '', credential_store: '', auth_file: '', api_key: '' })
+  // An empty choice is the placeholder. The manual option uses null so every native ID stays selectable.
+  const form = reactive({ name: record?.name ?? '', harness: CreateLLMAccountHarness.codex, auth_mode: CreateLLMAccountAuth_mode.account, active: true, providerChoice: '' as string | null, customProviderId: '', credential_store: '', auth_file: '', api_key: '' })
   const needsProvider = computed(() => !record && form.harness === CreateLLMAccountHarness.opencode && form.auth_mode === CreateLLMAccountAuth_mode.api_key)
   const stores = useResource((signal) => get('/api/v1/credential-stores', { signal }), () => record ? null : 'credential-stores', { interval: 30_000 })
   async function submit() {
@@ -27,7 +28,8 @@ export function useAccountForm(record: LlmAccountDetails | undefined, saved: () 
       if (!form.credential_store) mutation.fieldErrors.value.credential_store = t('catalog.required')
       if (!validAuthJSON(form.auth_file)) mutation.fieldErrors.value.auth_file = t('accounts.invalidAuth')
     }
-    if (needsProvider.value && !form.provider.trim()) mutation.fieldErrors.value.provider = t('catalog.required')
+    const provider = form.providerChoice ?? form.customProviderId.trim()
+    if (needsProvider.value && !provider) mutation.fieldErrors.value.provider = t('catalog.required')
     if (!record && form.auth_mode === CreateLLMAccountAuth_mode.api_key && !form.api_key.trim()) mutation.fieldErrors.value.api_key = t('catalog.required')
     if (Object.keys(mutation.fieldErrors.value).length) return
     const result = await mutation.run((signal) => {
@@ -35,7 +37,7 @@ export function useAccountForm(record: LlmAccountDetails | undefined, saved: () 
       const body = { name: form.name.trim(), harness: form.harness, auth_mode: form.auth_mode, active: form.active }
       return form.auth_mode === CreateLLMAccountAuth_mode.account
         ? createFileAccount({ ...body, credential_store: form.credential_store }, form.auth_file, signal)
-        : send('post', '/api/v1/llm-accounts', { signal, body: { ...body, ...(needsProvider.value && { provider: form.provider.trim() }), api_key: form.api_key } })
+        : send('post', '/api/v1/llm-accounts', { signal, body: { ...body, ...(needsProvider.value && { provider }), api_key: form.api_key } })
     })
     if (result.ok) {
       form.api_key = ''; form.auth_file = ''
