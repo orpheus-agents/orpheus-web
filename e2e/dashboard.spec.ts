@@ -12,14 +12,28 @@ for (const locale of ['en', 'ru'] as const) {
       await page.emulateMedia({ colorScheme: theme })
       const saved = session()
       saved.configuration.sandbox.services = ['removed-service']
+      const harnessNames = [
+        'ARTIFACTS_ACCESS_KEY_ID', 'ARTIFACTS_BUCKET', 'ARTIFACTS_ENDPOINT_URL', 'ARTIFACTS_PUBLIC_BASE_URL',
+        'ARTIFACTS_REGION', 'ARTIFACTS_SECRET_ACCESS_KEY', 'GH_HOST', 'GH_TOKEN', 'GITLAB_HOST', 'GITLAB_TOKEN',
+        'HELPDESK_API_KEY', 'HELPDESK_HOST', 'ORPHEUS_LANGFUSE_CHAT_ASSISTANT_PUBLIC_KEY', 'REDMINE_API_KEY', 'REDMINE_HOST',
+      ]
       await page.route(`**/api/v1/sessions/${sid}`, (route) => route.fulfill({ json: saved }))
-      await page.route(`**/api/v1/sessions/${sid}/runs/${rid}`, (route) => route.fulfill({ json: run({
-        services: ['registry'], harness_env_names: ['AGENT_HOST'], hooks: [{
+      const currentRun = run({
+        status: RunStatus.completed, finished_at: '2026-09-25T06:02:14Z',
+        services: ['registry'], harness_env_names: harnessNames, hooks: [{
           id: rid, name: HookResultName.before_run, status: HookResultStatus.completed, env_names: ['HOOK_TOKEN'],
           started_at: timestamp, deadline_at: null, finished_at: timestamp, exit_code: 0, signal: null,
           output: null, output_completeness: HookResultOutput_completeness.complete, truncation_reason: null, error: null,
         }],
-      }) }))
+      })
+      const previousId = '44444444-4444-4444-8444-444444444444'
+      const previousRun = run({
+        id: previousId, number: 2, harness_env_names: ['PREVIOUS_HOST'],
+        hooks: [{ ...currentRun.hooks[0], id: previousId, env_names: ['PREVIOUS_TOKEN'] }],
+      })
+      for (const item of [currentRun, previousRun]) {
+        await page.route(`**/api/v1/sessions/${sid}/runs/${item.id}`, (route) => route.fulfill({ json: item }))
+      }
       await page.route('**/api/v1/services', () => { throw new Error('History requested the current catalog') })
       await page.goto(`/sessions/${sid}/runs/${rid}`)
       const sessionCard = page.locator('section').filter({ has: page.getByRole('heading', { name: locale === 'en' ? 'Configuration' : 'Конфигурация', exact: true }) })
@@ -29,14 +43,42 @@ for (const locale of ['en', 'ru'] as const) {
       await expect(sessionCard.getByText('removed-service', { exact: true })).toBeVisible()
       await expect(sessionCard.getByText('registry', { exact: true })).toHaveCount(0)
       await expect(runCard.getByText('registry', { exact: true })).toBeVisible()
-      await expect(runCard.getByText('AGENT_HOST', { exact: true })).toBeVisible()
+      const harnessSummary = runCard.locator('summary', { hasText: locale === 'en' ? 'Harness environment' : 'ENV харнеса' })
+      const harnessName = runCard.getByText('REDMINE_HOST', { exact: true })
+      await expect(harnessSummary).toContainText(String(harnessNames.length))
+      await expect(harnessName).toBeHidden()
+      await runCard.screenshot({ path: `test-results/run-env-collapsed-${locale}-${theme}.png` })
+      await harnessSummary.press('Enter')
+      await expect(harnessName).toBeVisible()
+      await harnessSummary.blur()
+      await runCard.screenshot({ path: `test-results/run-env-expanded-${locale}-${theme}.png` })
       await runCard.locator('summary').filter({ hasText: 'before_run' }).click()
+      const hookSummary = runCard.locator('summary', { hasText: locale === 'en' ? 'Environment variables' : 'Переменные окружения' })
+      await expect(hookSummary).toContainText('1')
+      await expect(runCard.getByText('HOOK_TOKEN', { exact: true })).toBeHidden()
+      await hookSummary.click()
       await expect(runCard.getByText('HOOK_TOKEN', { exact: true })).toBeVisible()
+      await expect(harnessName).toBeVisible()
       await runCard.getByRole('button', { name: hooks, exact: true }).focus()
       await expect(page.getByRole('tooltip')).toHaveText(hint)
       await page.keyboard.press('Escape')
       await page.setViewportSize({ width: 390, height: 844 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await harnessSummary.click()
+      await expect(harnessName).toBeHidden()
+      await expect(runCard.getByText('HOOK_TOKEN', { exact: true })).toBeVisible()
+      await harnessSummary.click()
+      await page.getByRole('link', { name: locale === 'en' ? /Run #2/ : /Запуск №2/ }).click()
+      await expect(page.getByRole('heading', { name: locale === 'en' ? 'Run #2' : 'Запуск №2', exact: true })).toBeVisible()
+      await expect(page.getByText('REDMINE_HOST', { exact: true })).toHaveCount(0)
+      await expect(page.getByText('HOOK_TOKEN', { exact: true })).toHaveCount(0)
+      const previousName = page.getByText('PREVIOUS_HOST', { exact: true })
+      await expect(previousName).toBeAttached()
+      await expect(previousName).toBeHidden()
+      await page.locator('summary', { hasText: 'before_run' }).click()
+      const previousToken = page.getByText('PREVIOUS_TOKEN', { exact: true })
+      await expect(previousToken).toBeAttached()
+      await expect(previousToken).toBeHidden()
     })
   }
 }

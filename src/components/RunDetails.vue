@@ -83,11 +83,8 @@ usePolling(async () => {
         <dt class="font-mono text-muted">{{ t('run.tokens') }}</dt>
         <dd class="font-mono">{{ formatNumber(run.usage.total_tokens, locale) }}</dd>
       </div>
-      <div class="flex justify-between gap-3">
-        <dt class="shrink-0 font-mono text-muted">{{ t('services.harnessEnvironment') }}</dt>
-        <dd class="text-right"><EnvironmentNames :names="run.harness_env_names" /></dd>
-      </div>
     </dl>
+    <EnvironmentNames :key="run.id" :label="t('services.harnessEnvironment')" :names="run.harness_env_names" class="mt-3" />
     <TokenUsageBreakdown :usage="run.usage" class="mt-3" />
     <ErrorDetails v-if="run.error" class="mt-4" :error="run.error" />
     <ErrorDetails v-if="run.agent_error" class="mt-4" :error="run.agent_error" />
