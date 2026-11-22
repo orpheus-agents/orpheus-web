@@ -57,7 +57,8 @@ Fonts are in `fonts/`; body text uses the system sans and loads nothing.
   row of plain text separated by commas, not a card per item. A name with more
   to say has a dotted underline and shows its description and details on hover,
   focus or tap. An empty set is a word in the row; the dithered empty state is
-  for empty pages and lists.
+  for empty pages and lists. Harness and hook ENV names follow the same list
+  style. Each list starts collapsed and shows its count in the summary.
 - Buttons: 40 px tall, square. Primary is `ink` with `bg` text; secondary is
   a 1 px `ink` border.
 

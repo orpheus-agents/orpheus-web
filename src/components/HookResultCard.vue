@@ -17,10 +17,7 @@ const expanded = ref(false)
     </summary>
     <div v-if="expanded" class="mt-3 space-y-3">
       <p class="font-mono text-xs text-muted">{{ t('run.exitCode') }}: {{ hook.exit_code ?? t('common.notSet') }}</p>
-      <dl class="flex justify-between gap-3 text-xs">
-        <dt class="shrink-0 font-mono text-muted">{{ t('services.environment') }}</dt>
-        <dd class="text-right"><EnvironmentNames :names="hook.env_names" /></dd>
-      </dl>
+      <EnvironmentNames :label="t('services.environment')" :names="hook.env_names" />
       <ResultOutput v-if="hook.output" :result="hook.output" />
       <p v-if="hook.output_completeness !== HookResultOutput_completeness.complete" class="text-xs text-muted">{{ t(`completeness.${hook.output_completeness}`) }}</p>
       <ErrorDetails v-if="hook.error" :error="hook.error" />
