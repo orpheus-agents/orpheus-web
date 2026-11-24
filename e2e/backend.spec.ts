@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { checkLLMCatalog, checkOpenCodeAccount } from './catalogFlow'
-import { ErrorDetailCode } from '../src/api/generated'
+import { AnalyticsOverviewBucket, ErrorDetailCode, PathsApiV1AnalyticsOverviewGetParametersQueryWindow as Window } from '../src/api/generated'
 const saml = !!process.env.INTEGRATION_SAML
 
 async function checkTemplates(page: Page, origin: string) {
@@ -119,6 +119,30 @@ test('production nginx, pinned core and browser auth work together', async ({ pa
   await expect(page.getByText('Browser integration fixture', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Analytics', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible()
+  const annual = page.waitForResponse((response) => new URL(response.url()).searchParams.get('window') === Window.Value1y)
+  await page.getByLabel('Period', { exact: true }).selectOption(Window.Value1y)
+  const annualResponse = await annual
+  expect(annualResponse.status()).toBe(200)
+  const snapshot = await annualResponse.json()
+  expect(snapshot.bucket).toBe(AnalyticsOverviewBucket.day)
+  expect(snapshot.series.length).toBeGreaterThanOrEqual(365)
+  await page.getByRole('link', { name: 'Sessions', exact: true }).click()
+  await page.getByRole('button', { name: 'Past', exact: true }).click()
+  await page.getByLabel('Namespace', { exact: true }).fill('INTEG')
+  await page.getByLabel('Model', { exact: true }).fill('TURE-MO')
+  const filtered = page.waitForResponse((response) => {
+    const url = new URL(response.url())
+    return url.pathname === '/api/v1/sessions' && url.searchParams.get('profile') === 'default'
+      && url.searchParams.get('namespace_contains') === 'INTEG' && url.searchParams.get('model_contains') === 'TURE-MO'
+  })
+  await page.getByLabel('Profile', { exact: true }).selectOption('default')
+  const filteredResponse = await filtered
+  expect(filteredResponse.status()).toBe(200)
+  expect((await filteredResponse.json()).items).toEqual(expect.arrayContaining([expect.objectContaining({ id: sid })]))
+  await expect(page.getByRole('link', { name: sid.slice(0, 8), exact: true })).toBeVisible()
+  await page.getByLabel('Model', { exact: true }).fill('no-matching-model')
+  await page.getByRole('button', { name: 'Apply', exact: true }).click()
+  await expect(page.getByText('No sessions found', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Settings', exact: true }).click()
   await expect(page.getByText('fixture-account', { exact: true })).toBeVisible()
   await expect(page.getByText(/resets? available/)).toHaveCount(0)

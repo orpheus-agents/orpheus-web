@@ -12,8 +12,8 @@
 Dashboard for [Orpheus](https://github.com/orpheus-agents/orpheus).
 Vue 3, TypeScript, Vite and Tailwind CSS 4 through `@tailwindcss/vite`.
 
-- **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime, an hourly/daily activity chart and ranked runs, tokens and run time per namespace, where a namespace click filters the page.
-- **Sessions:** current and past sessions, server-side filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state. Session details show whether only one run is allowed or the session can continue. Sandbox cleanup state and errors remain separate from the run result.
+- **Analytics:** active sessions, runs, token totals with cached input and reasoning breakdown, runtime, activity charts for periods up to a year and rankings by namespace.
+- **Sessions:** current and past sessions, namespace, profile and model filters, cursor pagination, run details, messages, tool calls, hooks and sandbox state. Session details show whether only one run is allowed or the session can continue. Sandbox cleanup state and errors remain separate from the run result.
 - **Settings:** [LLM accounts, provider limits and model profiles](docs/llm-catalog.md), plus the [sandbox template catalog](docs/templates.md).
 
 Profile and template names show current descriptions on hover or keyboard focus.

@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useAnalytics } from '../composables/useAnalytics'
-import {
-  PathsApiV1AnalyticsOverviewGetParametersQueryWindow as Window,
-  PathsApiV1AnalyticsOverviewGetParametersQueryBucket as Bucket,
-} from '../api/generated'
+import { PathsApiV1AnalyticsOverviewGetParametersQueryWindow as Window } from '../api/generated'
 import AnalyticsMetrics from '../components/AnalyticsMetrics.vue'
 import ActivityChart from '../components/ActivityChart.vue'
 import AnalyticsNamespaces from '../components/AnalyticsNamespaces.vue'
 import RefreshStatus from '../components/RefreshStatus.vue'
 import PageState from '../components/PageState.vue'
 const { t } = useI18n()
-const { data, error, pending, stale, updatedAt, disconnected, refresh, filters, apply, changeWindow } = useAnalytics()
+const { data, error, pending, stale, updatedAt, disconnected, refresh, filters, buckets, apply, changeWindow } = useAnalytics()
 function selectNamespace(namespace: string) {
   filters.namespace = namespace
   void apply()
@@ -27,8 +24,8 @@ function selectNamespace(namespace: string) {
       <label><span class="field-label">{{ t('filters.period') }}</span><select v-model="filters.window" :aria-label="t('filters.period')" class="field" @change="changeWindow">
         <option v-for="value in Object.values(Window)" :key="value" :value="value">{{ t(`period.${value}`) }}</option>
       </select></label>
-      <label><span class="field-label">{{ t('filters.bucket') }}</span><select v-model="filters.bucket" :aria-label="t('filters.bucket')" class="field" @change="apply">
-        <option v-for="value in Object.values(Bucket)" :key="value" :value="value">{{ t(`bucket.${value}`) }}</option>
+      <label><span class="field-label">{{ t('filters.bucket') }}</span><select v-model="filters.bucket" :aria-label="t('filters.bucket')" class="field" :disabled="buckets.length === 1" @change="apply">
+        <option v-for="value in buckets" :key="value" :value="value">{{ t(`bucket.${value}`) }}</option>
       </select></label>
       <label class="min-w-44"><span class="field-label">{{ t('filters.namespace') }}</span><input
         v-model="filters.namespace"

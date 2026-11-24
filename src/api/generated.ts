@@ -2303,13 +2303,13 @@ export interface operations {
     get_analytics_overview: {
         parameters: {
             query?: {
-                /** @description Server-relative sliding window. Defaults to 24h; cannot be combined with from/to. */
+                /** @description Server-relative sliding window. Defaults to 24h; cannot be combined with from/to. The 3m, 6m and 1y windows subtract calendar months in UTC and require daily buckets. */
                 window?: PathsApiV1AnalyticsOverviewGetParametersQueryWindow;
                 /** @description Inclusive RFC 3339 timestamp with offset; requires to. */
                 from?: string;
                 /** @description Exclusive RFC 3339 timestamp with offset; requires from and cannot be later than as_of. Range at most 31 days. */
                 to?: string;
-                /** @description Local calendar hour or day; at most 800 buckets. */
+                /** @description Local calendar hour or day; at most 800 buckets. Defaults to day for 3m, 6m and 1y, and to hour otherwise. */
                 bucket?: PathsApiV1AnalyticsOverviewGetParametersQueryBucket;
                 /** @description IANA timezone for bucket boundaries; timestamps in the response are UTC. */
                 timezone?: string;
@@ -2617,6 +2617,14 @@ export interface operations {
                 /** @description Exclusive upper bound for the latest run creation time; requires last_run_created_from. Range at most 31 days. */
                 last_run_created_to?: string;
                 namespace?: string;
+                /** @description Literal case-insensitive substring, combined with namespace using AND. 1–128 UTF-8 bytes, no NUL or whitespace-only value. */
+                namespace_contains?: string;
+                /** @description Exact case-sensitive match on the stored session profile name. */
+                profile?: string;
+                /** @description Exact case-sensitive match on the stored session model. */
+                model?: string;
+                /** @description Literal case-insensitive substring of the stored session model, combined with model using AND. */
+                model_contains?: string;
                 external_key?: string;
                 status?: components["schemas"]["RunStatus"];
                 order?: PathsApiV1SessionsGetParametersQueryOrder;
@@ -3744,7 +3752,10 @@ export interface operations {
 export enum PathsApiV1AnalyticsOverviewGetParametersQueryWindow {
     Value24h = "24h",
     Value7d = "7d",
-    Value30d = "30d"
+    Value30d = "30d",
+    Value3m = "3m",
+    Value6m = "6m",
+    Value1y = "1y"
 }
 export enum PathsApiV1AnalyticsOverviewGetParametersQueryBucket {
     hour = "hour",

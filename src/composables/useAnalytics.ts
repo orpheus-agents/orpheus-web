@@ -9,6 +9,10 @@ import {
 import { useResource } from './useResource'
 import { useSettings } from './useSettings'
 
+function bucketsFor(window: Window) {
+  return [Window.Value3m, Window.Value6m, Window.Value1y].includes(window) ? [Bucket.day] : [Bucket.hour, Bucket.day]
+}
+
 export function useAnalytics() {
   const route = useRoute()
   const router = useRouter()
@@ -19,7 +23,7 @@ export function useAnalytics() {
     return {
       window,
       bucket:
-        Object.values(Bucket).find((value) => value === q.bucket) ??
+        bucketsFor(window).find((value) => value === q.bucket) ??
         (window === Window.Value24h ? Bucket.hour : Bucket.day),
       timezone: timeZone.value,
       namespace: typeof q.namespace === 'string' && q.namespace !== '' ? q.namespace : undefined,
@@ -45,5 +49,5 @@ export function useAnalytics() {
     () => route.name === 'analytics' ? JSON.stringify(query.value) : null,
     { keep: () => true },
   )
-  return { ...resource, filters, apply, changeWindow }
+  return { ...resource, filters, buckets: computed(() => bucketsFor(filters.window)), apply, changeWindow }
 }

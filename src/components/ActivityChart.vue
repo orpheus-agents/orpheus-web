@@ -48,11 +48,15 @@ const ticks = computed(() =>
     (n, i, arr) => n >= 0 && arr.indexOf(n) === i,
   ),
 )
+const spansYears = computed(() => {
+  const year = new Intl.DateTimeFormat(locale.value, { timeZone: props.overview.timezone, year: 'numeric' })
+  return year.format(new Date(props.overview.from)) !== year.format(new Date(props.overview.to))
+})
 function move(delta: number) {
   selected.value = Math.min(props.overview.series.length - 1, Math.max(0, selected.value + delta))
 }
 function tick(value: string) {
-  return formatAxisTime(value, locale.value, props.overview.timezone, props.overview.bucket)
+  return formatAxisTime(value, locale.value, props.overview.timezone, props.overview.bucket, spansYears.value)
 }
 function date(value: string) {
   return formatDate(value, locale.value, props.overview.timezone)

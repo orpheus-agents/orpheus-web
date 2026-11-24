@@ -27,6 +27,22 @@ beforeEach(() => {
   vi.mocked(get).mockResolvedValue({ items: [], next_cursor: 'next' })
 })
 afterEach(() => { wrapper?.unmount(); vi.useRealTimers(); vi.resetAllMocks() })
+it('sends stored profile and substring filters, preserves them across pages, and resets the cursor on apply', async () => {
+  const router = await start('/sessions?namespace=TEAM&profile=default&model=GPT%25_')
+  expect(state.filters).toMatchObject({ namespace: 'TEAM', profile: 'default', model: 'GPT%_' })
+  const expected = { namespace_contains: 'TEAM', profile: 'default', model_contains: 'GPT%_' }
+  expect(query()).toMatchObject(expected)
+  expect(query()).not.toHaveProperty('namespace')
+  expect(query()).not.toHaveProperty('model')
+  await state.page('next')
+  await flushPromises()
+  expect(query()).toMatchObject({ ...expected, cursor: 'next' })
+  Object.assign(state.filters, { namespace: ' ', profile: '', model: '  mini  ' })
+  await state.apply()
+  await flushPromises()
+  expect(router.currentRoute.value.query).toMatchObject({ model: 'mini' })
+  expect(query()).toMatchObject({ model_contains: 'mini', namespace_contains: undefined, profile: undefined, cursor: undefined })
+})
 it.each(['24h', '7d', '30d'])('rolls %s on polling and reload while pinning cursors to the successful page window', async (period) => {
   const router = await start(`/sessions?activity=inactive&period=${period}`)
   const first = { ...query() }

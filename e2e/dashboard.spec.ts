@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { mockAPI } from './fixtures'
 import { sid, rid, limits, llmAccount, run, session, timestamp } from '../src/test/fixtures'
-import { HookResultName, HookResultStatus, HookResultOutput_completeness, AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, type Event } from '../src/api/generated'
+import { HookResultName, HookResultStatus, HookResultOutput_completeness, AccountLimitItemState, RunStatus, SandboxEventType, SandboxStateState, PathsApiV1AnalyticsOverviewGetParametersQueryWindow as Window, type Event } from '../src/api/generated'
 
 test.beforeEach(async ({ page }) => { await mockAPI(page) })
 
@@ -153,6 +153,47 @@ test('analytics has metrics, chart and namespaces; periods and section filters a
   await page.getByRole('link', { name: 'Sessions', exact: true }).click()
   await expect(page.getByLabel('Namespace', { exact: true })).toHaveValue('engineering')
   await expect(page.getByRole('button', { name: 'Past', exact: true })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('long analytics periods use daily buckets and restore grouping for short periods', async ({ page }) => {
+  await page.goto('/')
+  const period = page.getByLabel('Period', { exact: true })
+  const grouping = page.getByLabel('Group by', { exact: true })
+  for (const [value, label] of [[Window.Value3m, 'Last 3 months'], [Window.Value6m, 'Last 6 months'], [Window.Value1y, 'Last year']] as const) {
+    const request = page.waitForRequest((r) => new URL(r.url()).searchParams.get('window') === value)
+    await period.selectOption({ label })
+    expect(new URL((await request).url()).searchParams.get('bucket')).toBe('day')
+    await expect(grouping).toHaveValue('day')
+    await expect(grouping).toBeDisabled()
+  }
+  await page.reload()
+  await expect(period).toHaveValue(Window.Value1y)
+  await period.selectOption(Window.Value24h)
+  await expect(grouping).toBeEnabled()
+  await expect(grouping).toHaveValue('hour')
+})
+
+test('session filters use catalog profiles and pass partial matches to the API', async ({ page }) => {
+  await page.goto('/sessions')
+  const profile = page.getByLabel('Profile', { exact: true })
+  await expect(profile.getByRole('option', { name: 'deep', exact: true })).toBeAttached()
+  await page.getByLabel('Namespace', { exact: true }).fill('GINEER')
+  await page.getByLabel('Model', { exact: true }).fill('GPT')
+  const filtered = page.waitForRequest((r) => {
+    const url = new URL(r.url())
+    return url.pathname.endsWith('/sessions') && url.searchParams.has('profile')
+  })
+  await profile.selectOption('deep')
+  const filters = new URL((await filtered).url()).searchParams
+  expect(filters.get('profile')).toBe('deep')
+  expect(filters.get('namespace_contains')).toBe('GINEER')
+  expect(filters.get('model_contains')).toBe('GPT')
+  expect(filters.has('namespace')).toBe(false)
+  expect(filters.has('model')).toBe(false)
+  await page.reload()
+  await expect(profile).toHaveValue('deep')
+  await expect(page.getByLabel('Namespace', { exact: true })).toHaveValue('GINEER')
+  await expect(page.getByLabel('Model', { exact: true })).toHaveValue('GPT')
 })
 
 test('a namespace in the widgets filters the analytics page and hides the widgets', async ({ page }) => {
