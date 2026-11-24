@@ -14,6 +14,7 @@ it('formats hourly and daily axis labels in the chosen timezone, including DST',
   expect(formatAxisTime('2026-03-29T01:30:00Z', 'en-GB', 'Europe/Berlin', Bucket.hour)).toBe('03:30')
   expect(formatAxisTime('2026-03-29T00:30:00Z', 'en-GB', 'America/New_York', Bucket.day)).toBe('28 Mar')
   expect(formatAxisTime('2026-03-29T01:30:00Z', 'ru-RU', 'Europe/Berlin', Bucket.day)).toBe('29 мар.')
+  expect(formatAxisTime('2026-03-29T00:30:00Z', 'en-GB', 'America/New_York', Bucket.day, true)).toBe('28 Mar 2026')
 })
 it('formats duration and timestamps centrally in the selected locale and timezone', () => {
   expect(formatDuration(3660, 'en-US')).toContain('1 hr')

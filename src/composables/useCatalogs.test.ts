@@ -45,3 +45,14 @@ it('reports a failed refresh through the connection indicator and recovers', asy
   expect(state.disconnected.value).toBe(false)
   expect(state.profiles.value.get('default')).toBe('Research')
 })
+
+it('loads every catalog page including inactive profiles for session filters', async () => {
+  vi.mocked(get).mockResolvedValueOnce({ ...profiles, next_cursor: 'next' })
+    .mockResolvedValueOnce({ ...profiles, items: [modelProfile({ name: 'archived', active: false, description: 'Archived' })] })
+  wrapper = mount(defineComponent({ setup() { state = useCatalogs(); return () => null } }))
+  await flushPromises()
+  expect(get).toHaveBeenCalledTimes(2)
+  expect(get).toHaveBeenNthCalledWith(1, '/api/v1/profiles', { signal: expect.any(AbortSignal), query: { limit: 200, cursor: undefined } })
+  expect(get).toHaveBeenNthCalledWith(2, '/api/v1/profiles', { signal: expect.any(AbortSignal), query: { limit: 200, cursor: 'next' } })
+  expect([...state.profiles.value]).toEqual([['default', 'Research'], ['archived', 'Archived']])
+})

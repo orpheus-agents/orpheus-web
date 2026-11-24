@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { PathsApiV1SessionsGetParametersQueryActivity as Activity } from '../api/generated'
 import { useCatalogs } from '../composables/useCatalogs'
@@ -25,7 +26,13 @@ const {
   page,
   hasCursor,
 } = useSessions()
-const catalogs = useCatalogs(() => data.value?.items.map((session) => session.configuration.agent.profile) ?? [])
+const catalogs = useCatalogs()
+const profileNames = computed(() => {
+  const names = new Set(catalogs.profiles.value.keys())
+  for (const session of data.value?.items ?? []) names.add(session.configuration.agent.profile)
+  if (filters.profile) names.add(filters.profile)
+  return [...names].sort()
+})
 </script>
 <template>
   <div class="space-y-6">
@@ -50,13 +57,23 @@ const catalogs = useCatalogs(() => data.value?.items.map((session) => session.co
         v-model="filters.namespace"
         :aria-label="t('filters.namespace')"
         class="field"
-        :placeholder="t('filters.allNamespaces')"
+        :placeholder="t('filters.contains')"
       ></label>
       <label><span class="field-label">{{ t('filters.externalKey') }}</span><input
         v-model="filters.external_key"
         :aria-label="t('filters.externalKey')"
         class="field"
         :placeholder="t('filters.exactKey')"
+      ></label>
+      <label class="w-48 max-w-full"><span class="field-label">{{ t('filters.profile') }}</span><select v-model="filters.profile" :aria-label="t('filters.profile')" class="field" @change="apply">
+        <option value="">{{ t('filters.allProfiles') }}</option>
+        <option v-for="name in profileNames" :key="name" :value="name">{{ name }}</option>
+      </select></label>
+      <label><span class="field-label">{{ t('profiles.model') }}</span><input
+        v-model="filters.model"
+        :aria-label="t('profiles.model')"
+        class="field"
+        :placeholder="t('filters.contains')"
       ></label>
       <label><span class="field-label">{{ t('sessions.status') }}</span><select v-model="filters.status" :aria-label="t('sessions.status')" class="field" @change="apply">
         <option value="">{{ t('filters.allStatuses') }}</option>

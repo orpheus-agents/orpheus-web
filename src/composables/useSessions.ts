@@ -25,6 +25,8 @@ export function useSessions() {
   const filters = reactive({
     activity: Activity.active,
     namespace: '',
+    profile: '',
+    model: '',
     external_key: '',
     status: '' as RunStatus | '',
     period: 'all',
@@ -37,6 +39,8 @@ export function useSessions() {
       Object.assign(filters, {
         activity: q.activity === Activity.inactive ? Activity.inactive : Activity.active,
         namespace: string(q.namespace),
+        profile: string(q.profile),
+        model: string(q.model),
         external_key: string(q.external_key),
         status: availableStatuses(q.activity).find((s) => s === q.status) ?? '',
         period: string(q.period) || 'all',
@@ -54,7 +58,9 @@ export function useSessions() {
       sort: Sort.last_run_created_at,
       order: Order.desc,
       limit: 50,
-      namespace: string(q.namespace) || undefined,
+      namespace_contains: string(q.namespace).trim() || undefined,
+      profile: string(q.profile) || undefined,
+      model_contains: string(q.model).trim() || undefined,
       external_key: string(q.external_key) || undefined,
       status: availableStatuses(q.activity).find((s) => s === q.status),
       cursor: string(q.cursor) || undefined,
@@ -79,7 +85,9 @@ export function useSessions() {
     await router.replace({
       query: {
         ...filters,
-        namespace: filters.namespace || undefined,
+        namespace: filters.namespace.trim() || undefined,
+        profile: filters.profile || undefined,
+        model: filters.model.trim() || undefined,
         external_key: filters.external_key || undefined,
         status: filters.status || undefined,
         from: filters.period === 'custom' ? filters.from || undefined : undefined,

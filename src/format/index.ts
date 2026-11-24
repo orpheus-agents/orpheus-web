@@ -72,8 +72,8 @@ export function shortenKey(key: string, max = 48) {
 export function formatPercent(value: number, locale: string) {
   return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value / 100)
 }
-export function formatAxisTime(timestamp: string, locale: string, timeZone: string, bucket: AnalyticsOverviewBucket) {
+export function formatAxisTime(timestamp: string, locale: string, timeZone: string, bucket: AnalyticsOverviewBucket, showYear = false) {
   const options: Intl.DateTimeFormatOptions = bucket === AnalyticsOverviewBucket.hour
-    ? { hour: '2-digit', minute: '2-digit' } : { month: 'short', day: 'numeric' }
+    ? { hour: '2-digit', minute: '2-digit' } : { year: showYear ? 'numeric' : undefined, month: 'short', day: 'numeric' }
   return new Intl.DateTimeFormat(locale, { ...options, timeZone }).format(new Date(timestamp))
 }
